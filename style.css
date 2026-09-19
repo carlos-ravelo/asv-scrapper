@@ -62,3 +62,51 @@ canvas { max-height: 300px; margin-top: 20px; }
 .player-link:hover {
     text-decoration: underline;
 }
+
+@media (max-width: 768px) {
+    div:has(> .panel-left) {
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 10px !important;
+    }
+    
+    .panel-right {
+        order: 1; /* Mueve la gráfica arriba */
+        width: 100% !important;
+        min-width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 20px;
+    }
+
+    .panel-left {
+        order: 2; /* Mueve el directorio abajo */
+        width: 100% !important;
+        min-width: 100% !important;
+        box-sizing: border-box !important;
+        max-height: 50vh;
+        overflow-y: auto;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        width: 100%;
+    }
+
+    #chartContainer > div:first-child {
+        flex-direction: column !important;
+    }
+    
+    #chartContainer > div:first-child > div:last-child {
+        width: 100%;
+        justify-content: flex-start !important;
+        margin-top: 10px;
+    }
+    
+    #chartModal > div {
+        width: 95vw !important;
+        height: 90vh !important;
+        padding: 10px !important;
+    }
+}
