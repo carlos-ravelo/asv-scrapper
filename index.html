@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASV Chess Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>ASV Player Dashboard</h2>
+<div class="dashboard-layout" style="display: flex; gap: 20px; align-items: flex-start;">
+    <!-- Panel Izquierdo: Directorio -->
+    <div class="panel-left" style="flex: 0 0 350px; position: sticky; top: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h3 style="margin: 0;">Club Directory</h3>
+            <input type="text" id="directorySearch" placeholder="Filter players..." oninput="filterDirectory()" style="padding: 6px; width: 50%; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div style="max-height: 80vh; overflow-y: auto; border: 1px solid #eee;">
+            <table style="margin-top: 0; width: 100%;">
+                <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                    <tr><th>#</th><th>Player</th><th>ELO</th></tr>
+                </thead>
+                <tbody id="topEloBody"></tbody>
+            </table>
+        </div>
+        <button type="button" id="clearSelectionBtn" onclick="clearSelection()" style="margin-top:10px; display:none;">Clear selection</button>
+    </div>
+
+    <!-- Panel Derecho: Gráfica y Match History -->
+<!-- Panel Derecho: Gráfica y Match History -->
+    <div class="panel-right" style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0;">
+        
+        <div id="emptyState" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px; background-color: #f8f9fa; padding: 20px; text-align: center;">
+            <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
+            <h3 style="margin: 0 0 10px 0; color: #495057;">No players selected</h3>
+            <p style="margin: 0; font-size: 15px;">Click on players in the directory to compare their ELO history and view matches.</p>
+        </div>
+
+        <div id="chartContainer" style="display: none; width: 100%;">
+            <!-- Toolbar: Chips & Date Controls -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 15px;">
+                <div id="playerChipsContainer" style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;"></div>
+                
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+                    <select id="timeFilter" onchange="updateDashboard()" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+                        <option value="all">All time</option>
+                        <option value="1">Last month</option>
+                        <option value="3">Last 3 months</option>
+                        <option value="12">Last year</option>
+                    </select>
+                    
+                    <button type="button" onclick="openChartModal()" style="cursor: pointer; padding: 4px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; background: #fff;">
+                        ⛶ Maximize
+                    </button>
+                </div>
+            </div>
+            
+            <canvas id="eloChart"></canvas>
+        </div>
+        
+        <div id="historyContainer" style="display: none; width: 100%;">
+            <h3 style="margin-top: 0;">Match History</h3>
+            <table style="width: 100%;">
+                <thead>
+                    <tr><th>Date</th><th>White</th><th>Black</th><th>Result</th></tr>
+                </thead>
+                <tbody id="matchHistoryBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+    </div>
+    <script src="app.js"></script>
+    <div id="chartModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
+        <div style="background: #fff; width: 92vw; height: 88vh; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px;">
+            <div id="modalChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;"></div>
+            
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <select id="modalTimeFilter" onchange="syncModalFilter(this.value)" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+                    <option value="all">All time</option>
+                    <option value="1">Last month</option>
+                    <option value="3">Last 3 months</option>
+                    <option value="12">Last year</option>
+                </select>
+                <button type="button" onclick="closeChartModal()" style="cursor: pointer; font-size: 24px; font-weight: bold; border: none; background: none; line-height: 1;">&times;</button>
+            </div>
+        </div>
+            <div style="flex: 1; position: relative; min-height: 0;">
+                <canvas id="modalEloChart"></canvas>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
