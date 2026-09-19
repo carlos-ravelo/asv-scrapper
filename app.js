@@ -188,7 +188,7 @@ function updateDashboard() {
     if (timeFilter !== 'all') {
         const d = new Date();
         d.setMonth(d.getMonth() - parseInt(timeFilter));
-        cutoffDate = d.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        cutoffDate = d.toISOString().split('T')[0];
     }
 
     // --- 3. MULTILINE CHART WITH FILTER ---
@@ -235,9 +235,12 @@ function updateDashboard() {
 
     renderChart(sortedDates, playerDatasets);
 
-    // --- 4. MATCH HISTORY WITH FILTER ---
+    // --- 4. MATCH HISTORY & PLAYER STATS ---
     const tbody = document.getElementById('matchHistoryBody');
     if(tbody) tbody.innerHTML = "";
+
+    const statsContainer = document.getElementById('playerStatsContainer');
+    if (statsContainer) statsContainer.style.display = 'none';
 
     if (selectedPlayers.length > 2) {
         if (historyContainer) historyContainer.style.display = 'none'; 
@@ -250,6 +253,65 @@ function updateDashboard() {
     if (selectedPlayers.length === 1) {
         const p = selectedPlayers[0];
         matchesToDisplay = resultsData.filter(row => row.Witspeler === p || row.Zwartspeler === p);
+        
+        // Calculate Advanced Stats for single player
+        if (statsContainer) {
+            let wins = 0, draws = 0, losses = 0;
+            const oppCount = {};
+            let bestWinOpponent = null;
+            let highestEloBeaten = 0;
+
+            // Pre-calculate max ELO for each player to find "Best Win"
+            const maxElos = {};
+            eloData.forEach(row => { 
+                if (!maxElos[row.Naam] || row.ELO > maxElos[row.Naam]) {
+                    maxElos[row.Naam] = row.ELO;
+                }
+            });
+
+            matchesToDisplay.forEach(match => {
+                const isWhite = match.Witspeler === p;
+                const opp = isWhite ? match.Zwartspeler : match.Witspeler;
+                
+                // Track most frequent
+                if (opp) oppCount[opp] = (oppCount[opp] || 0) + 1;
+
+                const won = (isWhite && match.Uitslag === '1-0') || (!isWhite && match.Uitslag === '0-1');
+                const lost = (isWhite && match.Uitslag === '0-1') || (!isWhite && match.Uitslag === '1-0');
+                
+                if (won) {
+                    wins++;
+                    // Check if this is the highest ELO beaten
+                    if (maxElos[opp] && maxElos[opp] > highestEloBeaten) {
+                        highestEloBeaten = maxElos[opp];
+                        bestWinOpponent = opp;
+                    }
+                } else if (lost) {
+                    losses++;
+                } else if (match.Uitslag === '½-½') {
+                    draws++;
+                }
+            });
+
+            const totalGames = wins + draws + losses;
+            const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+            
+            let mostFreqText = "N/A";
+            const sortedOpponents = Object.entries(oppCount).sort((a, b) => b[1] - a[1]);
+            if (sortedOpponents.length > 0) {
+                mostFreqText = `${sortedOpponents[0][0]} (${sortedOpponents[0][1]}x)`;
+            }
+
+            let bestWinText = bestWinOpponent ? `${bestWinOpponent} (${highestEloBeaten})` : "N/A";
+
+            statsContainer.style.display = 'flex';
+            statsContainer.innerHTML = `
+                <div style="flex: 1; min-width: 140px;"><strong>🏆 Win Rate:</strong> ${winRate}% (${wins}W - ${draws}D - ${losses}L)</div>
+                <div style="flex: 1; min-width: 140px;"><strong>🔥 Best Win:</strong> ${bestWinText}</div>
+                <div style="flex: 1; min-width: 140px;"><strong>⚔️ Rival:</strong> ${mostFreqText}</div>
+                <div style="flex: 1; min-width: 100px;"><strong>♟️ Total Games:</strong> ${totalGames}</div>
+            `;
+        }
     } else if (selectedPlayers.length === 2) {
         const [p1, p2] = selectedPlayers;
         matchesToDisplay = resultsData.filter(row => 
@@ -273,11 +335,26 @@ function updateDashboard() {
             const isWhite = selectedPlayers.includes(match.Witspeler);
             const isBlack = selectedPlayers.includes(match.Zwartspeler);
 
+            // Table row background color logic
+            let rowColor = "transparent";
+            if (selectedPlayers.length === 1) {
+                const p = selectedPlayers[0];
+                const isPWhite = match.Witspeler === p;
+                const won = (isPWhite && match.Uitslag === '1-0') || (!isPWhite && match.Uitslag === '0-1');
+                const lost = (isPWhite && match.Uitslag === '0-1') || (!isPWhite && match.Uitslag === '1-0');
+                const draw = match.Uitslag === '½-½';
+                
+                if (won) rowColor = "#e6f4ea"; // Light green
+                else if (lost) rowColor = "#fce8e6"; // Light red
+                else if (draw) rowColor = "#f8f9fa"; // Light gray
+            }
+
+            tr.style.backgroundColor = rowColor;
             tr.innerHTML = `
-                <td>${match.Publish_Date || ''}</td>
-                <td style="font-weight: ${isWhite ? 'bold' : 'normal'}">${match.Witspeler || ''}</td>
-                <td style="font-weight: ${isBlack ? 'bold' : 'normal'}">${match.Zwartspeler || ''}</td>
-                <td>${match.Uitslag || ''}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Publish_Date || ''}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isWhite ? 'bold' : 'normal'}">${match.Witspeler || ''}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isBlack ? 'bold' : 'normal'}">${match.Zwartspeler || ''}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Uitslag || ''}</td>
             `;
             tbody.appendChild(tr);
         });

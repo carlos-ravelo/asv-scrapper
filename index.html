@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASV Chess Tracker</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
@@ -58,6 +58,9 @@
                 </div>
             </div>
             
+            <!-- Player Stats Container -->
+            <div id="playerStatsContainer" style="display: none; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #dee2e6; gap: 15px; flex-wrap: wrap;"></div>
+            
             <canvas id="eloChart"></canvas>
         </div>
         
@@ -73,7 +76,7 @@
     </div>
 </div>
     </div>
-    <script src="app.js"></script>
+    <script src="app.js?v=2"></script>
     <div id="chartModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
         <div style="background: #fff; width: 92vw; height: 88vh; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px;">
@@ -89,6 +92,8 @@
                 <button type="button" onclick="closeChartModal()" style="cursor: pointer; font-size: 24px; font-weight: bold; border: none; background: none; line-height: 1;">&times;</button>
             </div>
         </div>
+        <!-- Player Stats (Visible only when 1 player is selected) -->
+            <div id="playerStatsContainer" style="display: none; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #dee2e6; gap: 15px; flex-wrap: wrap;"></div>
             <div style="flex: 1; position: relative; min-height: 0;">
                 <canvas id="modalEloChart"></canvas>
             </div>
