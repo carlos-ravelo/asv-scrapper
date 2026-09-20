@@ -4,7 +4,27 @@ import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, re
 import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js';
 
 // ==========================================
-// 1. REACTIVE STATE (ES6 Proxy)
+// 1. DOM CACHE (performance)
+// ==========================================
+const DOM = {
+    chartContainer: document.getElementById('chartContainer'),
+    historyContainer: document.getElementById('historyContainer'),
+    emptyState: document.getElementById('emptyState'),
+    statsContainer: document.getElementById('playerStatsContainer'),
+    playerChips: document.getElementById('playerChipsContainer'),
+    modalChips: document.getElementById('modalChipsContainer'),
+    clearBtn: document.getElementById('clearSelectionBtn'),
+    directorySearch: document.getElementById('directorySearch'),
+    timeFilter: document.getElementById('timeFilter'),
+    modalTimeFilter: document.getElementById('modalTimeFilter'),
+    chartModal: document.getElementById('chartModal'),
+    matchHistoryBody: document.getElementById('matchHistoryBody'),
+    ctxChart: document.getElementById('eloChart').getContext('2d'),
+    ctxModal: document.getElementById('modalEloChart').getContext('2d')
+};
+
+// ==========================================
+// 2. REACTIVE STATE (ES6 Proxy)
 // ==========================================
 const state = new Proxy({
     resultsData: [],
@@ -13,24 +33,18 @@ const state = new Proxy({
     directorySort: { key: 'elo', asc: false },
     timeFilter: 'all'
 }, {
-    // every time we change a variable, the Proxy detects what was modified and what needs to be re-rendered
     set(target, property, value) {
         target[property] = value;
         
-        if (property === 'directorySort') {
-            renderLanding();
-        }
+        if (property === 'directorySort') renderLanding();
         
         if (property === 'selectedPlayers') {
             highlightDirectoryRows(value);
-            const clearBtn = document.getElementById('clearSelectionBtn');
-            if (clearBtn) clearBtn.style.display = value.length ? 'inline-block' : 'none';
-            updateDashboard(); // Only triggered if selectedPlayers changes
+            if (DOM.clearBtn) DOM.clearBtn.style.display = value.length ? 'inline-block' : 'none';
+            updateDashboard();
         }
         
-        if (property === 'timeFilter') {
-            updateDashboard(); // Only triggered if the timeFilter changes
-        }
+        if (property === 'timeFilter') updateDashboard();
         
         return true;
     }
@@ -39,20 +53,19 @@ const state = new Proxy({
 let eloChartInstance = null, modalChartInstance = null;
 
 // ==========================================
-// 2. INITIALIZATION
+// 3. INITIALIZATION
 // ==========================================
 Promise.all([
     fetch('asv_results.json').then(res => res.json()),
     fetch('asv_elo.json').then(res => res.json())
 ]).then(([results, elo]) => {
-    // The proxy does not intercept these if we don't set them in the set, but we initialize them anyway
     state.resultsData = results;
     state.eloData = elo;
     renderLanding();
 }).catch(error => console.error("Error loading JSON data:", error));
 
 // ==========================================
-// 3. UI ORCHESTRATION
+// 4. UI ORCHESTRATION
 // ==========================================
 function renderLanding() {
     const sortedPlayers = getSortedDirectory(state.eloData, state.directorySort);
@@ -61,64 +74,51 @@ function renderLanding() {
 }
 
 function updateDashboard() {
-    const chartContainer = document.getElementById('chartContainer');
-    const historyContainer = document.getElementById('historyContainer');
-    const emptyState = document.getElementById('emptyState');
-    const statsContainer = document.getElementById('playerStatsContainer');
-
-    // Empty state
     if (state.selectedPlayers.length === 0) {
-        if (chartContainer) chartContainer.style.display = 'none';
-        if (historyContainer) historyContainer.style.display = 'none';
-        if (emptyState) emptyState.style.display = 'flex';
-        renderStats(statsContainer, null);
+        if (DOM.chartContainer) DOM.chartContainer.style.display = 'none';
+        if (DOM.historyContainer) DOM.historyContainer.style.display = 'none';
+        if (DOM.emptyState) DOM.emptyState.style.display = 'flex';
+        renderStats(DOM.statsContainer, null);
         return;
     }
 
-    if (emptyState) emptyState.style.display = 'none';
-    if (chartContainer) chartContainer.style.display = 'block';
+    if (DOM.emptyState) DOM.emptyState.style.display = 'none';
+    if (DOM.chartContainer) DOM.chartContainer.style.display = 'block';
 
-    // 1. Chips
-    renderPlayerChips('playerChipsContainer', state.selectedPlayers, state.eloData);
-    renderPlayerChips('modalChipsContainer', state.selectedPlayers, state.eloData);
+    renderPlayerChips(DOM.playerChips, state.selectedPlayers, state.eloData);
+    renderPlayerChips(DOM.modalChips, state.selectedPlayers, state.eloData);
 
-    // 2. Gráfica
     const cutoffDate = getCutoffDate();
     const chartData = getChartData(state.selectedPlayers, state.eloData, cutoffDate, chartColors);
     
-    const ctx = document.getElementById('eloChart').getContext('2d');
-    eloChartInstance = createEloChart(ctx, eloChartInstance, chartData, true);
+    eloChartInstance = createEloChart(DOM.ctxChart, eloChartInstance, chartData, true);
     syncModalIfOpen(chartData);
 
-    // 3. Match History & Stats 
     if (state.selectedPlayers.length <= 2) {
-        if (historyContainer) historyContainer.style.display = 'block';
-        const matchesToDisplay = getFilteredMatches(state.selectedPlayers, state.resultsData, cutoffDate);       
-        const statsData = getPlayerStats(state.selectedPlayers, matchesToDisplay, state.eloData);
-        renderStats(statsContainer, statsData);
+        if (DOM.historyContainer) DOM.historyContainer.style.display = 'block';
+        const matchesToDisplay = getFilteredMatches(state.selectedPlayers, state.resultsData, cutoffDate);
         
-        renderHistoryTable(document.getElementById('matchHistoryBody'), matchesToDisplay, state.selectedPlayers);
+        const statsData = getPlayerStats(state.selectedPlayers, matchesToDisplay, state.eloData);
+        renderStats(DOM.statsContainer, statsData);
+        
+        renderHistoryTable(DOM.matchHistoryBody, matchesToDisplay, state.selectedPlayers);
     } else {
-        if (historyContainer) historyContainer.style.display = 'none';
-        renderStats(statsContainer, null);
+        if (DOM.historyContainer) DOM.historyContainer.style.display = 'none';
+        renderStats(DOM.statsContainer, null);
     }
 }
 
 // ==========================================
-// 4. PURE ACTIONS (Ahora solo modifican el Estado, no el DOM)
+// 5. PURE ACTIONS
 // ==========================================
 function sortDirectory(key) {
-    // When mutating the object, we create a new one so that the Proxy detects it
     const isSameKey = state.directorySort.key === key;
-    state.directorySort = {
-        key: key,
-        asc: isSameKey ? !state.directorySort.asc : (key === 'name')
-    };
+    state.directorySort = { key: key, asc: isSameKey ? !state.directorySort.asc : (key === 'name') };
 }
 
 function selectPlayer(name) {
     const clean = String(name).trim();
-    let newPlayers = [...state.selectedPlayers]; // We work with a copy
+    let newPlayers = [...state.selectedPlayers];
     const index = newPlayers.indexOf(clean);
     
     if (index > -1) {
@@ -126,17 +126,16 @@ function selectPlayer(name) {
     } else {
         if (newPlayers.length >= 5) { alert("Maximum 5 players for comparison."); return; }
         newPlayers.push(clean);
-    }    
-    // When reassigning, the Proxy "set" magically triggers and updates the UI
+    }
     state.selectedPlayers = newPlayers;
 }
 
 function clearSelection() {
-    state.selectedPlayers = []; // The proxy detects this and clears everything
+    state.selectedPlayers = [];
 }
 
 function filterDirectory() {
-    const query = removeAccents(document.getElementById('directorySearch').value.toLowerCase());
+    const query = removeAccents(DOM.directorySearch.value.toLowerCase());
     document.querySelectorAll('.directory-row').forEach(row => {
         const playerName = removeAccents(row.querySelector('.clickable-player').textContent.toLowerCase());
         row.style.display = playerName.includes(query) ? '' : 'none';
@@ -144,7 +143,7 @@ function filterDirectory() {
 }
 
 // ==========================================
-// 5. HELPERS & MODALS
+// 6. HELPERS & MODALS
 // ==========================================
 function getCutoffDate() {
     if (state.timeFilter === 'all') return null;
@@ -154,26 +153,20 @@ function getCutoffDate() {
 }
 
 function syncModalIfOpen(chartData) {
-    const modal = document.getElementById('chartModal');
-    if (modal && modal.style.display === 'flex') {
-        const mCtx = document.getElementById('modalEloChart').getContext('2d');
-        modalChartInstance = createEloChart(mCtx, modalChartInstance, chartData, false);
+    if (DOM.chartModal && DOM.chartModal.style.display === 'flex') {
+        modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, chartData, false);
     }
 }
 
 function openChartModal() {
     if (!eloChartInstance) return;
-    const modal = document.getElementById('chartModal');
-    const modalFilter = document.getElementById('modalTimeFilter');
-    if (modalFilter) modalFilter.value = state.timeFilter;
-    modal.style.display = 'flex';
-    const ctx = document.getElementById('modalEloChart').getContext('2d');
-    modalChartInstance = createEloChart(ctx, modalChartInstance, JSON.parse(JSON.stringify(eloChartInstance.data)), false);
+    if (DOM.modalTimeFilter) DOM.modalTimeFilter.value = state.timeFilter;
+    if (DOM.chartModal) DOM.chartModal.style.display = 'flex';
+    modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, JSON.parse(JSON.stringify(eloChartInstance.data)), false);
 }
 
 function closeChartModal() {
-    const modal = document.getElementById('chartModal');
-    if (modal) modal.style.display = 'none';
+    if (DOM.chartModal) DOM.chartModal.style.display = 'none';
     if (modalChartInstance) { modalChartInstance.destroy(); modalChartInstance = null; }
 }
 
@@ -195,12 +188,9 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('change', (e) => {
     if (e.target.id === 'timeFilter' || e.target.id === 'modalTimeFilter') {
-        // Muta el estado, el Proxy se encarga de re-renderizar
         state.timeFilter = e.target.value; 
-        
-        // Sincroniza visualmente ambos selects
-        document.getElementById('timeFilter').value = e.target.value;
-        document.getElementById('modalTimeFilter').value = e.target.value;
+        DOM.timeFilter.value = e.target.value;
+        DOM.modalTimeFilter.value = e.target.value;
     }
 });
 

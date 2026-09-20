@@ -1,6 +1,19 @@
 export const chartColors = ['#0056b3', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
 
-// Small helper to avoid repeating the creation of dynamic player links
+// ==========================================
+//  DOM CACHE (runs just one time)
+// ==========================================
+const DOM = {
+    topEloBody: document.getElementById('topEloBody'),
+    tpl: {
+        dirRow: document.getElementById('tpl-directory-row'),
+        chip: document.getElementById('tpl-player-chip'),
+        statsSingle: document.getElementById('tpl-stats-single'),
+        statsH2h: document.getElementById('tpl-stats-h2h'),
+        historyRow: document.getElementById('tpl-history-row')
+    }
+};
+
 function createPlayerLinkNode(name, additionalText = '') {
     const span = document.createElement('span');
     span.className = 'clickable-player link-style';
@@ -18,13 +31,11 @@ function createPlayerLinkNode(name, additionalText = '') {
 }
 
 export function renderDirectoryTable(sortedPlayers) {
-    const tbody = document.getElementById('topEloBody');
-    const tpl = document.getElementById('tpl-directory-row');
-    if (!tbody || !tpl) return; 
+    if (!DOM.topEloBody || !DOM.tpl.dirRow) return; 
     
-    tbody.innerHTML = '';
+    DOM.topEloBody.innerHTML = '';
     sortedPlayers.forEach(([name, data], index) => {
-        const clone = tpl.content.cloneNode(true);
+        const clone = DOM.tpl.dirRow.content.cloneNode(true);
         const tds = clone.querySelectorAll('td');
         
         tds[0].textContent = index + 1;
@@ -34,23 +45,25 @@ export function renderDirectoryTable(sortedPlayers) {
         link.textContent = name;
         link.dataset.player = name;
         
-        tbody.appendChild(clone);
+        DOM.topEloBody.appendChild(clone);
     });
 }
 
-export function renderPlayerChips(containerId, selectedPlayers, eloData) {
-    const container = document.getElementById(containerId);
-    const tpl = document.getElementById('tpl-player-chip');
-    if (!container || !tpl) return;
+export function renderPlayerChips(container, selectedPlayers, eloData) {
+    if (!container || !DOM.tpl.chip) return;
+    
     container.innerHTML = '';
     selectedPlayers.forEach((player, idx) => {
         const playerHistory = eloData
             .filter(row => row.Naam === player && row.Publish_Date && row.Publish_Date !== 'Unknown')
             .sort((a, b) => a.Publish_Date.localeCompare(b.Publish_Date));
         const lastElo = playerHistory.length > 0 ? playerHistory[playerHistory.length - 1].ELO : 'N/A';
-        const clone = tpl.content.cloneNode(true);
-        const chip = clone.querySelector('.player-chip');        
-        chip.style.setProperty('--theme-color', chartColors[idx % chartColors.length]);       
+        
+        const clone = DOM.tpl.chip.content.cloneNode(true);
+        const chip = clone.querySelector('.player-chip');
+        
+        chip.style.setProperty('--theme-color', chartColors[idx % chartColors.length]);
+        
         clone.querySelector('.chip-name').textContent = player;
         clone.querySelector('.chip-elo').textContent = `(${lastElo})`;
         clone.querySelector('.chip-close').dataset.player = player;
@@ -78,9 +91,8 @@ export function renderStats(statsContainer, stats) {
     }
 
     if (stats.type === 'single') {
-        const tpl = document.getElementById('tpl-stats-single');
-        if (!tpl) return;
-        const clone = tpl.content.cloneNode(true);
+        if (!DOM.tpl.statsSingle) return;
+        const clone = DOM.tpl.statsSingle.content.cloneNode(true);
         
         clone.querySelector('.stat-winrate').textContent = `${stats.winRate}% (${stats.wins}W - ${stats.draws}D - ${stats.losses}L)`;
         clone.querySelector('.stat-total').textContent = stats.totalGames;
@@ -107,9 +119,8 @@ export function renderStats(statsContainer, stats) {
         statsContainer.appendChild(clone);
 
     } else if (stats.type === 'h2h') {
-        const tpl = document.getElementById('tpl-stats-h2h');
-        if (!tpl) return;
-        const clone = tpl.content.cloneNode(true);
+        if (!DOM.tpl.statsH2h) return;
+        const clone = DOM.tpl.statsH2h.content.cloneNode(true);
         
         clone.querySelector('.h2h-p1').textContent = stats.p1;
         clone.querySelector('.h2h-score').textContent = `${stats.p1Wins} - ${stats.p2Wins}`;
@@ -120,9 +131,9 @@ export function renderStats(statsContainer, stats) {
         statsContainer.appendChild(clone);
     }
 }
+
 export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
-    const tpl = document.getElementById('tpl-history-row');
-    if (!tbody || !tpl) return;
+    if (!tbody || !DOM.tpl.historyRow) return;
     tbody.innerHTML = "";
     
     matchesToDisplay.sort((a, b) => {
@@ -130,12 +141,11 @@ export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
         const db = b.Publish_Date && b.Publish_Date !== 'Unknown' ? b.Publish_Date : '';
         return db.localeCompare(da);
     }).forEach(match => {
-        const clone = tpl.content.cloneNode(true);
+        const clone = DOM.tpl.historyRow.content.cloneNode(true);
         const tr = clone.querySelector('.history-row');
         const isWhite = selectedPlayers.includes(match.Witspeler);
         const isBlack = selectedPlayers.includes(match.Zwartspeler);
 
-        // Dynamic color classes
         const whiteSpan = clone.querySelector('.col-white .clickable-player');
         const blackSpan = clone.querySelector('.col-black .clickable-player');
         
@@ -153,7 +163,6 @@ export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
             else if (match.Uitslag === '½-½') tr.classList.add('row-draw'); 
         }
 
-        // Safe data assignment
         clone.querySelector('.col-date').textContent = match.Publish_Date || '';
         whiteSpan.textContent = match.Witspeler || '';
         whiteSpan.dataset.player = match.Witspeler;
