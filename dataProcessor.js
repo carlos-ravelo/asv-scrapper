@@ -65,3 +65,63 @@ export function getFilteredMatches(selectedPlayers, resultsData, cutoffDate) {
     if (cutoffDate) matches = matches.filter(row => row.Publish_Date && row.Publish_Date >= cutoffDate);
     return matches;
 }
+
+export function getPlayerStats(selectedPlayers, matchesToDisplay, eloData) {
+    if (selectedPlayers.length === 1) {
+        const p = selectedPlayers[0];
+        let wins = 0, draws = 0, losses = 0;
+        const oppCount = {};
+        let bestWinOpponent = null, highestEloBeaten = 0;
+        const maxElos = {};
+
+        eloData.forEach(row => {
+            if (!maxElos[row.Naam] || row.ELO > maxElos[row.Naam]) maxElos[row.Naam] = row.ELO;
+        });
+
+        matchesToDisplay.forEach(match => {
+            const isWhite = match.Witspeler === p;
+            const opp = isWhite ? match.Zwartspeler : match.Witspeler;
+            if (opp) oppCount[opp] = (oppCount[opp] || 0) + 1;
+
+            const won = (isWhite && match.Uitslag === '1-0') || (!isWhite && match.Uitslag === '0-1');
+            const lost = (isWhite && match.Uitslag === '0-1') || (!isWhite && match.Uitslag === '1-0');
+
+            if (won) {
+                wins++;
+                if (maxElos[opp] && maxElos[opp] > highestEloBeaten) {
+                    highestEloBeaten = maxElos[opp];
+                    bestWinOpponent = opp;
+                }
+            } else if (lost) losses++;
+            else if (match.Uitslag === '½-½') draws++;
+        });
+
+        const totalGames = wins + draws + losses;
+        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
+
+        const sortedOpponents = Object.entries(oppCount).sort((a, b) => b[1] - a[1]);
+        const maxGames = sortedOpponents.length > 0 ? sortedOpponents[0][1] : 0;
+        const topRivals = sortedOpponents.filter(opp => opp[1] === maxGames).map(opp => opp[0]);
+
+        return {
+            type: 'single',
+            winRate, wins, draws, losses, totalGames,
+            bestWin: bestWinOpponent ? { opponent: bestWinOpponent, elo: highestEloBeaten } : null,
+            rivals: { names: topRivals, count: maxGames }
+        };
+
+    } else if (selectedPlayers.length === 2) {
+        const [p1, p2] = selectedPlayers;
+        let p1Wins = 0, p2Wins = 0, draws = 0;
+
+        matchesToDisplay.forEach(match => {
+            const p1IsWhite = match.Witspeler === p1;
+            if (match.Uitslag === '1-0') p1IsWhite ? p1Wins++ : p2Wins++;
+            else if (match.Uitslag === '0-1') p1IsWhite ? p2Wins++ : p1Wins++;
+            else if (match.Uitslag === '½-½') draws++;
+        });
+
+        return { type: 'h2h', p1, p2, p1Wins, p2Wins, draws };
+    }
+    return null;
+}

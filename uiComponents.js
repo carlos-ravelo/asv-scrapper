@@ -68,67 +68,37 @@ export function highlightDirectoryRows(selectedPlayers) {
     });
 }
 
-export function renderStats(statsContainer, matchesToDisplay, eloData, selectedPlayers) {
+export function renderStats(statsContainer, stats) {
     if (!statsContainer) return;
-    statsContainer.innerHTML = ''; // Clean container
+    statsContainer.innerHTML = '';
     
-    if (selectedPlayers.length === 1) {
-        const p = selectedPlayers[0];
-        let wins = 0, draws = 0, losses = 0;
-        const oppCount = {};
-        let bestWinOpponent = null, highestEloBeaten = 0;
-        const maxElos = {};
-        
-        eloData.forEach(row => { 
-            if (!maxElos[row.Naam] || row.ELO > maxElos[row.Naam]) maxElos[row.Naam] = row.ELO;
-        });
+    if (!stats) {
+        statsContainer.style.display = 'none';
+        return;
+    }
 
-        matchesToDisplay.forEach(match => {
-            const isWhite = match.Witspeler === p;
-            const opp = isWhite ? match.Zwartspeler : match.Witspeler;
-            if (opp) oppCount[opp] = (oppCount[opp] || 0) + 1;
-
-            const won = (isWhite && match.Uitslag === '1-0') || (!isWhite && match.Uitslag === '0-1');
-            const lost = (isWhite && match.Uitslag === '0-1') || (!isWhite && match.Uitslag === '1-0');
-            
-            if (won) {
-                wins++;
-                if (maxElos[opp] && maxElos[opp] > highestEloBeaten) {
-                    highestEloBeaten = maxElos[opp];
-                    bestWinOpponent = opp;
-                }
-            } else if (lost) losses++;
-            else if (match.Uitslag === '½-½') draws++;
-        });
-
-        const totalGames = wins + draws + losses;
-        const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
-        
+    if (stats.type === 'single') {
         const tpl = document.getElementById('tpl-stats-single');
+        if (!tpl) return;
         const clone = tpl.content.cloneNode(true);
         
-        clone.querySelector('.stat-winrate').textContent = `${winRate}% (${wins}W - ${draws}D - ${losses}L)`;
-        clone.querySelector('.stat-total').textContent = totalGames;
+        clone.querySelector('.stat-winrate').textContent = `${stats.winRate}% (${stats.wins}W - ${stats.draws}D - ${stats.losses}L)`;
+        clone.querySelector('.stat-total').textContent = stats.totalGames;
         
-        // Procesar oponente más frecuente
-        const sortedOpponents = Object.entries(oppCount).sort((a, b) => b[1] - a[1]);
         const rivalContainer = clone.querySelector('.stat-rival');
-        if (sortedOpponents.length > 0) {
-            const maxGames = sortedOpponents[0][1];
-            const topRivals = sortedOpponents.filter(opp => opp[1] === maxGames);
-            topRivals.forEach((opp, idx) => {
-                rivalContainer.appendChild(createPlayerLinkNode(opp[0]));
-                if (idx < topRivals.length - 1) rivalContainer.appendChild(document.createTextNode(', '));
+        if (stats.rivals.names.length > 0) {
+            stats.rivals.names.forEach((name, idx) => {
+                rivalContainer.appendChild(createPlayerLinkNode(name));
+                if (idx < stats.rivals.names.length - 1) rivalContainer.appendChild(document.createTextNode(', '));
             });
-            rivalContainer.appendChild(document.createTextNode(` (${maxGames}x)`));
+            rivalContainer.appendChild(document.createTextNode(` (${stats.rivals.count}x)`));
         } else {
             rivalContainer.textContent = "N/A";
         }
 
-        // Process best win
         const bestWinContainer = clone.querySelector('.stat-bestwin');
-        if (bestWinOpponent) {
-            bestWinContainer.appendChild(createPlayerLinkNode(bestWinOpponent, ` (${highestEloBeaten})`));
+        if (stats.bestWin) {
+            bestWinContainer.appendChild(createPlayerLinkNode(stats.bestWin.opponent, ` (${stats.bestWin.elo})`));
         } else {
             bestWinContainer.textContent = "N/A";
         }
@@ -136,30 +106,20 @@ export function renderStats(statsContainer, matchesToDisplay, eloData, selectedP
         statsContainer.style.display = 'flex';
         statsContainer.appendChild(clone);
 
-    } else if (selectedPlayers.length === 2) {
-        const [p1, p2] = selectedPlayers;
-        let p1Wins = 0, p2Wins = 0, draws = 0;
-        
-        matchesToDisplay.forEach(match => {
-            const p1IsWhite = match.Witspeler === p1;
-            if (match.Uitslag === '1-0') p1IsWhite ? p1Wins++ : p2Wins++;
-            else if (match.Uitslag === '0-1') p1IsWhite ? p2Wins++ : p1Wins++;
-            else if (match.Uitslag === '½-½') draws++;
-        });
-
+    } else if (stats.type === 'h2h') {
         const tpl = document.getElementById('tpl-stats-h2h');
+        if (!tpl) return;
         const clone = tpl.content.cloneNode(true);
         
-        clone.querySelector('.h2h-p1').textContent = p1;
-        clone.querySelector('.h2h-score').textContent = `${p1Wins} - ${p2Wins}`;
-        clone.querySelector('.h2h-p2').textContent = p2;
-        clone.querySelector('.h2h-draws').textContent = `(${draws} Draws)`;
+        clone.querySelector('.h2h-p1').textContent = stats.p1;
+        clone.querySelector('.h2h-score').textContent = `${stats.p1Wins} - ${stats.p2Wins}`;
+        clone.querySelector('.h2h-p2').textContent = stats.p2;
+        clone.querySelector('.h2h-draws').textContent = `(${stats.draws} Draws)`;
         
         statsContainer.style.display = 'flex';
         statsContainer.appendChild(clone);
     }
 }
-
 export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
     const tpl = document.getElementById('tpl-history-row');
     if (!tbody || !tpl) return;

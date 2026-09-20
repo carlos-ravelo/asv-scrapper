@@ -1,15 +1,42 @@
 import { createEloChart } from './chartManager.js';
 import { removeAccents } from './utils.js';
 import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js';
-import { getSortedDirectory, getChartData, getFilteredMatches } from './dataProcessor.js';
+import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js';
 
 // ==========================================
-// 1. STATE
+// 1. REACTIVE STATE (ES6 Proxy)
 // ==========================================
-let resultsData = [], eloData = [];
+const state = new Proxy({
+    resultsData: [],
+    eloData: [],
+    selectedPlayers: [],
+    directorySort: { key: 'elo', asc: false },
+    timeFilter: 'all'
+}, {
+    // every time we change a variable, the Proxy detects what was modified and what needs to be re-rendered
+    set(target, property, value) {
+        target[property] = value;
+        
+        if (property === 'directorySort') {
+            renderLanding();
+        }
+        
+        if (property === 'selectedPlayers') {
+            highlightDirectoryRows(value);
+            const clearBtn = document.getElementById('clearSelectionBtn');
+            if (clearBtn) clearBtn.style.display = value.length ? 'inline-block' : 'none';
+            updateDashboard(); // Only triggered if selectedPlayers changes
+        }
+        
+        if (property === 'timeFilter') {
+            updateDashboard(); // Only triggered if the timeFilter changes
+        }
+        
+        return true;
+    }
+});
+
 let eloChartInstance = null, modalChartInstance = null;
-let selectedPlayers = [];
-let directorySort = { key: 'elo', asc: false };
 
 // ==========================================
 // 2. INITIALIZATION
@@ -18,8 +45,9 @@ Promise.all([
     fetch('asv_results.json').then(res => res.json()),
     fetch('asv_elo.json').then(res => res.json())
 ]).then(([results, elo]) => {
-    resultsData = results;
-    eloData = elo;
+    // The proxy does not intercept these if we don't set them in the set, but we initialize them anyway
+    state.resultsData = results;
+    state.eloData = elo;
     renderLanding();
 }).catch(error => console.error("Error loading JSON data:", error));
 
@@ -27,9 +55,9 @@ Promise.all([
 // 3. UI ORCHESTRATION
 // ==========================================
 function renderLanding() {
-    const sortedPlayers = getSortedDirectory(eloData, directorySort);
+    const sortedPlayers = getSortedDirectory(state.eloData, state.directorySort);
     renderDirectoryTable(sortedPlayers);
-    highlightDirectoryRows(selectedPlayers);
+    highlightDirectoryRows(state.selectedPlayers);
 }
 
 function updateDashboard() {
@@ -37,98 +65,91 @@ function updateDashboard() {
     const historyContainer = document.getElementById('historyContainer');
     const emptyState = document.getElementById('emptyState');
     const statsContainer = document.getElementById('playerStatsContainer');
-    
-    if (statsContainer) statsContainer.style.display = 'none';
 
-    // Handle visibility if no players are selected
-    if (selectedPlayers.length === 0) {
+    // Empty state
+    if (state.selectedPlayers.length === 0) {
         if (chartContainer) chartContainer.style.display = 'none';
         if (historyContainer) historyContainer.style.display = 'none';
         if (emptyState) emptyState.style.display = 'flex';
+        renderStats(statsContainer, null);
         return;
     }
 
-    // Active dashboard visibility
     if (emptyState) emptyState.style.display = 'none';
     if (chartContainer) chartContainer.style.display = 'block';
 
-    // 1. Render player chips
-    renderPlayerChips('playerChipsContainer', selectedPlayers, eloData);
-    renderPlayerChips('modalChipsContainer', selectedPlayers, eloData);
+    // 1. Chips
+    renderPlayerChips('playerChipsContainer', state.selectedPlayers, state.eloData);
+    renderPlayerChips('modalChipsContainer', state.selectedPlayers, state.eloData);
 
-    // 2. Calculate dates and prepare chart data
+    // 2. Gráfica
     const cutoffDate = getCutoffDate();
-    const chartData = getChartData(selectedPlayers, eloData, cutoffDate, chartColors);
+    const chartData = getChartData(state.selectedPlayers, state.eloData, cutoffDate, chartColors);
     
     const ctx = document.getElementById('eloChart').getContext('2d');
     eloChartInstance = createEloChart(ctx, eloChartInstance, chartData, true);
     syncModalIfOpen(chartData);
 
-    // 3. Prepare stats and tables (1 or 2 players only)
-    if (selectedPlayers.length <= 2) {
+    // 3. Match History & Stats 
+    if (state.selectedPlayers.length <= 2) {
         if (historyContainer) historyContainer.style.display = 'block';
-        const matchesToDisplay = getFilteredMatches(selectedPlayers, resultsData, cutoffDate);
-        renderStats(statsContainer, matchesToDisplay, eloData, selectedPlayers);
-        renderHistoryTable(document.getElementById('matchHistoryBody'), matchesToDisplay, selectedPlayers);
+        const matchesToDisplay = getFilteredMatches(state.selectedPlayers, state.resultsData, cutoffDate);       
+        const statsData = getPlayerStats(state.selectedPlayers, matchesToDisplay, state.eloData);
+        renderStats(statsContainer, statsData);
+        
+        renderHistoryTable(document.getElementById('matchHistoryBody'), matchesToDisplay, state.selectedPlayers);
     } else {
         if (historyContainer) historyContainer.style.display = 'none';
+        renderStats(statsContainer, null);
     }
 }
 
 // ==========================================
-// 4. USER ACTIONS
+// 4. PURE ACTIONS (Ahora solo modifican el Estado, no el DOM)
 // ==========================================
 function sortDirectory(key) {
-    if (directorySort.key === key) {
-        directorySort.asc = !directorySort.asc;
-    } else {
-        directorySort.key = key;
-        directorySort.asc = (key === 'name') ? true : false;
-    }
-    renderLanding();
+    // When mutating the object, we create a new one so that the Proxy detects it
+    const isSameKey = state.directorySort.key === key;
+    state.directorySort = {
+        key: key,
+        asc: isSameKey ? !state.directorySort.asc : (key === 'name')
+    };
 }
 
 function selectPlayer(name) {
     const clean = String(name).trim();
-    const index = selectedPlayers.indexOf(clean);
+    let newPlayers = [...state.selectedPlayers]; // We work with a copy
+    const index = newPlayers.indexOf(clean);
     
     if (index > -1) {
-        selectedPlayers.splice(index, 1);
+        newPlayers.splice(index, 1);
     } else {
-        if (selectedPlayers.length >= 5) { alert("Maximum 5 players for comparison."); return; }
-        selectedPlayers.push(clean);
-    }
+        if (newPlayers.length >= 5) { alert("Maximum 5 players for comparison."); return; }
+        newPlayers.push(clean);
+    }    
+    // When reassigning, the Proxy "set" magically triggers and updates the UI
+    state.selectedPlayers = newPlayers;
+}
 
-    highlightDirectoryRows(selectedPlayers);
-    const clearBtn = document.getElementById('clearSelectionBtn');
-    if (clearBtn) clearBtn.style.display = selectedPlayers.length ? 'inline-block' : 'none';
-    updateDashboard();
+function clearSelection() {
+    state.selectedPlayers = []; // The proxy detects this and clears everything
 }
 
 function filterDirectory() {
     const query = removeAccents(document.getElementById('directorySearch').value.toLowerCase());
     document.querySelectorAll('.directory-row').forEach(row => {
-        const playerName = removeAccents(row.cells[1].textContent.toLowerCase());
+        const playerName = removeAccents(row.querySelector('.clickable-player').textContent.toLowerCase());
         row.style.display = playerName.includes(query) ? '' : 'none';
     });
-}
-
-function clearSelection() {
-    selectedPlayers = [];
-    highlightDirectoryRows(selectedPlayers);
-    const clearBtn = document.getElementById('clearSelectionBtn');
-    if (clearBtn) clearBtn.style.display = 'none';
-    updateDashboard();
 }
 
 // ==========================================
 // 5. HELPERS & MODALS
 // ==========================================
 function getCutoffDate() {
-    const timeFilter = document.getElementById('timeFilter')?.value || 'all';
-    if (timeFilter === 'all') return null;
+    if (state.timeFilter === 'all') return null;
     const d = new Date();
-    d.setMonth(d.getMonth() - parseInt(timeFilter));
+    d.setMonth(d.getMonth() - parseInt(state.timeFilter));
     return d.toISOString().split('T')[0];
 }
 
@@ -140,23 +161,12 @@ function syncModalIfOpen(chartData) {
     }
 }
 
-function syncModalFilter(value) {
-    const mainFilter = document.getElementById('timeFilter');
-    if (mainFilter) {
-        mainFilter.value = value; 
-        updateDashboard();        
-    }
-}
-
 function openChartModal() {
     if (!eloChartInstance) return;
     const modal = document.getElementById('chartModal');
-    const mainFilter = document.getElementById('timeFilter');
     const modalFilter = document.getElementById('modalTimeFilter');
-    
-    if (mainFilter && modalFilter) modalFilter.value = mainFilter.value;
+    if (modalFilter) modalFilter.value = state.timeFilter;
     modal.style.display = 'flex';
-    
     const ctx = document.getElementById('modalEloChart').getContext('2d');
     modalChartInstance = createEloChart(ctx, modalChartInstance, JSON.parse(JSON.stringify(eloChartInstance.data)), false);
 }
@@ -170,24 +180,12 @@ function closeChartModal() {
 // ==========================================
 // CENTRAL EVENT DELEGATION
 // ==========================================
-
-// 1. Click Events
 document.addEventListener('click', (e) => {
-    // Select player from directory links
-    const playerLink = e.target.closest('.player-link');
+    const playerLink = e.target.closest('[data-action="select-player"]');
     if (playerLink && playerLink.dataset.player) {
         selectPlayer(playerLink.dataset.player);
         return;
     }
-
-    // Select player from chips, stats or history table
-    const dynamicSelect = e.target.closest('[data-action="select-player"]');
-    if (dynamicSelect && dynamicSelect.dataset.player) {
-        selectPlayer(dynamicSelect.dataset.player);
-        return;
-    }
-
-    // Static Buttons & Table Headers
     if (e.target.closest('#clearSelectionBtn')) clearSelection();
     if (e.target.closest('#maximizeChartBtn')) openChartModal();
     if (e.target.closest('#closeModalBtn')) closeChartModal();
@@ -195,14 +193,17 @@ document.addEventListener('click', (e) => {
     if (e.target.closest('#sortEloBtn')) sortDirectory('elo');
 });
 
-// 2. Change Events (Dropdowns)
 document.addEventListener('change', (e) => {
-    if (e.target.id === 'timeFilter') updateDashboard();
-    if (e.target.id === 'modalTimeFilter') syncModalFilter(e.target.value);
+    if (e.target.id === 'timeFilter' || e.target.id === 'modalTimeFilter') {
+        // Muta el estado, el Proxy se encarga de re-renderizar
+        state.timeFilter = e.target.value; 
+        
+        // Sincroniza visualmente ambos selects
+        document.getElementById('timeFilter').value = e.target.value;
+        document.getElementById('modalTimeFilter').value = e.target.value;
+    }
 });
 
-// 3. Input Events (Search typing)
 document.addEventListener('input', (e) => {
     if (e.target.id === 'directorySearch') filterDirectory();
 });
-
