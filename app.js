@@ -3,24 +3,48 @@ import { removeAccents } from './utils.js';
 import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js';
 import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js';
 
+export const SELECTORS = Object.freeze({
+    ACTION_SELECT_PLAYER: '[data-action="select-player"]',
+    DIRECTORY_ROW: '.directory-row',
+    CLICKABLE_PLAYER: '.clickable-player',
+    BTN_CLEAR: '#clearSelectionBtn',
+    BTN_MAXIMIZE: '#maximizeChartBtn',
+    BTN_CLOSE_MODAL: '#closeModalBtn',
+    SORT_NAME: '#sortNameBtn',
+    SORT_ELO: '#sortEloBtn',
+    CHART_CONTAINER: 'chartContainer',
+    HISTORY_CONTAINER: 'historyContainer',
+    EMPTY_STATE: 'emptyState',
+    STATS_CONTAINER: 'playerStatsContainer',
+    PLAYER_CHIPS: 'playerChipsContainer',
+    MODAL_CHIPS: 'modalChipsContainer',
+    DIR_SEARCH: 'directorySearch',
+    TIME_FILTER: 'timeFilter',
+    MODAL_TIME_FILTER: 'modalTimeFilter',
+    CHART_MODAL: 'chartModal',
+    MATCH_HISTORY_BODY: 'matchHistoryBody',
+    ELO_CHART: 'eloChart',
+    MODAL_ELO_CHART: 'modalEloChart'
+});
+
 // ==========================================
-// 1. DOM CACHE (performance)
+// 1. CACHÉ DEL DOM (Rendimiento)
 // ==========================================
 const DOM = {
-    chartContainer: document.getElementById('chartContainer'),
-    historyContainer: document.getElementById('historyContainer'),
-    emptyState: document.getElementById('emptyState'),
-    statsContainer: document.getElementById('playerStatsContainer'),
-    playerChips: document.getElementById('playerChipsContainer'),
-    modalChips: document.getElementById('modalChipsContainer'),
-    clearBtn: document.getElementById('clearSelectionBtn'),
-    directorySearch: document.getElementById('directorySearch'),
-    timeFilter: document.getElementById('timeFilter'),
-    modalTimeFilter: document.getElementById('modalTimeFilter'),
-    chartModal: document.getElementById('chartModal'),
-    matchHistoryBody: document.getElementById('matchHistoryBody'),
-    ctxChart: document.getElementById('eloChart').getContext('2d'),
-    ctxModal: document.getElementById('modalEloChart').getContext('2d')
+    chartContainer: document.getElementById(SELECTORS.CHART_CONTAINER),
+    historyContainer: document.getElementById(SELECTORS.HISTORY_CONTAINER),
+    emptyState: document.getElementById(SELECTORS.EMPTY_STATE),
+    statsContainer: document.getElementById(SELECTORS.STATS_CONTAINER),
+    playerChips: document.getElementById(SELECTORS.PLAYER_CHIPS),
+    modalChips: document.getElementById(SELECTORS.MODAL_CHIPS),
+    clearBtn: document.getElementById(SELECTORS.BTN_CLEAR.substring(1)),
+    directorySearch: document.getElementById(SELECTORS.DIR_SEARCH),
+    timeFilter: document.getElementById(SELECTORS.TIME_FILTER),
+    modalTimeFilter: document.getElementById(SELECTORS.MODAL_TIME_FILTER),
+    chartModal: document.getElementById(SELECTORS.CHART_MODAL),
+    matchHistoryBody: document.getElementById(SELECTORS.MATCH_HISTORY_BODY),
+    ctxChart: document.getElementById(SELECTORS.ELO_CHART).getContext('2d'),
+    ctxModal: document.getElementById(SELECTORS.MODAL_ELO_CHART).getContext('2d')
 };
 
 // ==========================================
@@ -136,8 +160,8 @@ function clearSelection() {
 
 function filterDirectory() {
     const query = removeAccents(DOM.directorySearch.value.toLowerCase());
-    document.querySelectorAll('.directory-row').forEach(row => {
-        const playerName = removeAccents(row.querySelector('.clickable-player').textContent.toLowerCase());
+    document.querySelectorAll(SELECTORS.DIRECTORY_ROW).forEach(row => {
+        const playerName = removeAccents(row.querySelector(SELECTORS.CLICKABLE_PLAYER).textContent.toLowerCase());
         row.style.display = playerName.includes(query) ? '' : 'none';
     });
 }
@@ -174,20 +198,20 @@ function closeChartModal() {
 // CENTRAL EVENT DELEGATION
 // ==========================================
 document.addEventListener('click', (e) => {
-    const playerLink = e.target.closest('[data-action="select-player"]');
+    const playerLink = e.target.closest(SELECTORS.ACTION_SELECT_PLAYER);
     if (playerLink && playerLink.dataset.player) {
         selectPlayer(playerLink.dataset.player);
         return;
     }
-    if (e.target.closest('#clearSelectionBtn')) clearSelection();
-    if (e.target.closest('#maximizeChartBtn')) openChartModal();
-    if (e.target.closest('#closeModalBtn')) closeChartModal();
-    if (e.target.closest('#sortNameBtn')) sortDirectory('name');
-    if (e.target.closest('#sortEloBtn')) sortDirectory('elo');
+    if (e.target.closest(SELECTORS.BTN_CLEAR)) clearSelection();
+    if (e.target.closest(SELECTORS.BTN_MAXIMIZE)) openChartModal();
+    if (e.target.closest(SELECTORS.BTN_CLOSE_MODAL)) closeChartModal();
+    if (e.target.closest(SELECTORS.SORT_NAME)) sortDirectory('name');
+    if (e.target.closest(SELECTORS.SORT_ELO)) sortDirectory('elo');
 });
 
 document.addEventListener('change', (e) => {
-    if (e.target.id === 'timeFilter' || e.target.id === 'modalTimeFilter') {
+    if (e.target.id === SELECTORS.TIME_FILTER || e.target.id === SELECTORS.MODAL_TIME_FILTER) {
         state.timeFilter = e.target.value; 
         DOM.timeFilter.value = e.target.value;
         DOM.modalTimeFilter.value = e.target.value;
@@ -195,5 +219,5 @@ document.addEventListener('change', (e) => {
 });
 
 document.addEventListener('input', (e) => {
-    if (e.target.id === 'directorySearch') filterDirectory();
+    if (e.target.id === SELECTORS.DIR_SEARCH) filterDirectory();
 });

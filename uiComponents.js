@@ -1,7 +1,34 @@
+import { SELECTORS } from './app.js';
 export const chartColors = ['#0056b3', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
 
+export const UI_CLASSES = Object.freeze({
+    CHIP: '.player-chip',
+    CHIP_NAME: '.chip-name',
+    CHIP_ELO: '.chip-elo',
+    CHIP_CLOSE: '.chip-close',
+    STAT_WINRATE: '.stat-winrate',
+    STAT_TOTAL: '.stat-total',
+    STAT_RIVAL: '.stat-rival',
+    STAT_BESTWIN: '.stat-bestwin',
+    H2H_P1: '.h2h-p1',
+    H2H_SCORE: '.h2h-score',
+    H2H_P2: '.h2h-p2',
+    H2H_DRAWS: '.h2h-draws',
+    HISTORY_ROW: '.history-row',
+    COL_DATE: '.col-date',
+    COL_WHITE: '.col-white',
+    COL_BLACK: '.col-black',
+    COL_RESULT: '.col-result',
+    TEXT_WIN: 'text-win',
+    TEXT_LOSS: 'text-loss',
+    ROW_WIN: 'row-win',
+    ROW_LOSS: 'row-loss',
+    ROW_DRAW: 'row-draw',
+    TEXT_BOLD: 'text-bold'
+});
+
 // ==========================================
-//  DOM CACHE (runs just one time)
+// CACHÉ DEL DOM (Se ejecuta 1 sola vez)
 // ==========================================
 const DOM = {
     topEloBody: document.getElementById('topEloBody'),
@@ -41,7 +68,7 @@ export function renderDirectoryTable(sortedPlayers) {
         tds[0].textContent = index + 1;
         tds[2].textContent = data.elo;
         
-        const link = clone.querySelector('.clickable-player');
+        const link = clone.querySelector(SELECTORS.CLICKABLE_PLAYER);
         link.textContent = name;
         link.dataset.player = name;
         
@@ -60,21 +87,21 @@ export function renderPlayerChips(container, selectedPlayers, eloData) {
         const lastElo = playerHistory.length > 0 ? playerHistory[playerHistory.length - 1].ELO : 'N/A';
         
         const clone = DOM.tpl.chip.content.cloneNode(true);
-        const chip = clone.querySelector('.player-chip');
+        const chip = clone.querySelector(UI_CLASSES.CHIP);
         
         chip.style.setProperty('--theme-color', chartColors[idx % chartColors.length]);
         
-        clone.querySelector('.chip-name').textContent = player;
-        clone.querySelector('.chip-elo').textContent = `(${lastElo})`;
-        clone.querySelector('.chip-close').dataset.player = player;
+        clone.querySelector(UI_CLASSES.CHIP_NAME).textContent = player;
+        clone.querySelector(UI_CLASSES.CHIP_ELO).textContent = `(${lastElo})`;
+        clone.querySelector(UI_CLASSES.CHIP_CLOSE).dataset.player = player;
         
         container.appendChild(clone);
     });
 }
 
 export function highlightDirectoryRows(selectedPlayers) {
-    document.querySelectorAll('.directory-row').forEach(row => {
-        const link = row.querySelector('.clickable-player');
+    document.querySelectorAll(SELECTORS.DIRECTORY_ROW).forEach(row => {
+        const link = row.querySelector(SELECTORS.CLICKABLE_PLAYER);
         if (!link) return;
         const rowName = link.textContent.trim();
         row.style.backgroundColor = selectedPlayers.includes(rowName) ? '#e9ecef' : '';
@@ -94,10 +121,10 @@ export function renderStats(statsContainer, stats) {
         if (!DOM.tpl.statsSingle) return;
         const clone = DOM.tpl.statsSingle.content.cloneNode(true);
         
-        clone.querySelector('.stat-winrate').textContent = `${stats.winRate}% (${stats.wins}W - ${stats.draws}D - ${stats.losses}L)`;
-        clone.querySelector('.stat-total').textContent = stats.totalGames;
+        clone.querySelector(UI_CLASSES.STAT_WINRATE).textContent = `${stats.winRate}% (${stats.wins}W - ${stats.draws}D - ${stats.losses}L)`;
+        clone.querySelector(UI_CLASSES.STAT_TOTAL).textContent = stats.totalGames;
         
-        const rivalContainer = clone.querySelector('.stat-rival');
+        const rivalContainer = clone.querySelector(UI_CLASSES.STAT_RIVAL);
         if (stats.rivals.names.length > 0) {
             stats.rivals.names.forEach((name, idx) => {
                 rivalContainer.appendChild(createPlayerLinkNode(name));
@@ -108,7 +135,7 @@ export function renderStats(statsContainer, stats) {
             rivalContainer.textContent = "N/A";
         }
 
-        const bestWinContainer = clone.querySelector('.stat-bestwin');
+        const bestWinContainer = clone.querySelector(UI_CLASSES.STAT_BESTWIN);
         if (stats.bestWin) {
             bestWinContainer.appendChild(createPlayerLinkNode(stats.bestWin.opponent, ` (${stats.bestWin.elo})`));
         } else {
@@ -122,10 +149,10 @@ export function renderStats(statsContainer, stats) {
         if (!DOM.tpl.statsH2h) return;
         const clone = DOM.tpl.statsH2h.content.cloneNode(true);
         
-        clone.querySelector('.h2h-p1').textContent = stats.p1;
-        clone.querySelector('.h2h-score').textContent = `${stats.p1Wins} - ${stats.p2Wins}`;
-        clone.querySelector('.h2h-p2').textContent = stats.p2;
-        clone.querySelector('.h2h-draws').textContent = `(${stats.draws} Draws)`;
+        clone.querySelector(UI_CLASSES.H2H_P1).textContent = stats.p1;
+        clone.querySelector(UI_CLASSES.H2H_SCORE).textContent = `${stats.p1Wins} - ${stats.p2Wins}`;
+        clone.querySelector(UI_CLASSES.H2H_P2).textContent = stats.p2;
+        clone.querySelector(UI_CLASSES.H2H_DRAWS).textContent = `(${stats.draws} Draws)`;
         
         statsContainer.style.display = 'flex';
         statsContainer.appendChild(clone);
@@ -142,37 +169,37 @@ export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
         return db.localeCompare(da);
     }).forEach(match => {
         const clone = DOM.tpl.historyRow.content.cloneNode(true);
-        const tr = clone.querySelector('.history-row');
+        const tr = clone.querySelector(UI_CLASSES.HISTORY_ROW);
         const isWhite = selectedPlayers.includes(match.Witspeler);
         const isBlack = selectedPlayers.includes(match.Zwartspeler);
 
-        const whiteSpan = clone.querySelector('.col-white .clickable-player');
-        const blackSpan = clone.querySelector('.col-black .clickable-player');
+        const whiteSpan = clone.querySelector(`${UI_CLASSES.COL_WHITE} ${SELECTORS.CLICKABLE_PLAYER}`);
+        const blackSpan = clone.querySelector(`${UI_CLASSES.COL_BLACK} ${SELECTORS.CLICKABLE_PLAYER}`);
         
         if (selectedPlayers.length === 2) {
-            if (match.Uitslag === '1-0') { whiteSpan.classList.add('text-win'); blackSpan.classList.add('text-loss'); } 
-            else if (match.Uitslag === '0-1') { whiteSpan.classList.add('text-loss'); blackSpan.classList.add('text-win'); }
+            if (match.Uitslag === '1-0') { whiteSpan.classList.add(UI_CLASSES.TEXT_WIN); blackSpan.classList.add(UI_CLASSES.TEXT_LOSS); } 
+            else if (match.Uitslag === '0-1') { whiteSpan.classList.add(UI_CLASSES.TEXT_LOSS); blackSpan.classList.add(UI_CLASSES.TEXT_WIN); }
         }
 
         if (selectedPlayers.length === 1) {
             const isPWhite = match.Witspeler === selectedPlayers[0];
             const won = (isPWhite && match.Uitslag === '1-0') || (!isPWhite && match.Uitslag === '0-1');
             const lost = (isPWhite && match.Uitslag === '0-1') || (!isPWhite && match.Uitslag === '1-0');
-            if (won) tr.classList.add('row-win'); 
-            else if (lost) tr.classList.add('row-loss'); 
-            else if (match.Uitslag === '½-½') tr.classList.add('row-draw'); 
+            if (won) tr.classList.add(UI_CLASSES.ROW_WIN); 
+            else if (lost) tr.classList.add(UI_CLASSES.ROW_LOSS); 
+            else if (match.Uitslag === '½-½') tr.classList.add(UI_CLASSES.ROW_DRAW); 
         }
 
-        clone.querySelector('.col-date').textContent = match.Publish_Date || '';
+        clone.querySelector(UI_CLASSES.COL_DATE).textContent = match.Publish_Date || '';
         whiteSpan.textContent = match.Witspeler || '';
         whiteSpan.dataset.player = match.Witspeler;
-        if (isWhite) whiteSpan.classList.add('text-bold');
+        if (isWhite) whiteSpan.classList.add(UI_CLASSES.TEXT_BOLD);
         
         blackSpan.textContent = match.Zwartspeler || '';
         blackSpan.dataset.player = match.Zwartspeler;
-        if (isBlack) blackSpan.classList.add('text-bold');
+        if (isBlack) blackSpan.classList.add(UI_CLASSES.TEXT_BOLD);
         
-        clone.querySelector('.col-result').textContent = match.Uitslag || '';
+        clone.querySelector(UI_CLASSES.COL_RESULT).textContent = match.Uitslag || '';
         
         tbody.appendChild(clone);
     });
