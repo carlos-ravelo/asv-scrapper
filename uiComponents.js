@@ -28,7 +28,7 @@ export function renderPlayerChips(containerId, selectedPlayers, eloData) {
         `;
         chip.innerHTML = `
             ${player} <span style="font-size: 12px; opacity: 0.8; font-weight: normal;">(${lastElo})</span>
-            <span onclick="window.selectPlayer('${player.replace(/'/g, "\\'")}')" 
+            <span data-action="select-player" data-player="${player.replace(/'/g, "\\'")}" 
                   style="cursor: pointer; color: ${color}; font-weight: bold; font-size: 18px; line-height: 1;">&times;</span>
         `;
         container.appendChild(chip);
@@ -82,11 +82,11 @@ export function renderStats(statsContainer, matchesToDisplay, eloData, selectedP
         if (sortedOpponents.length > 0) {
             const maxGames = sortedOpponents[0][1];
             mostFreqText = sortedOpponents.filter(opp => opp[1] === maxGames).map(opp => 
-                `<span onclick="window.selectPlayer('${opp[0].replace(/'/g, "\\'")}')" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${opp[0]}</span>`
+                `<span data-action="select-player" data-player="${opp[0].replace(/'/g, "\\'")}" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${opp[0]}</span>`
             ).join(', ') + ` (${maxGames}x)`;
         }
 
-        let bestWinText = bestWinOpponent ? `<span onclick="window.selectPlayer('${bestWinOpponent.replace(/'/g, "\\'")}')" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${bestWinOpponent}</span> (${highestEloBeaten})` : "N/A";
+        let bestWinText = bestWinOpponent ? `<span data-action="select-player" data-player="${bestWinOpponent.replace(/'/g, "\\'")}" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${bestWinOpponent}</span> (${highestEloBeaten})` : "N/A";
 
         statsContainer.style.display = 'flex';
         statsContainer.innerHTML = `
@@ -131,7 +131,6 @@ export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
         const isBlack = selectedPlayers.includes(match.Zwartspeler);
 
         let whiteColor = "inherit", blackColor = "inherit", rowColor = "transparent";
-        
         if (selectedPlayers.length === 2) {
             if (match.Uitslag === '1-0') { whiteColor = "#155724"; blackColor = "#721c24"; } 
             else if (match.Uitslag === '0-1') { whiteColor = "#721c24"; blackColor = "#155724"; }
@@ -146,13 +145,32 @@ export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
             else if (match.Uitslag === '½-½') rowColor = "#f8f9fa"; 
         }
 
+        const safeWhite = match.Witspeler.replace(/'/g, "\\'");
+        const safeBlack = match.Zwartspeler.replace(/'/g, "\\'");
+
         tr.style.backgroundColor = rowColor;
         tr.innerHTML = `
             <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Publish_Date || ''}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isWhite ? 'bold' : 'normal'}; color: ${whiteColor};">${match.Witspeler || ''}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isBlack ? 'bold' : 'normal'}; color: ${blackColor};">${match.Zwartspeler || ''}</td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isWhite ? 'bold' : 'normal'}; color: ${whiteColor};">
+                <span data-action="select-player" data-player="${safeWhite}" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;">${match.Witspeler || ''}</span>
+            </td>
+            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isBlack ? 'bold' : 'normal'}; color: ${blackColor};">
+                <span data-action="select-player" data-player="${safeBlack}" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;">${match.Zwartspeler || ''}</span>
+            </td>
             <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Uitslag || ''}</td>
         `;
         tbody.appendChild(tr);
+    });
+}
+
+export function renderDirectoryTable(sortedPlayers) {
+    const topEloBody = document.getElementById('topEloBody');
+    if (!topEloBody) return; 
+    topEloBody.innerHTML = '';
+    sortedPlayers.forEach(([name, data], index) => {
+        const tr = document.createElement('tr');
+        tr.className = 'directory-row';
+        tr.innerHTML = `<td>${index + 1}</td><td>${playerLink(name)}</td><td>${data.elo}</td>`;
+        topEloBody.appendChild(tr);
     });
 }
