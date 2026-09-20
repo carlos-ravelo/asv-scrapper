@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASV Chess Tracker</title>
-    <link rel="stylesheet" href="style.css?v=3">
+    <link rel="stylesheet" href="style.css?v=5">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
     <div class="container">
         <h2>ASV Player Dashboard</h2>
-        <div class="dashboard-layout" style="display: flex; gap: 20px; align-items: flex-start;">
+        <div class="dashboard-layout">
             
             <!-- Left Panel: Directory -->
-            <div class="panel-left" style="flex: 0 0 350px; position: sticky; top: 0;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0;">Club Directory</h3>
-                    <input type="text" id="directorySearch" placeholder="Filter players..."
-                        style="padding: 6px; width: 50%; border: 1px solid #ccc; border-radius: 4px;">
+            <div class="panel-left">
+                <div class="directory-header">
+                    <h3>Club Directory</h3>
+                    <input type="text" id="directorySearch" class="search-input" placeholder="Filter players...">
                 </div>
-                <div style="max-height: 80vh; overflow-y: auto; border: 1px solid #eee;">
-                    <table style="margin-top: 0; width: 100%;">
-                        <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                <div class="directory-table-container">
+                    <table>
+                        <thead class="table-header-sticky">
                             <tr>
                                 <th>#</th>
                                 <th id="sortNameBtn" style="cursor: pointer;">Player ↕</th>
@@ -33,51 +31,39 @@
                         <tbody id="topEloBody"></tbody>
                     </table>
                 </div>
-                <button type="button" id="clearSelectionBtn" style="margin-top:10px; display:none;">Clear selection</button>
+                <button type="button" id="clearSelectionBtn" class="btn-clear" style="display:none;">Clear selection</button>
             </div>
 
             <!-- Right Panel: Chart and Match History -->
-            <div class="panel-right" style="flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0;">
+            <div class="panel-right">
 
-                <div id="emptyState"
-                    style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px; background-color: #f8f9fa; padding: 20px; text-align: center;">
-                    <div style="font-size: 48px; margin-bottom: 15px;">📊</div>
-                    <h3 style="margin: 0 0 10px 0; color: #495057;">No players selected</h3>
-                    <p style="margin: 0; font-size: 15px;">Click on players in the directory to compare their ELO history and view matches.</p>
+                <div id="emptyState" class="empty-state">
+                    <div class="empty-icon">📊</div>
+                    <h3 class="empty-title">No players selected</h3>
+                    <p class="empty-text">Click on players in the directory to compare their ELO history and view matches.</p>
                 </div>
 
-                <div id="chartContainer" style="display: none; width: 100%;">
-                    <!-- Toolbar: Chips & Date Controls -->
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 15px;">
-                        <div id="playerChipsContainer" style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
-                        </div>
-
-                        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
-                            <select id="timeFilter" style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+                <div id="chartContainer" style="display: none;">
+                    <div class="chart-toolbar">
+                        <div id="playerChipsContainer" class="chips-container"></div>
+                        <div class="controls-group">
+                            <select id="timeFilter" class="filter-select">
                                 <option value="all">All time</option>
                                 <option value="1">Last month</option>
                                 <option value="3">Last 3 months</option>
                                 <option value="12">Last year</option>
                             </select>
-
-                            <button type="button" id="maximizeChartBtn"
-                                style="cursor: pointer; padding: 4px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; background: #fff;">
-                                ⛶ Maximize
-                            </button>
+                            <button type="button" id="maximizeChartBtn" class="btn-outline">⛶ Maximize</button>
                         </div>
                     </div>
 
-                    <!-- Player Stats Container -->
-                    <div id="playerStatsContainer"
-                        style="display: none; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #dee2e6; gap: 15px; flex-wrap: wrap;">
-                    </div>
-
+                    <div id="playerStatsContainer" class="stats-container" style="display: none;"></div>
                     <canvas id="eloChart"></canvas>
                 </div>
 
-                <div id="historyContainer" style="display: none; width: 100%;">
-                    <h3 style="margin-top: 0;">Match History</h3>
-                    <table style="width: 100%;">
+                <div id="historyContainer" style="display: none;">
+                    <h3 class="history-title">Match History</h3>
+                    <table>
                         <thead>
                             <tr>
                                 <th>Date</th>
@@ -93,33 +79,72 @@
         </div>
     </div>
     
-    <script type="module" src="app.js?v=8"></script>
+    <script type="module" src="app.js?v=9"></script>
     
-    <div id="chartModal"
-        style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
-        <div
-            style="background: #fff; width: 92vw; height: 88vh; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.25);">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px;">
-                <div id="modalChipsContainer" style="display: flex; gap: 8px; flex-wrap: wrap; flex: 1;"></div>
-
-                <div style="display: flex; gap: 15px; align-items: center;">
-                    <select id="modalTimeFilter"
-                        style="padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px;">
+    <!-- Modal -->
+    <div id="chartModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div id="modalChipsContainer" class="chips-container"></div>
+                <div class="controls-group">
+                    <select id="modalTimeFilter" class="filter-select">
                         <option value="all">All time</option>
                         <option value="1">Last month</option>
                         <option value="3">Last 3 months</option>
                         <option value="12">Last year</option>
                     </select>
-                    <button type="button" id="closeModalBtn"
-                        style="cursor: pointer; font-size: 24px; font-weight: bold; border: none; background: none; line-height: 1;">&times;</button>
+                    <button type="button" id="closeModalBtn" class="btn-close">&times;</button>
                 </div>
             </div>
-            <div style="flex: 1; position: relative; min-height: 0;">
+            <div class="modal-body">
                 <canvas id="modalEloChart"></canvas>
             </div>
         </div>
     </div>
-</body>
 
+    <!-- ========================================== -->
+    <!-- TEMPLATES FOR VANILLA JS (Zero innerHTML) -->
+    <!-- ========================================== -->
+    
+    <template id="tpl-directory-row">
+        <tr class="directory-row">
+            <td></td>
+            <td><span class="clickable-player link-style" data-action="select-player"></span></td>
+            <td></td>
+        </tr>
+    </template>
+
+    <template id="tpl-player-chip">
+        <div class="player-chip">
+            <span class="chip-name"></span>
+            <span class="chip-elo"></span>
+            <button type="button" class="chip-close" data-action="select-player">&times;</button>
+        </div>
+    </template>
+
+    <template id="tpl-stats-single">
+        <div class="stat-box"><strong>🏆 Win Rate:</strong> <span class="stat-winrate"></span></div>
+        <div class="stat-box"><strong>🔥 Best Win:</strong> <span class="stat-bestwin"></span></div>
+        <div class="stat-box"><strong>⚔️ Rival:</strong> <span class="stat-rival"></span></div>
+        <div class="stat-box"><strong>♟️ Total Games:</strong> <span class="stat-total"></span></div>
+    </template>
+
+    <template id="tpl-stats-h2h">
+        <div class="stat-box h2h-box">
+            <strong>⚔️ Head-to-Head:</strong> 
+            <span class="h2h-p1 text-bold"></span> <span class="h2h-score"></span> <span class="h2h-p2 text-bold"></span> 
+            <span class="h2h-draws text-muted"></span>
+        </div>
+    </template>
+
+    <template id="tpl-history-row">
+        <tr class="history-row">
+            <td class="history-cell col-date"></td>
+            <td class="history-cell col-white"><span class="clickable-player" data-action="select-player"></span></td>
+            <td class="history-cell col-black"><span class="clickable-player" data-action="select-player"></span></td>
+            <td class="history-cell col-result"></td>
+        </tr>
+    </template>
+
+</body>
 </html>

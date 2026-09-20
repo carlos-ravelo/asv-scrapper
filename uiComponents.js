@@ -1,49 +1,77 @@
-import { escapeHtml } from './utils.js';
-
 export const chartColors = ['#0056b3', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
 
-export function playerLink(name) {
-    if (!name) return '';
-    const safe = escapeHtml(name);
-    return `<span class="player-link" data-player="${safe}">${safe}</span>`;
+// Small helper to avoid repeating the creation of dynamic player links
+function createPlayerLinkNode(name, additionalText = '') {
+    const span = document.createElement('span');
+    span.className = 'clickable-player link-style';
+    span.dataset.action = 'select-player';
+    span.dataset.player = name;
+    span.textContent = name;
+    
+    if (additionalText) {
+        const container = document.createDocumentFragment();
+        container.appendChild(span);
+        container.appendChild(document.createTextNode(additionalText));
+        return container;
+    }
+    return span;
+}
+
+export function renderDirectoryTable(sortedPlayers) {
+    const tbody = document.getElementById('topEloBody');
+    const tpl = document.getElementById('tpl-directory-row');
+    if (!tbody || !tpl) return; 
+    
+    tbody.innerHTML = '';
+    sortedPlayers.forEach(([name, data], index) => {
+        const clone = tpl.content.cloneNode(true);
+        const tds = clone.querySelectorAll('td');
+        
+        tds[0].textContent = index + 1;
+        tds[2].textContent = data.elo;
+        
+        const link = clone.querySelector('.clickable-player');
+        link.textContent = name;
+        link.dataset.player = name;
+        
+        tbody.appendChild(clone);
+    });
 }
 
 export function renderPlayerChips(containerId, selectedPlayers, eloData) {
     const container = document.getElementById(containerId);
-    if (!container) return;
-    
+    const tpl = document.getElementById('tpl-player-chip');
+    if (!container || !tpl) return;
     container.innerHTML = '';
     selectedPlayers.forEach((player, idx) => {
-        const color = chartColors[idx % chartColors.length]; 
         const playerHistory = eloData
             .filter(row => row.Naam === player && row.Publish_Date && row.Publish_Date !== 'Unknown')
             .sort((a, b) => a.Publish_Date.localeCompare(b.Publish_Date));
         const lastElo = playerHistory.length > 0 ? playerHistory[playerHistory.length - 1].ELO : 'N/A';
+        const clone = tpl.content.cloneNode(true);
+        const chip = clone.querySelector('.player-chip');        
+        chip.style.setProperty('--theme-color', chartColors[idx % chartColors.length]);       
+        clone.querySelector('.chip-name').textContent = player;
+        clone.querySelector('.chip-elo').textContent = `(${lastElo})`;
+        clone.querySelector('.chip-close').dataset.player = player;
         
-        const chip = document.createElement('div');
-        chip.style.cssText = `
-            background-color: ${color}1A; border: 1px solid ${color}; color: #333;
-            padding: 4px 12px; border-radius: 16px; display: flex; align-items: center;
-            gap: 8px; font-size: 14px; font-weight: 500;
-        `;
-        chip.innerHTML = `
-            ${player} <span style="font-size: 12px; opacity: 0.8; font-weight: normal;">(${lastElo})</span>
-            <span data-action="select-player" data-player="${player.replace(/'/g, "\\'")}" 
-                  style="cursor: pointer; color: ${color}; font-weight: bold; font-size: 18px; line-height: 1;">&times;</span>
-        `;
-        container.appendChild(chip);
+        container.appendChild(clone);
     });
 }
 
 export function highlightDirectoryRows(selectedPlayers) {
     document.querySelectorAll('.directory-row').forEach(row => {
-        const rowName = row.cells[1].textContent.trim();
+        const link = row.querySelector('.clickable-player');
+        if (!link) return;
+        const rowName = link.textContent.trim();
         row.style.backgroundColor = selectedPlayers.includes(rowName) ? '#e9ecef' : '';
     });
 }
 
 export function renderStats(statsContainer, matchesToDisplay, eloData, selectedPlayers) {
     if (!statsContainer) return;
+    statsContainer.innerHTML = ''; // Clean container
+    
     if (selectedPlayers.length === 1) {
         const p = selectedPlayers[0];
         let wins = 0, draws = 0, losses = 0;
@@ -69,32 +97,45 @@ export function renderStats(statsContainer, matchesToDisplay, eloData, selectedP
                     highestEloBeaten = maxElos[opp];
                     bestWinOpponent = opp;
                 }
-            } else if (lost) {
-                losses++;
-            } else if (match.Uitslag === '½-½') draws++;
+            } else if (lost) losses++;
+            else if (match.Uitslag === '½-½') draws++;
         });
 
         const totalGames = wins + draws + losses;
         const winRate = totalGames > 0 ? Math.round((wins / totalGames) * 100) : 0;
         
-        let mostFreqText = "N/A";
+        const tpl = document.getElementById('tpl-stats-single');
+        const clone = tpl.content.cloneNode(true);
+        
+        clone.querySelector('.stat-winrate').textContent = `${winRate}% (${wins}W - ${draws}D - ${losses}L)`;
+        clone.querySelector('.stat-total').textContent = totalGames;
+        
+        // Procesar oponente más frecuente
         const sortedOpponents = Object.entries(oppCount).sort((a, b) => b[1] - a[1]);
+        const rivalContainer = clone.querySelector('.stat-rival');
         if (sortedOpponents.length > 0) {
             const maxGames = sortedOpponents[0][1];
-            mostFreqText = sortedOpponents.filter(opp => opp[1] === maxGames).map(opp => 
-                `<span data-action="select-player" data-player="${opp[0].replace(/'/g, "\\'")}" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${opp[0]}</span>`
-            ).join(', ') + ` (${maxGames}x)`;
+            const topRivals = sortedOpponents.filter(opp => opp[1] === maxGames);
+            topRivals.forEach((opp, idx) => {
+                rivalContainer.appendChild(createPlayerLinkNode(opp[0]));
+                if (idx < topRivals.length - 1) rivalContainer.appendChild(document.createTextNode(', '));
+            });
+            rivalContainer.appendChild(document.createTextNode(` (${maxGames}x)`));
+        } else {
+            rivalContainer.textContent = "N/A";
         }
 
-        let bestWinText = bestWinOpponent ? `<span data-action="select-player" data-player="${bestWinOpponent.replace(/'/g, "\\'")}" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${bestWinOpponent}</span> (${highestEloBeaten})` : "N/A";
+        // Process best win
+        const bestWinContainer = clone.querySelector('.stat-bestwin');
+        if (bestWinOpponent) {
+            bestWinContainer.appendChild(createPlayerLinkNode(bestWinOpponent, ` (${highestEloBeaten})`));
+        } else {
+            bestWinContainer.textContent = "N/A";
+        }
 
         statsContainer.style.display = 'flex';
-        statsContainer.innerHTML = `
-            <div style="flex: 1; min-width: 140px;"><strong>🏆 Win Rate:</strong> ${winRate}% (${wins}W - ${draws}D - ${losses}L)</div>
-            <div style="flex: 1; min-width: 140px;"><strong>🔥 Best Win:</strong> ${bestWinText}</div>
-            <div style="flex: 1; min-width: 140px;"><strong>⚔️ Rival:</strong> ${mostFreqText}</div>
-            <div style="flex: 1; min-width: 100px;"><strong>♟️ Total Games:</strong> ${totalGames}</div>
-        `;
+        statsContainer.appendChild(clone);
+
     } else if (selectedPlayers.length === 2) {
         const [p1, p2] = selectedPlayers;
         let p1Wins = 0, p2Wins = 0, draws = 0;
@@ -106,19 +147,22 @@ export function renderStats(statsContainer, matchesToDisplay, eloData, selectedP
             else if (match.Uitslag === '½-½') draws++;
         });
 
+        const tpl = document.getElementById('tpl-stats-h2h');
+        const clone = tpl.content.cloneNode(true);
+        
+        clone.querySelector('.h2h-p1').textContent = p1;
+        clone.querySelector('.h2h-score').textContent = `${p1Wins} - ${p2Wins}`;
+        clone.querySelector('.h2h-p2').textContent = p2;
+        clone.querySelector('.h2h-draws').textContent = `(${draws} Draws)`;
+        
         statsContainer.style.display = 'flex';
-        statsContainer.innerHTML = `
-            <div style="flex: 1; text-align: center; font-size: 16px;">
-                <strong>⚔️ Head-to-Head:</strong> 
-                <span style="font-weight: bold;">${p1}</span> ${p1Wins} - ${p2Wins} <span style="font-weight: bold;">${p2}</span> 
-                <span style="color: #6c757d; font-size: 13px;">(${draws} Draws)</span>
-            </div>
-        `;
+        statsContainer.appendChild(clone);
     }
 }
 
 export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
-    if (!tbody) return;
+    const tpl = document.getElementById('tpl-history-row');
+    if (!tbody || !tpl) return;
     tbody.innerHTML = "";
     
     matchesToDisplay.sort((a, b) => {
@@ -126,51 +170,41 @@ export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
         const db = b.Publish_Date && b.Publish_Date !== 'Unknown' ? b.Publish_Date : '';
         return db.localeCompare(da);
     }).forEach(match => {
-        const tr = document.createElement('tr');
+        const clone = tpl.content.cloneNode(true);
+        const tr = clone.querySelector('.history-row');
         const isWhite = selectedPlayers.includes(match.Witspeler);
         const isBlack = selectedPlayers.includes(match.Zwartspeler);
 
-        let whiteColor = "inherit", blackColor = "inherit", rowColor = "transparent";
+        // Dynamic color classes
+        const whiteSpan = clone.querySelector('.col-white .clickable-player');
+        const blackSpan = clone.querySelector('.col-black .clickable-player');
+        
         if (selectedPlayers.length === 2) {
-            if (match.Uitslag === '1-0') { whiteColor = "#155724"; blackColor = "#721c24"; } 
-            else if (match.Uitslag === '0-1') { whiteColor = "#721c24"; blackColor = "#155724"; }
+            if (match.Uitslag === '1-0') { whiteSpan.classList.add('text-win'); blackSpan.classList.add('text-loss'); } 
+            else if (match.Uitslag === '0-1') { whiteSpan.classList.add('text-loss'); blackSpan.classList.add('text-win'); }
         }
 
         if (selectedPlayers.length === 1) {
             const isPWhite = match.Witspeler === selectedPlayers[0];
             const won = (isPWhite && match.Uitslag === '1-0') || (!isPWhite && match.Uitslag === '0-1');
             const lost = (isPWhite && match.Uitslag === '0-1') || (!isPWhite && match.Uitslag === '1-0');
-            if (won) rowColor = "#e6f4ea"; 
-            else if (lost) rowColor = "#fce8e6"; 
-            else if (match.Uitslag === '½-½') rowColor = "#f8f9fa"; 
+            if (won) tr.classList.add('row-win'); 
+            else if (lost) tr.classList.add('row-loss'); 
+            else if (match.Uitslag === '½-½') tr.classList.add('row-draw'); 
         }
 
-        const safeWhite = match.Witspeler.replace(/'/g, "\\'");
-        const safeBlack = match.Zwartspeler.replace(/'/g, "\\'");
-
-        tr.style.backgroundColor = rowColor;
-        tr.innerHTML = `
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Publish_Date || ''}</td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isWhite ? 'bold' : 'normal'}; color: ${whiteColor};">
-                <span data-action="select-player" data-player="${safeWhite}" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;">${match.Witspeler || ''}</span>
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isBlack ? 'bold' : 'normal'}; color: ${blackColor};">
-                <span data-action="select-player" data-player="${safeBlack}" style="cursor: pointer; text-decoration: underline; text-underline-offset: 2px;">${match.Zwartspeler || ''}</span>
-            </td>
-            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Uitslag || ''}</td>
-        `;
-        tbody.appendChild(tr);
-    });
-}
-
-export function renderDirectoryTable(sortedPlayers) {
-    const topEloBody = document.getElementById('topEloBody');
-    if (!topEloBody) return; 
-    topEloBody.innerHTML = '';
-    sortedPlayers.forEach(([name, data], index) => {
-        const tr = document.createElement('tr');
-        tr.className = 'directory-row';
-        tr.innerHTML = `<td>${index + 1}</td><td>${playerLink(name)}</td><td>${data.elo}</td>`;
-        topEloBody.appendChild(tr);
+        // Safe data assignment
+        clone.querySelector('.col-date').textContent = match.Publish_Date || '';
+        whiteSpan.textContent = match.Witspeler || '';
+        whiteSpan.dataset.player = match.Witspeler;
+        if (isWhite) whiteSpan.classList.add('text-bold');
+        
+        blackSpan.textContent = match.Zwartspeler || '';
+        blackSpan.dataset.player = match.Zwartspeler;
+        if (isBlack) blackSpan.classList.add('text-bold');
+        
+        clone.querySelector('.col-result').textContent = match.Uitslag || '';
+        
+        tbody.appendChild(clone);
     });
 }
