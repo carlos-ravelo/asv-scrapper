@@ -4,6 +4,10 @@ let eloChartInstance = null;
 let selectedPlayers = [];
 const chartColors = ['#0056b3', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
 
+function removeAccents(str) {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 function escapeHtml(str) {
     return String(str)
         .replace(/&/g, '&amp;')
@@ -81,14 +85,15 @@ function renderLanding() {
 }
 
 function filterDirectory() {
-    const query = document.getElementById('directorySearch').value.toLowerCase();
+    const query = removeAccents(document.getElementById('directorySearch').value.toLowerCase());
     const rows = document.querySelectorAll('.directory-row');
     
     rows.forEach(row => {
-        const playerName = row.cells[1].textContent.toLowerCase();
+        const playerName = removeAccents(row.cells[1].textContent.toLowerCase());
         row.style.display = playerName.includes(query) ? '' : 'none';
     });
 }
+
 document.addEventListener('click', (e) => {
     const link = e.target.closest('.player-link');
     if (link && link.dataset.player) {
@@ -219,6 +224,7 @@ function updateDashboard() {
             tension: 0.1,
             spanGaps: true,
             pointRadius: 2,
+            hitRadius: 25,
             pointHoverRadius: 6,
             pointBackgroundColor: chartColors[idx % chartColors.length]
         };
@@ -298,11 +304,21 @@ function updateDashboard() {
             
             let mostFreqText = "N/A";
             const sortedOpponents = Object.entries(oppCount).sort((a, b) => b[1] - a[1]);
+            
             if (sortedOpponents.length > 0) {
-                mostFreqText = `${sortedOpponents[0][0]} (${sortedOpponents[0][1]}x)`;
+                const maxGames = sortedOpponents[0][1];
+                // Find all opponents tied for the most games
+                const topRivals = sortedOpponents.filter(opp => opp[1] === maxGames);
+                
+                // Make them clickable links
+                mostFreqText = topRivals.map(opp => 
+                    `<span onclick="selectPlayer('${opp[0].replace(/'/g, "\\'")}')" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${opp[0]}</span>`
+                ).join(', ') + ` (${maxGames}x)`;
             }
 
-            let bestWinText = bestWinOpponent ? `${bestWinOpponent} (${highestEloBeaten})` : "N/A";
+            let bestWinText = bestWinOpponent 
+                ? `<span onclick="selectPlayer('${bestWinOpponent.replace(/'/g, "\\'")}')" style="cursor: pointer; color: #0056b3; font-weight: 500; text-decoration: underline;">${bestWinOpponent}</span> (${highestEloBeaten})` 
+                : "N/A";
 
             statsContainer.style.display = 'flex';
             statsContainer.innerHTML = `
@@ -312,12 +328,36 @@ function updateDashboard() {
                 <div style="flex: 1; min-width: 100px;"><strong>♟️ Total Games:</strong> ${totalGames}</div>
             `;
         }
-    } else if (selectedPlayers.length === 2) {
+        } else if (selectedPlayers.length === 2) {
         const [p1, p2] = selectedPlayers;
         matchesToDisplay = resultsData.filter(row => 
             (row.Witspeler === p1 && row.Zwartspeler === p2) || 
             (row.Witspeler === p2 && row.Zwartspeler === p1)
         );
+
+        if (statsContainer) {
+            let p1Wins = 0, p2Wins = 0, draws = 0;
+            
+            matchesToDisplay.forEach(match => {
+                const p1IsWhite = match.Witspeler === p1;
+                if (match.Uitslag === '1-0') {
+                    p1IsWhite ? p1Wins++ : p2Wins++;
+                } else if (match.Uitslag === '0-1') {
+                    p1IsWhite ? p2Wins++ : p1Wins++;
+                } else if (match.Uitslag === '½-½') {
+                    draws++;
+                }
+            });
+
+            statsContainer.style.display = 'flex';
+            statsContainer.innerHTML = `
+                <div style="flex: 1; text-align: center; font-size: 16px;">
+                    <strong>⚔️ Head-to-Head:</strong> 
+                    <span style="font-weight: bold;">${p1}</span> ${p1Wins} - ${p2Wins} <span style="font-weight: bold;">${p2}</span> 
+                    <span style="color: #6c757d; font-size: 13px;">(${draws} Draws)</span>
+                </div>
+            `;
+        }
     }
 
     if (cutoffDate) {
@@ -335,7 +375,21 @@ function updateDashboard() {
             const isWhite = selectedPlayers.includes(match.Witspeler);
             const isBlack = selectedPlayers.includes(match.Zwartspeler);
 
-            // Table row background color logic
+            // Text colors for names when 2 players are selected
+            let whiteColor = "inherit";
+            let blackColor = "inherit";
+            
+            if (selectedPlayers.length === 2) {
+                if (match.Uitslag === '1-0') {
+                    whiteColor = "#155724"; // Win for White
+                    blackColor = "#721c24"; // Loss for Black
+                } else if (match.Uitslag === '0-1') {
+                    whiteColor = "#721c24"; // Loss for White
+                    blackColor = "#155724"; // Win for Black
+                }
+            }
+
+            // Row background color when 1 player is selected
             let rowColor = "transparent";
             if (selectedPlayers.length === 1) {
                 const p = selectedPlayers[0];
@@ -344,16 +398,16 @@ function updateDashboard() {
                 const lost = (isPWhite && match.Uitslag === '0-1') || (!isPWhite && match.Uitslag === '1-0');
                 const draw = match.Uitslag === '½-½';
                 
-                if (won) rowColor = "#e6f4ea"; // Light green
-                else if (lost) rowColor = "#fce8e6"; // Light red
-                else if (draw) rowColor = "#f8f9fa"; // Light gray
+                if (won) rowColor = "#e6f4ea"; 
+                else if (lost) rowColor = "#fce8e6"; 
+                else if (draw) rowColor = "#f8f9fa"; 
             }
 
             tr.style.backgroundColor = rowColor;
             tr.innerHTML = `
                 <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Publish_Date || ''}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isWhite ? 'bold' : 'normal'}">${match.Witspeler || ''}</td>
-                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isBlack ? 'bold' : 'normal'}">${match.Zwartspeler || ''}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isWhite ? 'bold' : 'normal'}; color: ${whiteColor};">${match.Witspeler || ''}</td>
+                <td style="padding: 8px; border-bottom: 1px solid #ddd; font-weight: ${isBlack ? 'bold' : 'normal'}; color: ${blackColor};">${match.Zwartspeler || ''}</td>
                 <td style="padding: 8px; border-bottom: 1px solid #ddd;">${match.Uitslag || ''}</td>
             `;
             tbody.appendChild(tr);
@@ -379,6 +433,10 @@ function renderChart(labels, datasets) {
                 y: {
                     beginAtZero: false
                 }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
             }
         }
     });
@@ -428,6 +486,10 @@ function openChartModal() {
             maintainAspectRatio: false,
             scales: {
                 y: { beginAtZero: false }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false,
             }
         }
     });
