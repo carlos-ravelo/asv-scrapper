@@ -63,13 +63,13 @@ const state = new Proxy({
         if (property === 'directorySort') renderLanding();
         
         if (property === 'selectedPlayers') {
+            // Save to localStorage automatically on every change            
+            saveFavorites(value);
             highlightDirectoryRows(value);
             if (DOM.clearBtn) DOM.clearBtn.style.display = value.length ? 'inline-block' : 'none';
             updateDashboard();
-        }
-        
+        }        
         if (property === 'timeFilter') updateDashboard();
-        
         return true;
     }
 });
@@ -86,6 +86,7 @@ Promise.all([
     state.resultsData = results;
     state.eloData = elo;
     renderLanding();
+    loadFavorites(); // Mucho más limpio
 }).catch(error => console.error("Error loading JSON data:", error));
 
 // ==========================================
@@ -192,6 +193,24 @@ function openChartModal() {
 function closeChartModal() {
     if (DOM.chartModal) DOM.chartModal.style.display = 'none';
     if (modalChartInstance) { modalChartInstance.destroy(); modalChartInstance = null; }
+}
+
+function loadFavorites() {
+    const savedPlayers = localStorage.getItem('asv_chess_favorites');
+    if (!savedPlayers) return;
+
+    try {
+        const parsedPlayers = JSON.parse(savedPlayers);
+        if (Array.isArray(parsedPlayers) && parsedPlayers.length > 0) {
+            state.selectedPlayers = parsedPlayers;
+        }
+    } catch (e) {
+        console.error("Failed to parse saved players from localStorage", e);
+    }
+}
+
+function saveFavorites(players) {
+    localStorage.setItem('asv_chess_favorites', JSON.stringify(players));
 }
 
 // ==========================================
