@@ -28,7 +28,7 @@ export const SELECTORS = Object.freeze({
 });
 
 // ==========================================
-// 1. CACHÉ DEL DOM (Rendimiento)
+// 1. DOM CACHE
 // ==========================================
 const DOM = {
     chartContainer: document.getElementById(SELECTORS.CHART_CONTAINER),
@@ -63,13 +63,15 @@ const state = new Proxy({
         if (property === 'directorySort') renderLanding();
         
         if (property === 'selectedPlayers') {
-            // Save to localStorage automatically on every change            
             saveFavorites(value);
+            syncUrlWithPlayers(value);
             highlightDirectoryRows(value);
             if (DOM.clearBtn) DOM.clearBtn.style.display = value.length ? 'inline-block' : 'none';
             updateDashboard();
-        }        
+        }
+        
         if (property === 'timeFilter') updateDashboard();
+        
         return true;
     }
 });
@@ -86,7 +88,7 @@ Promise.all([
     state.resultsData = results;
     state.eloData = elo;
     renderLanding();
-    loadFavorites(); // Mucho más limpio
+    loadStateFromStorageOrUrl();
 }).catch(error => console.error("Error loading JSON data:", error));
 
 // ==========================================
@@ -115,6 +117,12 @@ function updateDashboard() {
 
     const cutoffDate = getCutoffDate();
     const chartData = getChartData(state.selectedPlayers, state.eloData, cutoffDate, chartColors);
+    
+    // Destruir instancia principal de forma segura
+    if (eloChartInstance) {
+        eloChartInstance.destroy();
+        eloChartInstance = null;
+    }
     
     eloChartInstance = createEloChart(DOM.ctxChart, eloChartInstance, chartData, true);
     syncModalIfOpen(chartData);
@@ -179,6 +187,11 @@ function getCutoffDate() {
 
 function syncModalIfOpen(chartData) {
     if (DOM.chartModal && DOM.chartModal.style.display === 'flex') {
+        // Destruir instancia del modal si existe
+        if (modalChartInstance) {
+            modalChartInstance.destroy();
+            modalChartInstance = null;
+        }
         modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, chartData, false);
     }
 }
@@ -187,6 +200,12 @@ function openChartModal() {
     if (!eloChartInstance) return;
     if (DOM.modalTimeFilter) DOM.modalTimeFilter.value = state.timeFilter;
     if (DOM.chartModal) DOM.chartModal.style.display = 'flex';
+    
+    // Destruir instancia del modal antes de recrearla
+    if (modalChartInstance) {
+        modalChartInstance.destroy();
+        modalChartInstance = null;
+    }
     modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, JSON.parse(JSON.stringify(eloChartInstance.data)), false);
 }
 
@@ -195,7 +214,32 @@ function closeChartModal() {
     if (modalChartInstance) { modalChartInstance.destroy(); modalChartInstance = null; }
 }
 
-function loadFavorites() {
+function saveFavorites(players) {
+    localStorage.setItem('asv_chess_favorites', JSON.stringify(players));
+}
+
+function syncUrlWithPlayers(players) {
+    const url = new URL(window.location);
+    if (players.length > 0) {
+        url.searchParams.set('p', players.join(','));
+    } else {
+        url.searchParams.delete('p');
+    }
+    window.history.replaceState({}, '', url);
+}
+
+function loadStateFromStorageOrUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pParam = urlParams.get('p');
+    
+    if (pParam) {
+        const playersFromUrl = pParam.split(',').map(p => p.trim()).filter(Boolean);
+        if (playersFromUrl.length > 0) {
+            state.selectedPlayers = playersFromUrl.slice(0, 5); 
+            return; 
+        }
+    }
+    
     const savedPlayers = localStorage.getItem('asv_chess_favorites');
     if (!savedPlayers) return;
 
@@ -207,10 +251,6 @@ function loadFavorites() {
     } catch (e) {
         console.error("Failed to parse saved players from localStorage", e);
     }
-}
-
-function saveFavorites(players) {
-    localStorage.setItem('asv_chess_favorites', JSON.stringify(players));
 }
 
 // ==========================================

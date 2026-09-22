@@ -10,10 +10,13 @@ export const UI_CLASSES = Object.freeze({
     STAT_TOTAL: '.stat-total',
     STAT_RIVAL: '.stat-rival',
     STAT_BESTWIN: '.stat-bestwin',
+    STAT_STREAK: '.stat-streak',
     H2H_P1: '.h2h-p1',
     H2H_SCORE: '.h2h-score',
     H2H_P2: '.h2h-p2',
     H2H_DRAWS: '.h2h-draws',
+    H2H_P1_STREAK: '.h2h-p1-streak',
+    H2H_P2_STREAK: '.h2h-p2-streak',
     HISTORY_ROW: '.history-row',
     COL_DATE: '.col-date',
     COL_WHITE: '.col-white',
@@ -24,11 +27,14 @@ export const UI_CLASSES = Object.freeze({
     ROW_WIN: 'row-win',
     ROW_LOSS: 'row-loss',
     ROW_DRAW: 'row-draw',
-    TEXT_BOLD: 'text-bold'
+    TEXT_BOLD: 'text-bold',
+    STREAK_W: 'streak-w',
+    STREAK_L: 'streak-l',
+    STREAK_D: 'streak-d'
 });
 
 // ==========================================
-// CACHÉ DEL DOM (Se ejecuta 1 sola vez)
+// CACHÉ DEL DOM
 // ==========================================
 const DOM = {
     topEloBody: document.getElementById('topEloBody'),
@@ -55,6 +61,26 @@ function createPlayerLinkNode(name, additionalText = '') {
         return container;
     }
     return span;
+}
+
+function renderStreak(container, streakArray) {
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (!streakArray || streakArray.length === 0) {
+        container.textContent = "N/A";
+        return;
+    }
+
+    streakArray.forEach(result => {
+        const span = document.createElement('span');
+        span.className = 'streak-indicator';
+        if (result === 'W') span.classList.add(UI_CLASSES.STREAK_W);
+        else if (result === 'L') span.classList.add(UI_CLASSES.STREAK_L);
+        else if (result === 'D') span.classList.add(UI_CLASSES.STREAK_D);
+        span.textContent = result;
+        container.appendChild(span);
+    });
 }
 
 export function renderDirectoryTable(sortedPlayers) {
@@ -141,6 +167,8 @@ export function renderStats(statsContainer, stats) {
         } else {
             bestWinContainer.textContent = "N/A";
         }
+        
+        renderStreak(clone.querySelector(UI_CLASSES.STAT_STREAK), stats.streak);
 
         statsContainer.style.display = 'flex';
         statsContainer.appendChild(clone);
@@ -153,6 +181,9 @@ export function renderStats(statsContainer, stats) {
         clone.querySelector(UI_CLASSES.H2H_SCORE).textContent = `${stats.p1Wins} - ${stats.p2Wins}`;
         clone.querySelector(UI_CLASSES.H2H_P2).textContent = stats.p2;
         clone.querySelector(UI_CLASSES.H2H_DRAWS).textContent = `(${stats.draws} Draws)`;
+        
+        renderStreak(clone.querySelector(UI_CLASSES.H2H_P1_STREAK), stats.p1Streak);
+        renderStreak(clone.querySelector(UI_CLASSES.H2H_P2_STREAK), stats.p2Streak);
         
         statsContainer.style.display = 'flex';
         statsContainer.appendChild(clone);
