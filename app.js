@@ -148,7 +148,7 @@ function selectPlayer(name) {
     if (index > -1) {
         newPlayers.splice(index, 1);
     } else {
-        if (newPlayers.length >= 5) { alert("Maximum 5 players for comparison."); return; }
+        if (newPlayers.length >= 10) { alert("Maximum 10 players for comparison."); return; }
         newPlayers.push(clean);
     }
     state.selectedPlayers = newPlayers;
