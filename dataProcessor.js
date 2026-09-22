@@ -25,25 +25,51 @@ export function getSortedDirectory(eloData, directorySort) {
 }
 
 export function getChartData(selectedPlayers, eloData, cutoffDate, chartColors) {
-    const datasets = [];
-    selectedPlayers.forEach((player, idx) => {
+    let allDates = new Set();
+    
+    const playerDatasets = selectedPlayers.map((player, idx) => {
         const playerHistory = eloData
             .filter(row => row.Naam === player && row.Publish_Date && row.Publish_Date !== 'Unknown')
             .filter(row => !cutoffDate || row.Publish_Date >= cutoffDate)
             .sort((a, b) => a.Publish_Date.localeCompare(b.Publish_Date));
 
-        datasets.push({
+        // Filtro para eliminar puntos redundantes intermedios (optimización)
+        const cleanHistory = playerHistory.filter((row, i, arr) => {
+            if (i === 0 || i === arr.length - 1) return true;
+            return row.ELO !== arr[i - 1].ELO || row.ELO !== arr[i + 1].ELO; 
+        });
+
+        // Recolectar las fechas de este jugador para el eje X global
+        cleanHistory.forEach(row => allDates.add(row.Publish_Date));
+
+        const color = chartColors[idx % chartColors.length];
+
+        return {
             label: player,
-            data: playerHistory.map(row => ({ x: row.Publish_Date, y: row.ELO })),
-            borderColor: chartColors[idx % chartColors.length],
-            backgroundColor: chartColors[idx % chartColors.length],
+            dataRaw: cleanHistory, // Guardamos temporalmente para mapear después
+            borderColor: color,
+            backgroundColor: color,
             fill: false,
             tension: 0.1,
             pointRadius: 3,
-            pointHoverRadius: 6
-        });
+            pointHoverRadius: 6,
+            spanGaps: true // Evita que la línea se rompa si el jugador no jugó en una fecha
+        };
     });
-    return { datasets };
+
+    // Ordenar todas las fechas cronológicamente de forma global
+    const sortedDates = Array.from(allDates).sort();
+
+    // Alinear los datos de cada jugador a las fechas globales
+    playerDatasets.forEach(dataset => {
+        dataset.data = sortedDates.map(date => {
+            const match = dataset.dataRaw.find(d => d.Publish_Date === date);
+            return match ? match.ELO : null;
+        });
+        delete dataset.dataRaw; // Limpiamos la propiedad temporal
+    });
+
+    return { labels: sortedDates, datasets: playerDatasets };
 }
 
 export function getFilteredMatches(selectedPlayers, resultsData, cutoffDate) {
