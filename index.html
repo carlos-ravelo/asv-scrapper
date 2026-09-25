@@ -131,13 +131,30 @@
     </template>
 
     <template id="tpl-stats-h2h">
-        <div class="stat-box h2h-box">
-            <strong>⚔️ Head-to-Head:</strong> 
-            <span class="h2h-p1 text-bold"></span> <span class="h2h-score"></span> <span class="h2h-p2 text-bold"></span> 
-            <span class="h2h-draws text-muted"></span>
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 10px;">
+            <!-- Header -->
+            <div style="text-align: center; border-bottom: 1px solid #dee2e6; padding-bottom: 8px;">
+                ⚔️ <strong>Head-to-Head</strong> <span class="h2h-draws text-muted"></span>
+            </div>
+            <!-- Scoreboard -->
+            <div style="display: flex; justify-content: space-around; align-items: center; text-align: center; padding: 10px 0;">
+                <!-- Player 1 -->
+                <div>
+                    <div class="h2h-p1-name text-bold" style="font-size: 1.1em; margin-bottom: 5px;"></div>
+                    <div class="h2h-score-p1" style="font-size: 1.8em; font-weight: bold; margin-bottom: 5px;"></div>
+                    <div class="h2h-p1-streak"></div>
+                </div>
+                
+                <div style="font-size: 1.2em; font-weight: bold; color: #adb5bd;">VS</div>
+                
+                <!-- Player 2 -->
+                <div>
+                    <div class="h2h-p2-name text-bold" style="font-size: 1.1em; margin-bottom: 5px;"></div>
+                    <div class="h2h-score-p2" style="font-size: 1.8em; font-weight: bold; margin-bottom: 5px;"></div>
+                    <div class="h2h-p2-streak"></div>
+                </div>
+            </div>
         </div>
-        <div><strong>Form <span class="h2h-p1"></span>:</strong> <span class="h2h-p1-streak"></span></div>
-        <div><strong>Form <span class="h2h-p2"></span>:</strong> <span class="h2h-p2-streak"></span></div>
     </template>
 
     <template id="tpl-history-row">

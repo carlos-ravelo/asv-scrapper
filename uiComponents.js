@@ -172,20 +172,26 @@ export function renderStats(statsContainer, stats) {
 
         statsContainer.style.display = 'flex';
         statsContainer.appendChild(clone);
-
-    } else if (stats.type === 'h2h') {
+    }
+    else if (stats.type === 'h2h') {
         if (!DOM.tpl.statsH2h) return;
         const clone = DOM.tpl.statsH2h.content.cloneNode(true);
         
-        clone.querySelector(UI_CLASSES.H2H_P1).textContent = stats.p1;
-        clone.querySelector(UI_CLASSES.H2H_SCORE).textContent = `${stats.p1Wins} - ${stats.p2Wins}`;
-        clone.querySelector(UI_CLASSES.H2H_P2).textContent = stats.p2;
-        clone.querySelector(UI_CLASSES.H2H_DRAWS).textContent = `(${stats.draws} Draws)`;
+        // P1 Stats
+        clone.querySelector('.h2h-p1-name').textContent = stats.p1;
+        clone.querySelector('.h2h-score-p1').textContent = stats.p1Wins;
+        renderStreak(clone.querySelector('.h2h-p1-streak'), stats.p1Streak);
         
-        renderStreak(clone.querySelector(UI_CLASSES.H2H_P1_STREAK), stats.p1Streak);
-        renderStreak(clone.querySelector(UI_CLASSES.H2H_P2_STREAK), stats.p2Streak);
+        // P2 Stats
+        clone.querySelector('.h2h-p2-name').textContent = stats.p2;
+        clone.querySelector('.h2h-score-p2').textContent = stats.p2Wins;
+        renderStreak(clone.querySelector('.h2h-p2-streak'), stats.p2Streak);
+        
+        // Shared Stats
+        clone.querySelector('.h2h-draws').textContent = `(${stats.draws} Draws)`;
         
         statsContainer.style.display = 'flex';
+        statsContainer.style.width = '100%'; // Ensure the container spans full width
         statsContainer.appendChild(clone);
     }
 }
