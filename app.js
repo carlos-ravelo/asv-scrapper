@@ -1,31 +1,8 @@
 import { createEloChart } from './chartManager.js';
+import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
 import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js';
 import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js';
-
-export const SELECTORS = Object.freeze({
-    ACTION_SELECT_PLAYER: '[data-action="select-player"]',
-    DIRECTORY_ROW: '.directory-row',
-    CLICKABLE_PLAYER: '.clickable-player',
-    BTN_CLEAR: '#clearSelectionBtn',
-    BTN_MAXIMIZE: '#maximizeChartBtn',
-    BTN_CLOSE_MODAL: '#closeModalBtn',
-    SORT_NAME: '#sortNameBtn',
-    SORT_ELO: '#sortEloBtn',
-    CHART_CONTAINER: 'chartContainer',
-    HISTORY_CONTAINER: 'historyContainer',
-    EMPTY_STATE: 'emptyState',
-    STATS_CONTAINER: 'playerStatsContainer',
-    PLAYER_CHIPS: 'playerChipsContainer',
-    MODAL_CHIPS: 'modalChipsContainer',
-    DIR_SEARCH: 'directorySearch',
-    TIME_FILTER: 'timeFilter',
-    MODAL_TIME_FILTER: 'modalTimeFilter',
-    CHART_MODAL: 'chartModal',
-    MATCH_HISTORY_BODY: 'matchHistoryBody',
-    ELO_CHART: 'eloChart',
-    MODAL_ELO_CHART: 'modalEloChart'
-});
 
 // ==========================================
 // 1. DOM CACHE
@@ -118,7 +95,7 @@ function updateDashboard() {
     const cutoffDate = getCutoffDate();
     const chartData = getChartData(state.selectedPlayers, state.eloData, cutoffDate, chartColors);
     
-    // Destruir instancia principal de forma segura
+    // Safely destroy the main chart instance.
     if (eloChartInstance) {
         eloChartInstance.destroy();
         eloChartInstance = null;
@@ -157,7 +134,10 @@ function selectPlayer(name) {
     if (index > -1) {
         newPlayers.splice(index, 1);
     } else {
-        if (newPlayers.length >= 10) { alert("Maximum 10 players for comparison."); return; }
+        if (newPlayers.length >= MAX_SELECTED_PLAYERS) {
+            alert("Maximum " + MAX_SELECTED_PLAYERS + " players for comparison.");
+            return;
+        }
         newPlayers.push(clean);
     }
     state.selectedPlayers = newPlayers;
@@ -187,7 +167,7 @@ function getCutoffDate() {
 
 function syncModalIfOpen(chartData) {
     if (DOM.chartModal && DOM.chartModal.style.display === 'flex') {
-        // Destruir instancia del modal si existe
+        // Destroy the modal chart instance if one exists.
         if (modalChartInstance) {
             modalChartInstance.destroy();
             modalChartInstance = null;
@@ -201,7 +181,7 @@ function openChartModal() {
     if (DOM.modalTimeFilter) DOM.modalTimeFilter.value = state.timeFilter;
     if (DOM.chartModal) DOM.chartModal.style.display = 'flex';
     
-    // Destruir instancia del modal antes de recrearla
+    // Destroy the modal chart instance before recreating it.
     if (modalChartInstance) {
         modalChartInstance.destroy();
         modalChartInstance = null;
@@ -235,7 +215,7 @@ function loadStateFromStorageOrUrl() {
     if (pParam) {
         const playersFromUrl = pParam.split(',').map(p => p.trim()).filter(Boolean);
         if (playersFromUrl.length > 0) {
-            state.selectedPlayers = playersFromUrl.slice(0, 5); 
+            state.selectedPlayers = playersFromUrl.slice(0, MAX_SELECTED_PLAYERS);
             return; 
         }
     }
@@ -246,7 +226,7 @@ function loadStateFromStorageOrUrl() {
     try {
         const parsedPlayers = JSON.parse(savedPlayers);
         if (Array.isArray(parsedPlayers) && parsedPlayers.length > 0) {
-            state.selectedPlayers = parsedPlayers;
+            state.selectedPlayers = parsedPlayers.slice(0, MAX_SELECTED_PLAYERS);
         }
     } catch (e) {
         console.error("Failed to parse saved players from localStorage", e);

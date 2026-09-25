@@ -1,4 +1,4 @@
-import { SELECTORS } from './app.js';
+import { SELECTORS } from './constants.js';
 export const chartColors = ['#0056b3', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
 
 export const UI_CLASSES = Object.freeze({
@@ -11,12 +11,6 @@ export const UI_CLASSES = Object.freeze({
     STAT_RIVAL: '.stat-rival',
     STAT_BESTWIN: '.stat-bestwin',
     STAT_STREAK: '.stat-streak',
-    H2H_P1: '.h2h-p1',
-    H2H_SCORE: '.h2h-score',
-    H2H_P2: '.h2h-p2',
-    H2H_DRAWS: '.h2h-draws',
-    H2H_P1_STREAK: '.h2h-p1-streak',
-    H2H_P2_STREAK: '.h2h-p2-streak',
     HISTORY_ROW: '.history-row',
     COL_DATE: '.col-date',
     COL_WHITE: '.col-white',
@@ -34,7 +28,7 @@ export const UI_CLASSES = Object.freeze({
 });
 
 // ==========================================
-// CACHÉ DEL DOM
+// DOM cache
 // ==========================================
 const DOM = {
     topEloBody: document.getElementById('topEloBody'),
@@ -191,7 +185,6 @@ export function renderStats(statsContainer, stats) {
         clone.querySelector('.h2h-draws').textContent = `(${stats.draws} Draws)`;
         
         statsContainer.style.display = 'flex';
-        statsContainer.style.width = '100%'; // Ensure the container spans full width
         statsContainer.appendChild(clone);
     }
 }

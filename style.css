@@ -5,7 +5,7 @@ th, td { padding: 10px; border: 1px solid #ddd; text-align: left; }
 th { background-color: #f8f9fa; }
 canvas { max-height: 300px; margin-top: 20px; }
 
-/* --- Layout Principal --- */
+/* --- Main Layout --- */
 .dashboard-layout { display: flex; gap: 20px; align-items: flex-start; }
 .panel-left { flex: 0 0 350px; position: sticky; top: 0; }
 .panel-right { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
@@ -49,7 +49,13 @@ canvas { max-height: 300px; margin-top: 20px; }
 /* --- Statistics and Tables --- */
 .stats-container { background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; border: 1px solid #dee2e6; gap: 15px; flex-wrap: wrap; }
 .stat-box { flex: 1; min-width: 140px; }
-.h2h-box { text-align: center; font-size: 16px; }
+.h2h-stats { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.h2h-header { text-align: center; border-bottom: 1px solid #dee2e6; padding-bottom: 8px; }
+.h2h-scoreboard { display: flex; justify-content: space-around; align-items: center; text-align: center; padding: 10px 0; }
+.h2h-player { flex: 1; min-width: 0; }
+.h2h-player-name { font-size: 1.1em; margin-bottom: 5px; }
+.h2h-score { font-size: 1.8em; font-weight: bold; margin-bottom: 5px; }
+.h2h-vs { font-size: 1.2em; font-weight: bold; color: #adb5bd; padding: 0 12px; }
 .text-bold { font-weight: bold; }
 .text-muted { color: #6c757d; font-size: 13px; }
 .history-cell { padding: 8px; border-bottom: 1px solid #ddd; }
@@ -92,3 +98,91 @@ canvas { max-height: 300px; margin-top: 20px; }
 .streak-w { background-color: #28a745; }
 .streak-l { background-color: #dc3545; }
 .streak-d { background-color: #6c757d; }
+
+/* ==========================================
+   MOBILE OPTIMIZATIONS
+   ========================================= */
+@media (max-width: 768px) {
+    /* Allow table containers to scroll horizontally when needed. */
+    .table-container, .table-responsive, .card-body {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS. */
+        width: 100%;
+    }
+
+    /* Let tables use the available width on mobile. */
+    table {
+        width: 100% !important;
+        table-layout: auto;
+    }
+
+    /* Reduce cell padding and font size on mobile. */
+    th, td {
+        padding: 8px 4px !important;
+        font-size: 0.85em; /* Slightly reduce font size to fit more data. */
+        white-space: normal; /* Allow long names to wrap onto another line. */
+        word-break: break-word;
+    }
+}
+
+/* ==========================================
+   MOBILE MODAL OPTIMIZATIONS
+   ========================================= */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 100vw !important;
+        height: 100vh !important;
+        max-width: 100vw !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        padding: 12px !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        display: flex;
+        flex-direction: column; /* Stack chips above controls */
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+
+    .chips-container {
+        display: flex;
+        flex-wrap: wrap; /* Allow chips to flow into multiple rows */
+        gap: 6px;
+        width: 100%;
+    }
+
+    .player-chip {
+        font-size: 0.85em;
+        padding: 4px 8px;
+        margin: 0; /* Prevent unwanted overflow */
+    }
+
+    .controls-group {
+        display: flex;
+        justify-content: space-between; /* Select on left, close button on right */
+        align-items: center;
+        width: 100%;
+        margin-top: 0 !important;
+    }
+
+    .btn-close {
+        font-size: 2rem; /* Larger touch target for mobile */
+        line-height: 1;
+        padding: 0 8px;
+        margin: 0;
+    }
+
+    .modal-body {
+        flex-grow: 1;
+        position: relative;
+        width: 100%;
+    }
+
+    #modalEloChart {
+        max-height: calc(100vh - 140px) !important;
+    }
+}
