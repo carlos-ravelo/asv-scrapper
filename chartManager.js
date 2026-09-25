@@ -1,11 +1,11 @@
 export function createEloChart(ctx, existingChart, chartData, maintainAspectRatio = true) {
-    // 1. Destruir la instancia si la tenemos en nuestra variable
+    // Destroy the existing chart instance if available.
     if (existingChart) {
         existingChart.destroy();
     }
     
-    // 2. FORZAR la destrucción en el registro interno de Chart.js
-    // Esto mata cualquier gráfico fantasma atascado en el canvas
+    // Also destroy any chart registered internally by Chart.js.
+    // This prevents a stale chart from remaining attached to the canvas.
     const canvasChart = Chart.getChart(ctx.canvas);
     if (canvasChart) {
         canvasChart.destroy();
@@ -23,6 +23,21 @@ export function createEloChart(ctx, existingChart, chartData, maintainAspectRati
             interaction: {
                 mode: 'index',
                 intersect: false,
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label(context) {
+                            return context.dataset.label + ": " + context.formattedValue;
+                        },
+                        afterLabel(context) {
+                            const change = context.dataset.ratingChanges?.[context.dataIndex];
+                            if (change == null) return null;
+                            const sign = change > 0 ? '+' : '';
+                            return "Change: " + sign + change;
+                        }
+                    }
+                }
             }
         }
     });

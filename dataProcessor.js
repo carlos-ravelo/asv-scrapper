@@ -28,45 +28,61 @@ export function getChartData(selectedPlayers, eloData, cutoffDate, chartColors) 
     let allDates = new Set();
     
     const playerDatasets = selectedPlayers.map((player, idx) => {
-        const playerHistory = eloData
+        const fullPlayerHistory = eloData
             .filter(row => row.Naam === player && row.Publish_Date && row.Publish_Date !== 'Unknown')
-            .filter(row => !cutoffDate || row.Publish_Date >= cutoffDate)
             .sort((a, b) => a.Publish_Date.localeCompare(b.Publish_Date));
 
-        // Filtro para eliminar puntos redundantes intermedios (optimización)
+        const playerHistory = fullPlayerHistory
+            .filter(row => !cutoffDate || row.Publish_Date >= cutoffDate);
+
+        // Compare with the previous rating even when it falls outside the visible period.
+        const ratingChanges = new Map();
+        fullPlayerHistory.forEach((row, index) => {
+            if (index === 0) return;
+            const previousRating = Number(fullPlayerHistory[index - 1].ELO);
+            const currentRating = Number(row.ELO);
+            if (Number.isFinite(previousRating) && Number.isFinite(currentRating)) {
+                ratingChanges.set(row.Publish_Date, currentRating - previousRating);
+            }
+        });
+
+        // Remove redundant intermediate points as an optimization.
         const cleanHistory = playerHistory.filter((row, i, arr) => {
             if (i === 0 || i === arr.length - 1) return true;
             return row.ELO !== arr[i - 1].ELO || row.ELO !== arr[i + 1].ELO; 
         });
 
-        // Recolectar las fechas de este jugador para el eje X global
+        // Collect this player’s dates for the shared x-axis.
         cleanHistory.forEach(row => allDates.add(row.Publish_Date));
 
         const color = chartColors[idx % chartColors.length];
 
         return {
             label: player,
-            dataRaw: cleanHistory, // Guardamos temporalmente para mapear después
+            dataRaw: cleanHistory, // Store temporarily for mapping below.
+            ratingChangesRaw: ratingChanges,
             borderColor: color,
             backgroundColor: color,
             fill: false,
             tension: 0.1,
             pointRadius: 3,
             pointHoverRadius: 6,
-            spanGaps: true // Evita que la línea se rompa si el jugador no jugó en una fecha
+            spanGaps: true // Keep the line connected when a player has no rating for a date.
         };
     });
 
-    // Ordenar todas las fechas cronológicamente de forma global
+    // Sort all dates chronologically.
     const sortedDates = Array.from(allDates).sort();
 
-    // Alinear los datos de cada jugador a las fechas globales
+    // Align each player’s data with the shared dates.
     playerDatasets.forEach(dataset => {
         dataset.data = sortedDates.map(date => {
             const match = dataset.dataRaw.find(d => d.Publish_Date === date);
             return match ? match.ELO : null;
         });
-        delete dataset.dataRaw; // Limpiamos la propiedad temporal
+        dataset.ratingChanges = sortedDates.map(date => dataset.ratingChangesRaw.get(date) ?? null);
+        delete dataset.dataRaw; // Remove the temporary property.
+        delete dataset.ratingChangesRaw;
     });
 
     return { labels: sortedDates, datasets: playerDatasets };
