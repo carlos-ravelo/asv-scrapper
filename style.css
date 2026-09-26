@@ -180,9 +180,12 @@ canvas { max-height: 300px; margin-top: 20px; }
         flex-grow: 1;
         position: relative;
         width: 100%;
+        display: flex;
+        align-items: center; 
     }
 
     #modalEloChart {
-        max-height: calc(100vh - 140px) !important;
+        width: 100% !important;
+        max-height: 350px !important; 
     }
 }
