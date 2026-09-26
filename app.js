@@ -21,7 +21,8 @@ const DOM = {
     chartModal: document.getElementById(SELECTORS.CHART_MODAL),
     matchHistoryBody: document.getElementById(SELECTORS.MATCH_HISTORY_BODY),
     ctxChart: document.getElementById(SELECTORS.ELO_CHART).getContext('2d'),
-    ctxModal: document.getElementById(SELECTORS.MODAL_ELO_CHART).getContext('2d')
+    ctxModal: document.getElementById(SELECTORS.MODAL_ELO_CHART).getContext('2d'),
+    modalStatsContainer: document.getElementById('modalStatsContainer'),
 };
 
 // ==========================================
@@ -83,6 +84,7 @@ function updateDashboard() {
         if (DOM.historyContainer) DOM.historyContainer.style.display = 'none';
         if (DOM.emptyState) DOM.emptyState.style.display = 'flex';
         renderStats(DOM.statsContainer, null);
+        renderStats(DOM.modalStatsContainer, null); // Clean modal stats
         return;
     }
 
@@ -109,12 +111,15 @@ function updateDashboard() {
         const matchesToDisplay = getFilteredMatches(state.selectedPlayers, state.resultsData, cutoffDate);
         
         const statsData = getPlayerStats(state.selectedPlayers, matchesToDisplay, state.eloData);
-        renderStats(DOM.statsContainer, statsData);
         
+        renderStats(DOM.statsContainer, statsData);
+        renderStats(DOM.modalStatsContainer, statsData); // Update modal stats
+
         renderHistoryTable(DOM.matchHistoryBody, matchesToDisplay, state.selectedPlayers);
     } else {
         if (DOM.historyContainer) DOM.historyContainer.style.display = 'none';
         renderStats(DOM.statsContainer, null);
+        renderStats(DOM.modalStatsContainer, null); // Clean modal stats
     }
 }
 
