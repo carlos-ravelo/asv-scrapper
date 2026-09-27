@@ -121,21 +121,56 @@ canvas { max-height: 300px; margin-top: 20px; }
 .empty-text { margin: 0; font-size: 15px; }
 
 /* --- Toolbar and Controls --- */
-.chart-toolbar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 15px; }
-.chips-container { display: flex; gap: 10px; flex-wrap: wrap; flex: 1; }
+.chart-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 12px; }
+.chips-container { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1; }
 .controls-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .filter-select { padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
 .btn-outline { cursor: pointer; padding: 4px 10px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
 
 /* --- Pills (Chips) --- */
 .player-chip {
-    background-color: color-mix(in srgb, var(--theme-color) 10%, transparent);
-    border: 1px solid var(--theme-color);
-    color: #333; padding: 4px 12px; border-radius: 16px; display: flex;
-    align-items: center; gap: 8px; font-size: 14px; font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 2px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #495057;
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
 }
-.chip-elo { font-size: 12px; opacity: 0.8; font-weight: normal; }
-.chip-close { cursor: pointer; color: var(--theme-color); font-weight: bold; font-size: 18px; line-height: 1; background: none; border: none; padding: 0; }
+.player-chip::before {
+    width: 6px;
+    height: 6px;
+    flex: 0 0 6px;
+    border-radius: 50%;
+    background: var(--theme-color);
+    content: "";
+}
+.chip-name { font-weight: 500; }
+.chip-elo { color: #6c757d; font-size: 11px; font-weight: normal; opacity: 0.75; }
+.chip-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 14px;
+    width: 14px;
+    height: 14px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #868e96;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.7;
+    transition: background-color 120ms ease, opacity 120ms ease;
+}
+.chip-close:hover { background: #e9ecef; color: #495057; opacity: 1; }
+.chip-close:focus-visible { outline: 2px solid var(--theme-color); outline-offset: 1px; }
 
 /* --- Clickable Links --- */
 .clickable-player { cursor: pointer; color: inherit; text-decoration: none; }
@@ -265,9 +300,10 @@ canvas { max-height: 300px; margin-top: 20px; }
     }
 
     .player-chip {
-        font-size: 0.85em;
-        padding: 4px 8px;
-        margin: 0; /* Prevent unwanted overflow */
+        gap: 4px;
+        padding: 1px 2px;
+        font-size: 12px;
+        margin: 0;
     }
 
     .controls-group {
