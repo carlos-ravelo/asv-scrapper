@@ -14,6 +14,8 @@ export const SELECTORS = Object.freeze({
     PLAYER_CHIPS: 'playerChipsContainer',
     MODAL_CHIPS: 'modalChipsContainer',
     DIR_SEARCH: 'directorySearch',
+    SAVED_VIEWS_LIST: 'savedViewsList',
+    SAVED_VIEWS_SAVE: 'saveSavedViewBtn',
     TIME_FILTER: 'timeFilter',
     MODAL_TIME_FILTER: 'modalTimeFilter',
     CHART_MODAL: 'chartModal',

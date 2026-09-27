@@ -36,6 +36,11 @@
 
             <!-- Right Panel: Chart and Match History -->
             <div class="panel-right">
+                <div id="savedViewsContainer" class="saved-views" role="group" aria-label="Saved views">
+                    <span class="saved-views-label" aria-hidden="true">Saved</span>
+                    <div id="savedViewsList" class="saved-views-list" aria-live="polite"></div>
+                    <button type="button" id="saveSavedViewBtn" class="saved-view-save" data-action="save-view" aria-label="Save current player selection" title="Save current player selection" disabled>+</button>
+                </div>
 
                 <div id="emptyState" class="empty-state">
                     <div class="empty-icon">📊</div>

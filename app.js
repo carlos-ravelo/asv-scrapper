@@ -7,6 +7,8 @@ import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } 
 // ==========================================
 // 1. DOM CACHE
 // ==========================================
+const SAVED_VIEWS_STORAGE_KEY = 'asv_chess_saved_views';
+
 const DOM = {
     chartContainer: document.getElementById(SELECTORS.CHART_CONTAINER),
     historyContainer: document.getElementById(SELECTORS.HISTORY_CONTAINER),
@@ -16,6 +18,8 @@ const DOM = {
     modalChips: document.getElementById(SELECTORS.MODAL_CHIPS),
     clearBtn: document.getElementById(SELECTORS.BTN_CLEAR.substring(1)),
     directorySearch: document.getElementById(SELECTORS.DIR_SEARCH),
+    savedViewsList: document.getElementById(SELECTORS.SAVED_VIEWS_LIST),
+    saveSavedViewButton: document.getElementById(SELECTORS.SAVED_VIEWS_SAVE),
     timeFilter: document.getElementById(SELECTORS.TIME_FILTER),
     modalTimeFilter: document.getElementById(SELECTORS.MODAL_TIME_FILTER),
     chartModal: document.getElementById(SELECTORS.CHART_MODAL),
@@ -43,6 +47,7 @@ const state = new Proxy({
         if (property === 'selectedPlayers') {
             saveFavorites(value);
             syncUrlWithPlayers(value);
+            renderSavedViews();
             highlightDirectoryRows(value);
             if (DOM.clearBtn) DOM.clearBtn.style.display = value.length ? 'inline-block' : 'none';
             updateDashboard();
@@ -66,6 +71,7 @@ Promise.all([
     state.resultsData = results;
     state.eloData = elo;
     renderLanding();
+    renderSavedViews();
     loadStateFromStorageOrUrl();
 }).catch(error => console.error("Error loading JSON data:", error));
 
@@ -163,6 +169,115 @@ function filterDirectory() {
 // ==========================================
 // 6. HELPERS & MODALS
 // ==========================================
+function readSavedViews() {
+    try {
+        const savedViews = JSON.parse(localStorage.getItem(SAVED_VIEWS_STORAGE_KEY) || '{}');
+        if (!savedViews || Array.isArray(savedViews) || typeof savedViews !== 'object') return new Map();
+
+        return new Map(Object.entries(savedViews).filter(([name, players]) =>
+            name.trim().length > 0 &&
+            Array.isArray(players) &&
+            players.every(player => typeof player === 'string')
+        ));
+    } catch (error) {
+        return new Map();
+    }
+}
+
+function writeSavedViews(savedViews) {
+    localStorage.setItem(SAVED_VIEWS_STORAGE_KEY, JSON.stringify(Object.fromEntries(savedViews)));
+}
+
+function getAvailablePlayerNames() {
+    if (Array.isArray(state.eloData)) {
+        return new Set(state.eloData.map(row => row.Naam).filter(name => typeof name === 'string'));
+    }
+    if (state.eloData && typeof state.eloData === 'object') {
+        return new Set(Object.keys(state.eloData));
+    }
+    return new Set();
+}
+
+function renderSavedViews() {
+    if (!DOM.savedViewsList) return;
+
+    const savedViews = readSavedViews();
+    DOM.savedViewsList.replaceChildren();
+    if (DOM.saveSavedViewButton) {
+        DOM.saveSavedViewButton.disabled = state.selectedPlayers.length === 0;
+    }
+
+    if (savedViews.size === 0) {
+        const emptyLabel = document.createElement('span');
+        emptyLabel.className = 'saved-views-empty';
+        emptyLabel.textContent = 'No saved views';
+        DOM.savedViewsList.appendChild(emptyLabel);
+        return;
+    }
+
+    savedViews.forEach((players, name) => {
+        const item = document.createElement('div');
+        item.className = 'saved-view-item';
+
+        const loadButton = document.createElement('button');
+        loadButton.type = 'button';
+        loadButton.className = 'saved-view-load';
+        loadButton.textContent = name;
+        loadButton.title = name;
+        loadButton.dataset.action = 'load-saved-view';
+        loadButton.dataset.viewName = name;
+        const isActive = players.length === state.selectedPlayers.length &&
+            players.every((player, index) => player === state.selectedPlayers[index]);
+        item.classList.toggle('is-active', isActive);
+        loadButton.classList.toggle('is-active', isActive);
+        loadButton.setAttribute('aria-pressed', String(isActive));
+
+        const deleteButton = document.createElement('button');
+        deleteButton.type = 'button';
+        deleteButton.className = 'saved-view-delete';
+        deleteButton.textContent = '×';
+        deleteButton.title = `Delete ${name}`;
+        deleteButton.setAttribute('aria-label', `Delete saved view ${name}`);
+        deleteButton.dataset.action = 'delete-saved-view';
+        deleteButton.dataset.viewName = name;
+
+        item.append(loadButton, deleteButton);
+        DOM.savedViewsList.appendChild(item);
+    });
+}
+
+function saveCurrentView() {
+    if (state.selectedPlayers.length === 0) return;
+
+    const name = window.prompt('Name this saved view:')?.trim();
+    if (!name) return;
+
+    const savedViews = readSavedViews();
+    if (savedViews.has(name) && !window.confirm(`Replace the saved view “${name}”?`)) return;
+
+    savedViews.set(name, [...state.selectedPlayers]);
+    writeSavedViews(savedViews);
+    renderSavedViews();
+}
+
+function loadSavedView(name) {
+    const players = readSavedViews().get(name);
+    if (!players) return;
+
+    const availablePlayers = getAvailablePlayerNames();
+    state.selectedPlayers = players
+        .filter(player => availablePlayers.has(player))
+        .slice(0, MAX_SELECTED_PLAYERS);
+}
+
+function deleteSavedView(name) {
+    const savedViews = readSavedViews();
+    if (!savedViews.delete(name)) return;
+
+    writeSavedViews(savedViews);
+    renderSavedViews();
+}
+
 function getCutoffDate() {
     if (state.timeFilter === 'all') return null;
     const d = new Date();
@@ -242,6 +357,22 @@ function loadStateFromStorageOrUrl() {
 // CENTRAL EVENT DELEGATION
 // ==========================================
 document.addEventListener('click', (e) => {
+    const deleteSavedViewButton = e.target.closest('[data-action="delete-saved-view"]');
+    if (deleteSavedViewButton) {
+        deleteSavedView(deleteSavedViewButton.dataset.viewName);
+        return;
+    }
+
+    const loadSavedViewButton = e.target.closest('[data-action="load-saved-view"]');
+    if (loadSavedViewButton) {
+        loadSavedView(loadSavedViewButton.dataset.viewName);
+        return;
+    }
+
+    if (e.target.closest('[data-action="save-view"]')) {
+        saveCurrentView();
+        return;
+    }
     const playerLink = e.target.closest(SELECTORS.ACTION_SELECT_PLAYER);
     if (playerLink && playerLink.dataset.player) {
         selectPlayer(playerLink.dataset.player);

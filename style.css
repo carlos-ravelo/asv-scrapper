@@ -14,6 +14,102 @@ canvas { max-height: 300px; margin-top: 20px; }
 .directory-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .directory-header h3 { margin: 0; }
 .search-input { padding: 6px; width: 50%; border: 1px solid #ccc; border-radius: 4px; }
+.saved-views {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    margin: 0 0 -12px;
+}
+.saved-views-label {
+    flex: 0 0 auto;
+    color: #6c757d;
+    font-size: 11px;
+    font-weight: 600;
+}
+.saved-views-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: visible;
+    padding: 2px 0;
+}
+.saved-views-empty {
+    flex: 0 0 auto;
+    color: #6c757d;
+    font-size: 12px;
+}
+.saved-view-item {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+    border-radius: 14px;
+    background: #f1f3f5;
+}
+.saved-view-load,
+.saved-view-delete,
+.saved-view-save {
+    border: 0;
+    cursor: pointer;
+}
+.saved-view-load {
+    max-width: 140px;
+    overflow: hidden;
+    padding: 4px 8px;
+    background: transparent;
+    color: #495057;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.saved-view-load:hover,
+.saved-view-load.is-active {
+    background: #e7f1ff;
+    color: #084298;
+}
+.saved-view-item.is-active {
+    border-color: #b6d4fe;
+}
+.saved-view-delete {
+    align-self: stretch;
+    padding: 0 7px;
+    border-left: 1px solid #dee2e6;
+    background: transparent;
+    color: #6c757d;
+    font-size: 13px;
+}
+.saved-view-delete:hover {
+    background: #e9ecef;
+    color: #343a40;
+}
+.saved-view-save {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #ced4da;
+    border-radius: 50%;
+    background: #fff;
+    color: #495057;
+    font-size: 18px;
+    line-height: 1;
+}
+.saved-view-save:hover:not(:disabled) {
+    background: #f1f3f5;
+}
+.saved-view-save:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
 .directory-table-container { max-height: 80vh; overflow-y: auto; border: 1px solid #eee; }
 .table-header-sticky { position: sticky; top: 0; background: white; z-index: 1; }
 .btn-clear { margin-top: 10px; }
@@ -129,6 +225,18 @@ canvas { max-height: 300px; margin-top: 20px; }
    MOBILE MODAL OPTIMIZATIONS
    ========================================= */
 @media (max-width: 768px) {
+    .saved-views {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .saved-views-list {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: none;
+    }
+
     .modal-content {
         box-sizing: border-box;
         width: 100vw !important;
