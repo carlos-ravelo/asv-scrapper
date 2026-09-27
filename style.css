@@ -201,10 +201,31 @@ canvas { max-height: 300px; margin-top: 20px; }
 
 /* --- Modal --- */
 .modal-overlay { position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.65); align-items: center; justify-content: center; }
-.modal-content { background: #fff; width: 92vw; height: 88vh; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 15px; }
+.modal-content { position: relative; background: #fff; width: 92vw; height: 88vh; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-right: 48px; gap: 15px; }
 .modal-body { flex: 1; position: relative; min-height: 0; }
-.btn-close { cursor: pointer; font-size: 24px; font-weight: bold; border: none; background: none; line-height: 1; padding: 0; }
+.btn-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid #dee2e6;
+    border-radius: 50%;
+    background: #f8f9fa;
+    color: #495057;
+    cursor: pointer;
+    font-size: 22px;
+    font-weight: 400;
+    transition: background-color 120ms ease, color 120ms ease;
+}
+.btn-close:hover { background: #e9ecef; color: #212529; }
+.btn-close:focus-visible { outline: 2px solid #6c757d; outline-offset: 2px; }
 
 /* --- Mobile (Responsive) --- */
 @media (max-width: 768px) {
@@ -290,6 +311,16 @@ canvas { max-height: 300px; margin-top: 20px; }
         align-items: stretch;
         gap: 12px;
         margin-bottom: 10px;
+        padding-right: 44px;
+    }
+
+    .btn-close {
+        box-sizing: border-box;
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
     }
 
     .chips-container {
@@ -308,17 +339,10 @@ canvas { max-height: 300px; margin-top: 20px; }
 
     .controls-group {
         display: flex;
-        justify-content: space-between; /* Select on left, close button on right */
+        justify-content: flex-start;
         align-items: center;
         width: 100%;
         margin-top: 0 !important;
-    }
-
-    .btn-close {
-        font-size: 2rem; /* Larger touch target for mobile */
-        line-height: 1;
-        padding: 0 8px;
-        margin: 0;
     }
 
     .modal-body {
