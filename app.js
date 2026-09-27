@@ -1,4 +1,4 @@
-import { createEloChart } from './chartManager.js';
+import { createEloChart } from './chartManager.js?v=5';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
 import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js';
@@ -109,7 +109,7 @@ function updateDashboard() {
         eloChartInstance = null;
     }
     
-    eloChartInstance = createEloChart(DOM.ctxChart, eloChartInstance, chartData, true);
+    eloChartInstance = createEloChart(DOM.ctxChart, eloChartInstance, chartData, false);
     syncModalIfOpen(chartData);
 
     if (state.selectedPlayers.length <= 2) {
