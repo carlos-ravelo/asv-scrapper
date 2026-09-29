@@ -115,7 +115,17 @@ canvas { max-height: 300px; margin-top: 20px; }
 }
 .directory-table-container { max-height: 80vh; overflow-y: auto; border: 1px solid #eee; }
 .table-header-sticky { position: sticky; top: 0; background: white; z-index: 1; }
-.btn-clear { margin-top: 10px; }
+.btn-clear {
+    flex: 0 0 auto;
+    padding: 2px 4px;
+    border: 0;
+    background: transparent;
+    color: #6c757d;
+    font-size: 11px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.btn-clear:hover, .btn-clear:focus-visible { color: #495057; text-decoration: underline; }
 
 /* --- Empty State --- */
 .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; color: #6c757d; border: 2px dashed #dee2e6; border-radius: 8px; background-color: #f8f9fa; padding: 20px; text-align: center; }
@@ -125,6 +135,8 @@ canvas { max-height: 300px; margin-top: 20px; }
 
 /* --- Toolbar and Controls --- */
 .chart-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 12px; }
+.selected-players { display: flex; align-items: center; flex: 1 1 auto; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.selected-players .chips-container { flex: 0 1 auto; width: auto; }
 .chips-container { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1; }
 .controls-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .filter-select { padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
@@ -310,7 +322,7 @@ canvas { max-height: 300px; margin-top: 20px; }
     #eloChart { width: 100% !important; height: 100% !important; min-height: 280px !important; }
     .panel-left { order: 2; width: 100% !important; min-width: 100% !important; box-sizing: border-box !important; max-height: 50vh; overflow-y: auto; }
     table { display: block; overflow-x: auto; white-space: nowrap; width: 100%; }
-    .chart-toolbar { flex-direction: column !important; }
+    .chart-toolbar { flex-direction: column !important; align-items: stretch; }
     .controls-group { width: 100%; justify-content: flex-start !important; margin-top: 10px; }
 }
 

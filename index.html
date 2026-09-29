@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASV Chess Tracker</title>
-    <link rel="stylesheet" href="style.css?v=22">
+    <link rel="stylesheet" href="style.css?v=23">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
@@ -34,7 +34,6 @@
                         <tbody id="topEloBody"></tbody>
                     </table>
                 </div>
-                <button type="button" id="clearSelectionBtn" class="btn-clear" style="display:none;">Clear selection</button>
             </div>
 
             <!-- Right Panel: Chart and Match History -->
@@ -53,7 +52,10 @@
 
                 <div id="chartContainer" class="chart-container" style="display: none;">
                     <div class="chart-toolbar">
-                        <div id="playerChipsContainer" class="chips-container"></div>
+                        <div class="selected-players">
+                            <div id="playerChipsContainer" class="chips-container"></div>
+                            <button type="button" id="clearSelectionBtn" class="btn-clear" style="display:none;">Clear selection</button>
+                        </div>
                         <div class="controls-group">
                             <select id="timeFilter" class="filter-select">
                                 <option value="all">All time</option>
