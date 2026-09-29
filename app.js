@@ -1,4 +1,4 @@
-import { createEloChart } from './chartManager.js?v=5';
+import { createEloChart } from './chartManager.js?v=6';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
 import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js';
@@ -60,6 +60,35 @@ const state = new Proxy({
 });
 
 let eloChartInstance = null, modalChartInstance = null;
+let pageScrollPosition = 0;
+let bodyStylesBeforeModal = null;
+
+function lockBackgroundScroll() {
+    if (bodyStylesBeforeModal) return;
+    pageScrollPosition = window.scrollY;
+    bodyStylesBeforeModal = {
+        position: document.body.style.position,
+        top: document.body.style.top,
+        left: document.body.style.left,
+        right: document.body.style.right,
+        width: document.body.style.width,
+        overflow: document.body.style.overflow
+    };
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${pageScrollPosition}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+}
+
+function unlockBackgroundScroll() {
+    if (!bodyStylesBeforeModal) return;
+
+    Object.assign(document.body.style, bodyStylesBeforeModal);
+    bodyStylesBeforeModal = null;
+    window.scrollTo(0, pageScrollPosition);
+}
 
 // ==========================================
 // 3. INITIALIZATION
@@ -292,26 +321,30 @@ function syncModalIfOpen(chartData) {
             modalChartInstance.destroy();
             modalChartInstance = null;
         }
-        modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, chartData, false);
+        modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, chartData, false, true);
     }
 }
 
 function openChartModal() {
     if (!eloChartInstance) return;
     if (DOM.modalTimeFilter) DOM.modalTimeFilter.value = state.timeFilter;
-    if (DOM.chartModal) DOM.chartModal.style.display = 'flex';
+    lockBackgroundScroll();
+    if (DOM.chartModal) {
+        DOM.chartModal.style.display = 'flex';
+    }
     
     // Destroy the modal chart instance before recreating it.
     if (modalChartInstance) {
         modalChartInstance.destroy();
         modalChartInstance = null;
     }
-    modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, JSON.parse(JSON.stringify(eloChartInstance.data)), false);
+    modalChartInstance = createEloChart(DOM.ctxModal, modalChartInstance, JSON.parse(JSON.stringify(eloChartInstance.data)), false, true);
 }
 
 function closeChartModal() {
     if (DOM.chartModal) DOM.chartModal.style.display = 'none';
     if (modalChartInstance) { modalChartInstance.destroy(); modalChartInstance = null; }
+    unlockBackgroundScroll();
 }
 
 function saveFavorites(players) {
@@ -381,6 +414,7 @@ document.addEventListener('click', (e) => {
     if (e.target.closest(SELECTORS.BTN_CLEAR)) clearSelection();
     if (e.target.closest(SELECTORS.BTN_MAXIMIZE)) openChartModal();
     if (e.target.closest(SELECTORS.BTN_CLOSE_MODAL)) closeChartModal();
+    if (e.target.closest('#resetModalZoomBtn')) modalChartInstance?.resetZoom();
     if (e.target.closest(SELECTORS.SORT_NAME)) sortDirectory('name');
     if (e.target.closest(SELECTORS.SORT_ELO)) sortDirectory('elo');
 });

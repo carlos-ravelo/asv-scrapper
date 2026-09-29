@@ -203,10 +203,79 @@ canvas { max-height: 300px; margin-top: 20px; }
 .text-loss { color: #721c24; font-weight: normal; }
 
 /* --- Modal --- */
-.modal-overlay { position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.65); align-items: center; justify-content: center; }
-.modal-content { position: relative; background: #fff; width: 92vw; height: 88vh; padding: 20px; border-radius: 8px; display: flex; flex-direction: column; box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-right: 48px; gap: 15px; }
-.modal-body { flex: 1; position: relative; min-height: 0; }
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: 16px;
+    background-color: rgba(0,0,0,0.65);
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    overscroll-behavior: none;
+}
+.modal-content {
+    position: relative;
+    box-sizing: border-box;
+    width: min(1200px, 100%);
+    height: 92%;
+    max-height: 100%;
+    min-height: 0;
+    min-width: 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+}
+.modal-header {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-right: 48px;
+    gap: 15px;
+    min-width: 0;
+}
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+#modalStatsContainer {
+    box-sizing: border-box;
+    width: 100%;
+    flex: 0 0 auto;
+    margin-bottom: 0;
+}
+.modal-chart-container {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    min-height: 280px;
+    flex: 1 0 280px;
+}
+#modalEloChart {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: none !important;
+    margin: 0;
+    touch-action: pan-y !important;
+}
 .btn-close {
     position: absolute;
     top: 14px;
@@ -243,7 +312,6 @@ canvas { max-height: 300px; margin-top: 20px; }
     table { display: block; overflow-x: auto; white-space: nowrap; width: 100%; }
     .chart-toolbar { flex-direction: column !important; }
     .controls-group { width: 100%; justify-content: flex-start !important; margin-top: 10px; }
-    .modal-content { width: 95vw !important; height: 90vh !important; padding: 10px !important; }
 }
 
 .streak-indicator {
@@ -286,7 +354,7 @@ canvas { max-height: 300px; margin-top: 20px; }
 }
 
 /* ==========================================
-   MOBILE MODAL OPTIMIZATIONS
+   MOBILE COMPONENTS
    ========================================= */
 @media (max-width: 768px) {
     .saved-views {
@@ -299,36 +367,6 @@ canvas { max-height: 300px; margin-top: 20px; }
         overflow-x: auto;
         overflow-y: hidden;
         scrollbar-width: none;
-    }
-
-    .modal-content {
-        box-sizing: border-box;
-        width: 100vw !important;
-        height: 100vh !important;
-        max-width: 100vw !important;
-        max-height: 100vh !important;
-        border-radius: 0 !important;
-        padding: 12px !important;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .modal-header {
-        display: flex;
-        flex-direction: column; /* Stack chips above controls */
-        align-items: stretch;
-        gap: 12px;
-        margin-bottom: 10px;
-        padding-right: 44px;
-    }
-
-    .btn-close {
-        box-sizing: border-box;
-        top: 10px;
-        right: 10px;
-        width: 40px;
-        height: 40px;
-        font-size: 24px;
     }
 
     .chips-container {
@@ -353,32 +391,6 @@ canvas { max-height: 300px; margin-top: 20px; }
         margin-top: 0 !important;
     }
 
-    .modal-body {
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-        flex-grow: 1;
-        position: relative;
-        width: 100%;
-        min-height: 0;
-        overflow-y: auto;
-    }
-
-    #modalStatsContainer {
-        width: 100%;
-        box-sizing: border-box;
-        flex: 0 0 auto;
-        margin-bottom: 0 !important;
-    }
-
-    #modalEloChart {
-        width: 100% !important;
-        max-height: 350px !important;
-        flex: 0 0 auto;
-        margin-top: 0;
-    }
-
     .stats-container {
         flex-direction: column;
         gap: 12px;
@@ -400,5 +412,99 @@ canvas { max-height: 300px; margin-top: 20px; }
 
     .h2h-vs {
         padding: 5px 0;
+    }
+}
+
+/* Compact dialogs also cover phones wider than 768px in landscape. */
+@media (max-width: 768px), (max-height: 500px) {
+    .modal-overlay {
+        padding: max(8px, env(safe-area-inset-top, 0px))
+                 max(8px, env(safe-area-inset-right, 0px))
+                 max(8px, env(safe-area-inset-bottom, 0px))
+                 max(8px, env(safe-area-inset-left, 0px));
+    }
+
+    .modal-content {
+        width: 100%;
+        height: 100%;
+        padding: 12px;
+    }
+
+    .modal-header {
+        gap: 8px;
+        margin-bottom: 8px;
+        padding-right: 44px;
+    }
+
+    #modalChipsContainer {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+        max-height: 64px;
+        overflow: auto;
+    }
+
+    .modal-header .controls-group {
+        width: auto;
+        flex: 0 0 auto;
+        margin-top: 0;
+    }
+
+    .modal-content .btn-close {
+        box-sizing: border-box;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+    }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+    .modal-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 500px) {
+    .modal-header {
+        flex-direction: row;
+    }
+
+    #modalChipsContainer {
+        max-height: 40px;
+    }
+
+    .modal-header .controls-group {
+        flex-wrap: nowrap;
+        gap: 6px;
+    }
+
+    #modalStatsContainer {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 8px;
+    }
+
+    #modalStatsContainer .stat-box {
+        width: auto;
+        min-width: 120px;
+        flex: 1 1 120px;
+    }
+
+    #modalStatsContainer .h2h-scoreboard {
+        flex-direction: row;
+        gap: 6px;
+        padding: 4px 0;
+    }
+
+    #modalStatsContainer .h2h-score {
+        font-size: 1.35em;
+    }
+
+    .modal-chart-container {
+        min-height: 180px;
+        flex-basis: 180px;
     }
 }

@@ -19,7 +19,7 @@ function formatChartDate(value, formatter) {
     return Number.isNaN(date.getTime()) ? label : formatter.format(date);
 }
 
-export function createEloChart(ctx, existingChart, chartData, maintainAspectRatio = true) {
+export function createEloChart(ctx, existingChart, chartData, maintainAspectRatio = true, enableZoom = false) {
     // Destroy the existing chart instance if available.
     if (existingChart) {
         existingChart.destroy();
@@ -82,6 +82,20 @@ export function createEloChart(ctx, existingChart, chartData, maintainAspectRati
                 intersect: false,
             },
             plugins: {
+                zoom: enableZoom ? {
+                    limits: {
+                        x: { min: 'original', max: 'original', minRange: 2 }
+                    },
+                    pan: {
+                        enabled: true,
+                        mode: 'x'
+                    },
+                    zoom: {
+                        wheel: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: 'x'
+                    }
+                } : { pan: { enabled: false }, zoom: { wheel: { enabled: false }, pinch: { enabled: false } } },
                 tooltip: {
                     callbacks: {
                         title(items) {
