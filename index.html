@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASV Chess Tracker</title>
-    <link rel="stylesheet" href="style.css?v=23">
+    <link rel="stylesheet" href="style.css?v=24">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
@@ -37,7 +37,7 @@
             </div>
 
             <!-- Right Panel: Chart and Match History -->
-            <div class="panel-right">
+            <div class="panel-right" x-data="biweeklyRecap">
                 <div id="savedViewsContainer" class="saved-views" role="group" aria-label="Saved views">
                     <span class="saved-views-label" aria-hidden="true">Saved</span>
                     <div id="savedViewsList" class="saved-views-list" aria-live="polite"></div>
@@ -63,6 +63,7 @@
                                 <option value="3">Last 3 months</option>
                                 <option value="12">Last year</option>
                             </select>
+                            <button type="button" id="shareRecapBtn" class="btn-outline" x-on:click="share" x-bind:disabled="exporting" x-text="exporting ? 'Exporting…' : 'Share 14-Day Recap'" data-html2canvas-ignore>Share 14-Day Recap</button>
                             <button type="button" id="maximizeChartBtn" class="btn-outline">⛶ Maximize</button>
                         </div>
                     </div>
@@ -71,7 +72,10 @@
                     <div class="chart-canvas-container">
                         <canvas id="eloChart"></canvas>
                     </div>
+                    <section id="biweeklyRecap" class="biweekly-recap" aria-label="Biweekly awards" hidden></section>
                 </div>
+
+                <div id="recapStatus" role="status" aria-live="polite" x-text="status"></div>
 
                 <div id="historyContainer" style="display: none;">
                     <h3 class="history-title">Match History</h3>
@@ -91,7 +95,7 @@
         </div>
     </div>
     
-    <script type="module" src="app.js?v=20"></script>
+    <script type="module" src="app.js?v=23"></script>
     
     <!-- Modal -->
     <div id="chartModal" class="modal-overlay" style="display: none;">

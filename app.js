@@ -1,3 +1,5 @@
+import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/module.esm.js';
+import { calculateRecap, renderRecap, downloadRecap } from './recap.js';
 import { createEloChart } from './chartManager.js?v=6';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
@@ -140,6 +142,9 @@ function updateDashboard() {
     
     eloChartInstance = createEloChart(DOM.ctxChart, eloChartInstance, chartData, false);
     syncModalIfOpen(chartData);
+    if (!document.getElementById('biweeklyRecap').hidden) {
+        renderRecap(document.getElementById('biweeklyRecap'), calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers));
+    }
 
     if (state.selectedPlayers.length <= 2) {
         if (DOM.historyContainer) DOM.historyContainer.style.display = 'block';
@@ -161,6 +166,27 @@ function updateDashboard() {
 // ==========================================
 // 5. PURE ACTIONS
 // ==========================================
+Alpine.data('biweeklyRecap', () => ({
+    exporting: false,
+    status: '',
+    async share() {
+        if (!eloChartInstance || this.exporting) return;
+        this.exporting = true;
+        this.status = '';
+        try {
+            const recap = calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers);
+            renderRecap(document.getElementById('biweeklyRecap'), recap);
+            await this.$nextTick();
+            await downloadRecap(DOM.chartContainer, eloChartInstance, recap);
+            this.status = 'Recap PNG downloaded.';
+        } catch (error) {
+            this.status = error.message || 'Could not export the recap. Please try again.';
+        } finally {
+            this.exporting = false;
+        }
+    }
+}));
+
 function sortDirectory(key) {
     const isSameKey = state.directorySort.key === key;
     state.directorySort = { key: key, asc: isSameKey ? !state.directorySort.asc : (key === 'name') };
@@ -430,3 +456,4 @@ document.addEventListener('change', (e) => {
 document.addEventListener('input', (e) => {
     if (e.target.id === SELECTORS.DIR_SEARCH) filterDirectory();
 });
+Alpine.start();

@@ -520,3 +520,17 @@ canvas { max-height: 300px; margin-top: 20px; }
         flex-basis: 180px;
     }
 }
+
+.biweekly-recap { margin-top: 20px; padding: 16px; background: #f4f7fc; border: 1px solid #dce4ef; border-radius: 8px; }
+.biweekly-recap[hidden] { display: none; }
+.biweekly-recap h3 { margin: 0 0 6px; }
+.biweekly-recap > p { color: #596579; font-size: 12px; line-height: 1.5; }
+.recap-awards { display: flex; flex-wrap: wrap; gap: 10px; }
+.recap-award { flex: 1 1 140px; min-width: 0; padding: 12px; background: white; border: 1px solid #dce4ef; border-radius: 6px; overflow-wrap: anywhere; }
+.recap-award h4 { margin: 0 0 10px; font-size: 14px; }
+.recap-award strong { display: block; font-size: 13px; }
+.recap-award p { margin: 8px 0 0; color: #596579; font-size: 12px; }
+.biweekly-recap .recap-note { margin-bottom: 0; font-size: 11px; }
+#recapStatus { font-size: 13px; color: #596579; }
+#recapStatus:empty { display: none; }
+#shareRecapBtn:disabled { cursor: wait; opacity: .65; }
