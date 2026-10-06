@@ -97,6 +97,10 @@ export function createEloChart(ctx, existingChart, chartData, maintainAspectRati
                     }
                 } : { pan: { enabled: false }, zoom: { wheel: { enabled: false }, pinch: { enabled: false } } },
                 tooltip: {
+                    itemSort(a, b) {
+                        return b.parsed.y - a.parsed.y ||
+                            String(a.dataset.label).localeCompare(String(b.dataset.label));
+                    },
                     callbacks: {
                         title(items) {
                             return items.length

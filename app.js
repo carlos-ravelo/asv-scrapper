@@ -1,6 +1,6 @@
 import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/module.esm.js';
 import { calculateRecap, renderRecap, downloadRecap } from './recap.js';
-import { createEloChart } from './chartManager.js?v=6';
+import { createEloChart } from './chartManager.js?v=7';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
 import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js';
