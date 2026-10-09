@@ -134,7 +134,24 @@ canvas { max-height: 300px; margin-top: 20px; }
 .empty-text { margin: 0; font-size: 15px; }
 
 /* --- Toolbar and Controls --- */
-.chart-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; gap: 12px; }
+.chart-toolbar { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 10px; gap: 8px 12px; }
+.chart-toolbar .selected-players { order: -1; flex: 1 1 180px; }
+.chart-frame { position: relative; padding-right: 36px; }
+.chart-icon-button { position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #68768a; cursor: pointer; }
+.chart-icon-button:hover { background: #eef2f7; color: #263449; }
+.chart-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.chart-period { display: flex; align-items: center; color: #68768a; font-size: 12px; }
+.chart-period .filter-select { min-height: 32px; padding: 4px 8px; border-color: #dce3ec; border-radius: 7px; background-color: #fff; color: #263449; font: inherit; font-size: 12px; cursor: pointer; }
+.recap-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 4px 8px; border: 1px solid #dce3ec; border-radius: 7px; background: #fff; color: #40516a; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
+.recap-toggle:hover:not(:disabled) { background: #edf3ff; border-color: #b8cdef; color: #2456a6; }
+.recap-toggle[aria-expanded="true"] { background: #eaf1ff; border-color: #b8cdef; color: #2456a6; }
+.recap-period { padding: 2px 6px; border-radius: 5px; background: #edf1f6; color: #68768a; font-size: 11px; font-weight: 400; white-space: nowrap; }
+.recap-toggle[aria-expanded="true"] .recap-chevron { transform: rotate(180deg); }
+.chart-icon-button:focus-visible, .recap-toggle:focus-visible, .chart-period .filter-select:focus-visible { outline: 2px solid #3971c9; outline-offset: 3px; }
+@media (max-width: 768px) {
+    .chart-toolbar .selected-players { flex-basis: auto; }
+    .chart-actions { margin-left: 0; }
+}
 .selected-players { display: flex; align-items: center; flex: 1 1 auto; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
 .selected-players .chips-container { flex: 0 1 auto; width: auto; }
 .chips-container { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1; }

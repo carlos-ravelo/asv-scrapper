@@ -168,12 +168,20 @@ function updateDashboard() {
 // ==========================================
 Alpine.data('biweeklyRecap', () => ({
     exporting: false,
+    recapVisible: false,
     status: '',
     show() {
         if (!eloChartInstance || this.exporting) return;
         this.status = '';
+        const container = document.getElementById('biweeklyRecap');
+        if (this.recapVisible) {
+            container.hidden = true;
+            this.recapVisible = false;
+            return;
+        }
         const recap = calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers);
-        renderRecap(document.getElementById('biweeklyRecap'), recap);
+        renderRecap(container, recap);
+        this.recapVisible = true;
     },
     async download() {
         if (!eloChartInstance || this.exporting) return;
