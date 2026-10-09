@@ -3,7 +3,7 @@ import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=2';
 import { createEloChart } from './chartManager.js?v=7';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
-import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js';
+import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js?v=2';
 import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js';
 
 // ==========================================
@@ -16,7 +16,6 @@ const DOM = {
     historyContainer: document.getElementById(SELECTORS.HISTORY_CONTAINER),
     emptyState: document.getElementById(SELECTORS.EMPTY_STATE),
     statsContainer: document.getElementById(SELECTORS.STATS_CONTAINER),
-    playerChips: document.getElementById(SELECTORS.PLAYER_CHIPS),
     modalChips: document.getElementById(SELECTORS.MODAL_CHIPS),
     clearBtn: document.getElementById(SELECTORS.BTN_CLEAR.substring(1)),
     directorySearch: document.getElementById(SELECTORS.DIR_SEARCH),
@@ -50,7 +49,7 @@ const state = new Proxy({
             saveFavorites(value);
             syncUrlWithPlayers(value);
             renderSavedViews();
-            highlightDirectoryRows(value);
+            renderLanding();
             if (DOM.clearBtn) DOM.clearBtn.style.display = value.length ? 'inline-block' : 'none';
             updateDashboard();
         }
@@ -111,8 +110,16 @@ Promise.all([
 // ==========================================
 function renderLanding() {
     const sortedPlayers = getSortedDirectory(state.eloData, state.directorySort);
-    renderDirectoryTable(sortedPlayers);
+    const focusedPlayer = document.activeElement?.closest('.directory-row')
+        ? document.activeElement.dataset.player : null;
+    renderDirectoryTable(sortedPlayers, state.selectedPlayers);
     highlightDirectoryRows(state.selectedPlayers);
+    filterDirectory();
+    if (focusedPlayer) {
+        const button = [...document.querySelectorAll('.directory-row button')]
+            .find(button => button.dataset.player === focusedPlayer);
+        button?.focus({ preventScroll: true });
+    }
 }
 
 function updateDashboard() {
@@ -128,7 +135,6 @@ function updateDashboard() {
     if (DOM.emptyState) DOM.emptyState.style.display = 'none';
     if (DOM.chartContainer) DOM.chartContainer.style.display = 'block';
 
-    renderPlayerChips(DOM.playerChips, state.selectedPlayers, state.eloData);
     renderPlayerChips(DOM.modalChips, state.selectedPlayers, state.eloData);
 
     const cutoffDate = getCutoffDate();
@@ -231,7 +237,7 @@ function filterDirectory() {
     const query = removeAccents(DOM.directorySearch.value.toLowerCase());
     document.querySelectorAll(SELECTORS.DIRECTORY_ROW).forEach(row => {
         const playerName = removeAccents(row.querySelector(SELECTORS.CLICKABLE_PLAYER).textContent.toLowerCase());
-        row.style.display = playerName.includes(query) ? '' : 'none';
+        row.style.display = row.classList.contains('is-selected') || playerName.includes(query) ? '' : 'none';
     });
 }
 

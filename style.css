@@ -16,6 +16,13 @@ canvas { max-height: 300px; margin-top: 20px; }
 /* --- Directory --- */
 .directory-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .directory-header h3 { margin: 0; }
+.directory-player { display: inline-flex; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; font: inherit; text-align: left; }
+.directory-player::before { content: ''; width: 12px; height: 12px; flex: 0 0 12px; border: 1px solid #b8c3d1; border-radius: 4px; }
+.directory-row.is-selected { background: #f0f5fc; }
+.directory-row.is-selected .directory-player { font-weight: 600; }
+.directory-row.is-selected .directory-player::before { content: '✓'; border-color: var(--player-color); background: var(--player-color); color: #fff; text-align: center; font-size: 10px; line-height: 12px; }
+.directory-row.is-selected + .directory-row:not(.is-selected) td { border-top: 2px solid #b8c3d1; }
+.directory-player:focus-visible { outline: 2px solid #3971c9; outline-offset: 3px; border-radius: 2px; }
 .search-input { padding: 6px; width: 50%; border: 1px solid #ccc; border-radius: 4px; }
 .saved-views {
     display: flex;
@@ -135,7 +142,6 @@ canvas { max-height: 300px; margin-top: 20px; }
 
 /* --- Toolbar and Controls --- */
 .chart-toolbar { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 10px; gap: 8px 12px; }
-.chart-toolbar .selected-players { order: -1; flex: 1 1 180px; }
 .chart-frame { position: relative; padding-right: 36px; }
 .chart-icon-button { position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #68768a; cursor: pointer; }
 .chart-icon-button:hover { background: #eef2f7; color: #263449; }
@@ -149,11 +155,8 @@ canvas { max-height: 300px; margin-top: 20px; }
 .recap-toggle[aria-expanded="true"] .recap-chevron { transform: rotate(180deg); }
 .chart-icon-button:focus-visible, .recap-toggle:focus-visible, .chart-period .filter-select:focus-visible { outline: 2px solid #3971c9; outline-offset: 3px; }
 @media (max-width: 768px) {
-    .chart-toolbar .selected-players { flex-basis: auto; }
     .chart-actions { margin-left: 0; }
 }
-.selected-players { display: flex; align-items: center; flex: 1 1 auto; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
-.selected-players .chips-container { flex: 0 1 auto; width: auto; }
 .chips-container { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1; }
 .controls-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .filter-select { padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }

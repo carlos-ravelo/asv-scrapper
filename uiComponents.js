@@ -77,15 +77,18 @@ function renderStreak(container, streakArray) {
     });
 }
 
-export function renderDirectoryTable(sortedPlayers) {
+export function renderDirectoryTable(sortedPlayers, selectedPlayers = []) {
     if (!DOM.topEloBody || !DOM.tpl.dirRow) return; 
     
     DOM.topEloBody.innerHTML = '';
-    sortedPlayers.forEach(([name, data], index) => {
+    const selection = new Set(selectedPlayers);
+    const rankedPlayers = sortedPlayers.map(([name, data], index) => ({ name, data, rank: index + 1 }));
+    rankedPlayers.sort((a, b) => Number(selection.has(b.name)) - Number(selection.has(a.name)));
+    rankedPlayers.forEach(({ name, data, rank }) => {
         const clone = DOM.tpl.dirRow.content.cloneNode(true);
         const tds = clone.querySelectorAll('td');
         
-        tds[0].textContent = index + 1;
+        tds[0].textContent = rank;
         tds[2].textContent = data.elo;
         
         const link = clone.querySelector(SELECTORS.CLICKABLE_PLAYER);
@@ -124,7 +127,13 @@ export function highlightDirectoryRows(selectedPlayers) {
         const link = row.querySelector(SELECTORS.CLICKABLE_PLAYER);
         if (!link) return;
         const rowName = link.textContent.trim();
-        row.style.backgroundColor = selectedPlayers.includes(rowName) ? '#e9ecef' : '';
+        const selectedIndex = selectedPlayers.indexOf(rowName);
+        const selected = selectedIndex !== -1;
+        row.classList.toggle('is-selected', selected);
+        link.setAttribute('aria-pressed', String(selected));
+        link.title = selected ? 'Deselect player' : 'Select player';
+        if (selected) row.style.setProperty('--player-color', chartColors[selectedIndex % chartColors.length]);
+        else row.style.removeProperty('--player-color');
     });
 }
 
