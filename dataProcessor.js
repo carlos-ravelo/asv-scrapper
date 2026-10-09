@@ -108,7 +108,7 @@ function calculateStreak(player, matches) {
         return db.localeCompare(da);
     });
 
-    const recent5 = sortedMatches.slice(0, 5);
+    const recent5 = sortedMatches.slice(0, 5).reverse();
     return recent5.map(match => {
         const isWhite = match.Witspeler === player;
         if (match.Uitslag === '1-0') return isWhite ? 'W' : 'L';
