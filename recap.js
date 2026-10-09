@@ -47,11 +47,11 @@ export function calculateRecap(resultsData, eloData, now = new Date(), selectedP
         return { title, names, detail: names.length ? format(best) : empty };
     };
     return { from, to, scope: selection.size ? 'Selected players' : 'Club-wide awards', awards: [
-        award('🚀 The Rocket', gains, n => `+${n} Elo`, 'No Elo gains'),
-        award('📉 The Tilt', drops, n => `−${n} Elo`, 'No Elo drops'),
-        award('🗡️ Giant Slayer', slayers, n => `Defeated a ${n} Elo opponent`, 'No rated wins'),
-        award('🛡️ Gladiator', games, n => `${n} matches played`, 'No completed matches'),
-        award('🔥 On Fire', streaks, n => `${n} consecutive wins`, 'No active win streak')
+        award('🚀 Most Elo Gained', gains, n => `+${n} Elo`, 'No Elo gains'),
+        award('📉 Most Elo Lost', drops, n => `−${n} Elo`, 'No Elo drops'),
+        award('🗡️ Highest Rated Win', slayers, n => `Defeated a ${n} Elo opponent`, 'No rated wins'),
+        award('🛡️ Most Active player', games, n => `${n} matches played`, 'No completed matches'),
+        award('🔥 Longest Win Streak', streaks, n => `${n} consecutive wins`, 'No active win streak')
     ] };
 }
 
@@ -59,6 +59,17 @@ export function renderRecap(container, recap) {
     container.replaceChildren();
     const heading = document.createElement('h3');
     heading.textContent = 'Biweekly Recap';
+    const header = document.createElement('div');
+    header.className = 'recap-header';
+    const download = document.createElement('button');
+    download.type = 'button';
+    download.className = 'btn-outline recap-download';
+    download.setAttribute('aria-label', 'Download recap PNG');
+    download.title = 'Download recap PNG';
+    download.setAttribute('x-bind:disabled', 'exporting');
+    download.setAttribute('data-html2canvas-ignore', '');
+    download.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg>';
+    header.append(heading, download);
     const description = document.createElement('p');
     description.textContent = `${recap.from} – ${recap.to} · ${recap.scope} · Elo: first to last rating within this period`;
     const cards = document.createElement('div');
@@ -78,7 +89,7 @@ export function renderRecap(container, recap) {
     const note = document.createElement('p');
     note.className = 'recap-note';
     note.textContent = 'Ties share awards. Opponent Elo uses the latest in-period rating published by match date. Same-day games follow source order. Streaks count only this period.';
-    container.append(heading, description, cards, note);
+    container.append(header, description, cards, note);
     container.hidden = false;
 }
 

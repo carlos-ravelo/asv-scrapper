@@ -524,6 +524,10 @@ canvas { max-height: 300px; margin-top: 20px; }
 .biweekly-recap { margin-top: 20px; padding: 16px; background: #f4f7fc; border: 1px solid #dce4ef; border-radius: 8px; }
 .biweekly-recap[hidden] { display: none; }
 .biweekly-recap h3 { margin: 0 0 6px; }
+.recap-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.biweekly-recap .recap-header h3 { margin: 0; }
+.recap-download { display: inline-flex; align-items: center; justify-content: center; padding: 6px; }
+.recap-download:disabled { cursor: wait; opacity: .65; }
 .biweekly-recap > p { color: #596579; font-size: 12px; line-height: 1.5; }
 .recap-awards { display: flex; flex-wrap: wrap; gap: 10px; }
 .recap-award { flex: 1 1 140px; min-width: 0; padding: 12px; background: white; border: 1px solid #dce4ef; border-radius: 6px; overflow-wrap: anywhere; }

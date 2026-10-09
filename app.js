@@ -1,5 +1,5 @@
 import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/module.esm.js';
-import { calculateRecap, renderRecap, downloadRecap } from './recap.js';
+import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=2';
 import { createEloChart } from './chartManager.js?v=7';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
@@ -169,7 +169,13 @@ function updateDashboard() {
 Alpine.data('biweeklyRecap', () => ({
     exporting: false,
     status: '',
-    async share() {
+    show() {
+        if (!eloChartInstance || this.exporting) return;
+        this.status = '';
+        const recap = calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers);
+        renderRecap(document.getElementById('biweeklyRecap'), recap);
+    },
+    async download() {
         if (!eloChartInstance || this.exporting) return;
         this.exporting = true;
         this.status = '';
