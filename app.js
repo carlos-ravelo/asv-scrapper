@@ -275,6 +275,7 @@ function getAvailablePlayerNames() {
 
 function renderSavedViews() {
     if (!DOM.savedViewsList) return;
+    requestAnimationFrame(updateSavedViewsScroll);
 
     const savedViews = readSavedViews();
     DOM.savedViewsList.replaceChildren();
@@ -318,6 +319,19 @@ function renderSavedViews() {
 
         item.append(loadButton, deleteButton);
         DOM.savedViewsList.appendChild(item);
+    });
+}
+
+function updateSavedViewsScroll() {
+    const list = DOM.savedViewsList;
+    if (!list) return;
+    const buttons = document.querySelectorAll('[data-scroll-views]');
+    const needsScroll = list.scrollWidth > list.parentElement.clientWidth + 1;
+    buttons.forEach(button => { button.hidden = !needsScroll; });
+    buttons.forEach(button => {
+        button.disabled = Number(button.dataset.scrollViews) < 0
+            ? list.scrollLeft <= 1
+            : list.scrollLeft + list.clientWidth >= list.scrollWidth - 1;
     });
 }
 
@@ -436,6 +450,14 @@ function loadStateFromStorageOrUrl() {
 // CENTRAL EVENT DELEGATION
 // ==========================================
 document.addEventListener('click', (e) => {
+    const scrollButton = e.target.closest('[data-scroll-views]');
+    if (scrollButton) {
+        DOM.savedViewsList.scrollBy({
+            left: Number(scrollButton.dataset.scrollViews) * DOM.savedViewsList.clientWidth * 0.8,
+            behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
+        });
+        return;
+    }
     const deleteSavedViewButton = e.target.closest('[data-action="delete-saved-view"]');
     if (deleteSavedViewButton) {
         deleteSavedView(deleteSavedViewButton.dataset.viewName);
@@ -476,4 +498,6 @@ document.addEventListener('change', (e) => {
 document.addEventListener('input', (e) => {
     if (e.target.id === SELECTORS.DIR_SEARCH) filterDirectory();
 });
+DOM.savedViewsList.addEventListener('scroll', updateSavedViewsScroll, { passive: true });
+new ResizeObserver(updateSavedViewsScroll).observe(DOM.savedViewsList);
 Alpine.start();

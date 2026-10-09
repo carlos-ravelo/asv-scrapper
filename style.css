@@ -24,14 +24,51 @@ canvas { max-height: 300px; margin-top: 20px; }
 .directory-row.is-selected + .directory-row:not(.is-selected) td { border-top: 2px solid #b8c3d1; }
 .directory-player:focus-visible { outline: 2px solid #3971c9; outline-offset: 3px; border-radius: 2px; }
 .search-input { padding: 6px; width: 50%; border: 1px solid #ccc; border-radius: 4px; }
-.saved-views {
-    display: flex;
+.toolbar-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-wrap: nowrap;
+    gap: 12px;
     width: 100%;
     min-width: 0;
-    margin: 0 0 -12px;
+}
+.saved-views-row {
+    display: flex;
+    align-items: center;
+    grid-column: 1 / -1;
+    gap: 4px;
+    min-width: 0;
+    padding-top: 8px;
+    border-top: 1px solid #edf0f4;
+}
+.saved-views-scroll {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid #dce3ec;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #40516a;
+    font-size: 22px;
+    cursor: pointer;
+}
+.saved-views-scroll[hidden] { display: none; }
+.saved-views-scroll:disabled { opacity: .35; cursor: default; }
+.saved-views-scroll:hover:not(:disabled) { background: #eaf1ff; }
+.saved-views-scroll:focus-visible { outline: 2px solid #3971c9; outline-offset: 2px; }
+.toolbar-container > .saved-view-save {
+    justify-self: start;
+}
+.toolbar-right {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+    gap: 6px;
+}
+.toolbar-right > *, .toolbar-right .filter-select {
+    flex-shrink: 0;
 }
 .saved-views-label {
     flex: 0 0 auto;
@@ -42,12 +79,18 @@ canvas { max-height: 300px; margin-top: 20px; }
 .saved-views-list {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
     flex: 1 1 auto;
     min-width: 0;
-    overflow: visible;
-    padding: 2px 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: none;
+    padding: 3px;
+}
+.saved-views-list::-webkit-scrollbar {
+    display: none;
 }
 .saved-views-empty {
     flex: 0 0 auto;
@@ -103,15 +146,26 @@ canvas { max-height: 300px; margin-top: 20px; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 28px;
-    width: 28px;
-    height: 28px;
+    flex: 0 0 auto;
+    gap: 6px;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
     border: 1px solid #ced4da;
-    border-radius: 50%;
+    border-radius: 7px;
     background: #fff;
     color: #495057;
-    font-size: 18px;
+    font-size: 12px;
     line-height: 1;
+    white-space: nowrap;
+}
+.saved-view-save:focus-visible, .saved-views-list:focus-visible {
+    outline: 2px solid #3971c9;
+    outline-offset: 2px;
+}
+@media (max-width: 600px) {
+    .toolbar-container { gap: 8px; }
+    .toolbar-container .recap-period { display: none; }
 }
 .saved-view-save:hover:not(:disabled) {
     background: #f1f3f5;
@@ -141,11 +195,9 @@ canvas { max-height: 300px; margin-top: 20px; }
 .empty-text { margin: 0; font-size: 15px; }
 
 /* --- Toolbar and Controls --- */
-.chart-toolbar { display: flex; flex-wrap: wrap; align-items: center; margin-bottom: 10px; gap: 8px 12px; }
 .chart-frame { position: relative; padding-right: 36px; }
 .chart-icon-button { position: absolute; top: 0; right: 0; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; padding: 0; border: 1px solid transparent; border-radius: 8px; background: transparent; color: #68768a; cursor: pointer; }
 .chart-icon-button:hover { background: #eef2f7; color: #263449; }
-.chart-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-left: auto; }
 .chart-period { display: flex; align-items: center; color: #68768a; font-size: 12px; }
 .chart-period .filter-select { min-height: 32px; padding: 4px 8px; border-color: #dce3ec; border-radius: 7px; background-color: #fff; color: #263449; font: inherit; font-size: 12px; cursor: pointer; }
 .recap-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 4px 8px; border: 1px solid #dce3ec; border-radius: 7px; background: #fff; color: #40516a; font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; }
@@ -154,9 +206,6 @@ canvas { max-height: 300px; margin-top: 20px; }
 .recap-period { padding: 2px 6px; border-radius: 5px; background: #edf1f6; color: #68768a; font-size: 11px; font-weight: 400; white-space: nowrap; }
 .recap-toggle[aria-expanded="true"] .recap-chevron { transform: rotate(180deg); }
 .chart-icon-button:focus-visible, .recap-toggle:focus-visible, .chart-period .filter-select:focus-visible { outline: 2px solid #3971c9; outline-offset: 3px; }
-@media (max-width: 768px) {
-    .chart-actions { margin-left: 0; }
-}
 .chips-container { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1; }
 .controls-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .filter-select { padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
@@ -342,7 +391,6 @@ canvas { max-height: 300px; margin-top: 20px; }
     #eloChart { width: 100% !important; height: 100% !important; min-height: 280px !important; }
     .panel-left { order: 2; width: 100% !important; min-width: 100% !important; box-sizing: border-box !important; max-height: 50vh; overflow-y: auto; }
     table { display: block; overflow-x: auto; white-space: nowrap; width: 100%; }
-    .chart-toolbar { flex-direction: column !important; align-items: stretch; }
     .controls-group { width: 100%; justify-content: flex-start !important; margin-top: 10px; }
 }
 
@@ -389,18 +437,6 @@ canvas { max-height: 300px; margin-top: 20px; }
    MOBILE COMPONENTS
    ========================================= */
 @media (max-width: 768px) {
-    .saved-views {
-        flex-wrap: nowrap;
-        gap: 8px;
-    }
-
-    .saved-views-list {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overflow-y: hidden;
-        scrollbar-width: none;
-    }
-
     .chips-container {
         display: flex;
         flex-wrap: wrap; /* Allow chips to flow into multiple rows */
