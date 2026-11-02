@@ -2,12 +2,10 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-PYTHON_SCRIPT="$PROJECT_DIR/scrapper.py"
-PYTHON_BIN="$PROJECT_DIR/.venv/bin/python"
+RUNNER="$PROJECT_DIR/run-scrapers.sh"
 LOG_FILE="$PROJECT_DIR/cron_execution.log"
 
-[[ -x "$PYTHON_BIN" ]] || PYTHON_BIN="/usr/bin/python3"
-[[ -f "$PYTHON_SCRIPT" ]] || exit 1
+[[ -f "$RUNNER" ]] || exit 1
 command -v crontab >/dev/null
 command -v flock >/dev/null
 
@@ -15,7 +13,7 @@ command -v flock >/dev/null
 # flock prevents simultaneous executions.
 printf -v CRON_COMMAND '0 10,22 * * * cd %q && %q -n %q %q %q >> %q 2>&1 # asv-scraper' \
     "$PROJECT_DIR" "$(command -v flock)" "$PROJECT_DIR/.scraper.lock" \
-    "$PYTHON_BIN" "$PYTHON_SCRIPT" "$LOG_FILE"
+    /bin/bash "$RUNNER" "$LOG_FILE"
 CRON_COMMAND="${CRON_COMMAND//%/\\%}"
 
 TEMP_CRONTAB="$(mktemp)"

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Follow your KNSB team, prepare for the next round and compare the strength behind the standings.">
+    <title>KNSB Teams · ASV Stats</title>
+    <link rel="stylesheet" href="knsb.css?v=1">
+</head>
+<body>
+    <header class="site-header"><a class="brand" href="index.html"><span aria-hidden="true">♞</span> ASV Stats</a><nav aria-label="Main"><a href="index.html">Club players</a><a href="knsb.html" aria-current="page">KNSB teams</a></nav></header>
+    <main>
+        <div class="page-heading"><div><h1>The story behind the standings.</h1><p>Follow your team. Know your next opponent.</p></div><a id="divisionSource" href="https://knsb.netstand.nl/divisions/view/669" target="_blank" rel="noopener">Official competition ↗</a></div>
+        <p id="loadStatus" role="status">Loading the competition…</p>
+        <div id="dashboard" hidden>
+            <div class="team-toolbar"><label for="teamSelect">Your team <select id="teamSelect"></select></label><button id="favoriteButton" type="button" aria-pressed="false">☆ Save team</button><span id="competitionLabel"></span><span id="updatedAt"></span></div>
+            <div id="favorites" class="favorites" role="group" aria-label="Favorite teams"></div>
+            <section id="teamOverview" aria-label="Selected team"></section>
+            <div class="section-heading"><h2>What’s behind the table?</h2><span>Compare the teams in your group</span></div>
+            <p class="explanation">Ratings come from the players who actually played. Opponent rating shows the strength of the opposition faced so far.</p>
+            <div class="table-scroll"><table id="standings"><caption class="sr-only">Group standings and team strength. Select a team to view its season.</caption><thead><tr><th scope="col">#</th><th scope="col">Team</th><th scope="col"><button data-sort="played">Played</button></th><th scope="col"><button data-sort="match_points">MP</button></th><th scope="col"><button data-sort="board_points">BP</button></th><th scope="col"><button data-sort="rating">Avg. rating</button></th><th scope="col"><button data-sort="opposition">Opponent rating</button></th><th scope="col"><button data-sort="delta">Above expected</button></th><th scope="col">Form</th></tr></thead><tbody></tbody></table></div>
+            <p class="table-note">MP: match points. BP: board points. Form runs from oldest to newest. Click a metric to sort.</p>
+            <section class="comparison-section" aria-labelledby="comparisonTitle"><div class="section-heading"><h2 id="comparisonTitle">Prepare for the next round</h2><label for="compareSelect">Compare with <select id="compareSelect"></select></label></div><div id="comparison"></div></section>
+            <div class="season-grid"><section aria-labelledby="calendarTitle"><div class="section-heading"><h2 id="calendarTitle">Your season</h2><a id="teamSource" target="_blank" rel="noopener">Team on Netstand ↗</a></div><div id="calendar"></div></section><section aria-labelledby="playersTitle"><div class="section-heading"><h2 id="playersTitle">Who’s been playing?</h2></div><div id="players"></div></section></div>
+            <details class="methodology"><summary>How to read these numbers</summary><p>Average rating is weighted by appearances, using each encounter’s published ratings. Opponent rating uses those same appearances on the other side. “Above expected” adds up actual minus expected board points using 1 / (1 + 10^((opponent rating − player rating) / 400)). This is a simple rating baseline, not a measure of luck or a match prediction.</p><p>Only scored games with two named players and valid ratings enter that baseline. Walkovers, missing ratings and unrecognised result formats are excluded. With only a few rounds, the sample is small. Last lineups are historical, not confirmed future selections. Position history uses match points then board points, with equal positions for ties; official extra tie-breaks may differ.</p><p>Dates are published round dates; individual encounters can move. Times and venues are not included in this first version. Updates run twice daily; corrections replace the current data and the previous version is archived.</p></details>
+        </div>
+    </main>
+    <dialog id="matchDialog" aria-labelledby="matchTitle"><div class="dialog-header"><h2 id="matchTitle">Encounter</h2><button id="closeMatch" type="button" aria-label="Close encounter">×</button></div><div id="matchContent"></div></dialog>
+    <footer>ASV Stats <span>Public competition results from <a href="https://knsb.netstand.nl/" target="_blank" rel="noopener">KNSB / Netstand</a></span></footer>
+    <script type="module" src="knsb.js?v=1"></script>
+</body>
+</html>
