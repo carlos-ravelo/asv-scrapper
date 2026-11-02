@@ -1,4 +1,5 @@
 import os
+import logging
 from io import StringIO
 from urllib.parse import urlparse
 import requests
@@ -6,6 +7,13 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S %z",
+)
+logging.info("Scraper execution started.")
 
 base_page_url = "https://www.asv-schaken.nl/interne-competitie/page/{}/"
 results_csv = "asv_results.csv"
@@ -48,7 +56,7 @@ def _date_from_wp_api(article_url):
         r.raise_for_status()
         data = r.json()
     except Exception as e:
-        print(f"  [wp-api-error] {article_url}: {e}")
+        logging.info(f"  [wp-api-error] {article_url}: {e}")
         return None
     if isinstance(data, list) and data:
         raw = data[0].get('date') or data[0].get('date_gmt')
@@ -82,7 +90,7 @@ def scrape_article(article_url):
         article_response = requests.get(article_url, headers=HEADERS, timeout=request_timeout)
         article_response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"  [fetch-error] {article_url}: {e}")
+        logging.info(f"  [fetch-error] {article_url}: {e}")
         return None, None
 
     article_soup = BeautifulSoup(article_response.text, 'html.parser')
@@ -110,7 +118,7 @@ def scrape_article(article_url):
     except ValueError:
         return None, None
     except Exception as e:
-        print(f"  [parse-error] {article_url}: {e}")
+        logging.info(f"  [parse-error] {article_url}: {e}")
         return None, None
 
     df_results = None
@@ -160,14 +168,14 @@ processed_elo = get_processed_urls(elo_csv)
 # Step 1: collect all candidate article URLs across index pages.
 all_article_urls = set()
 for page_num in range(1, max_pages + 1):
-    print(f"Checking index page {page_num}...")
+    logging.info(f"Checking index page {page_num}...")
     try:
         page_response = requests.get(
             base_page_url.format(page_num), headers=HEADERS, timeout=request_timeout
         )
         page_response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching index page {page_num}: {e}")
+        logging.info(f"Error fetching index page {page_num}: {e}")
         break
 
     soup = BeautifulSoup(page_response.text, 'html.parser')
@@ -177,7 +185,7 @@ for page_num in range(1, max_pages + 1):
         for link in links
         if 'uitslagen-en-standen' in link['href'] or '-ronde-' in link['href']
     }
-    print(f"  found {len(page_urls)} candidate article link(s) on page {page_num}")
+    logging.info(f"  found {len(page_urls)} candidate article link(s) on page {page_num}")
     all_article_urls.update(page_urls)
 
 # Step 2: keep only URLs missing from at least one of the CSVs.
@@ -185,7 +193,7 @@ pending_urls = [
     u for u in all_article_urls
     if u not in processed_results or u not in processed_elo
 ]
-print(f"Total unique candidates: {len(all_article_urls)} | pending to scrape: {len(pending_urls)}")
+logging.info(f"Total unique candidates: {len(all_article_urls)} | pending to scrape: {len(pending_urls)}")
 
 # Step 3: scrape pending articles in parallel.
 new_results = []
@@ -202,7 +210,7 @@ if pending_urls:
             if df_elo is not None and url not in processed_elo:
                 new_elo.append(df_elo)
                 processed_elo.add(url)
-            print(f"  done: {url}")
+            logging.info(f"  done: {url}")
 
 # Append new data to base CSV files
 if new_results:
@@ -237,4 +245,4 @@ def csv_to_json(csv_path, json_path):
 csv_to_json(results_csv, "asv_results.json")
 csv_to_json(elo_csv, "asv_elo.json")
 
-print("Incremental update and JSON generation complete.")
+logging.info("Incremental update and JSON generation complete.")

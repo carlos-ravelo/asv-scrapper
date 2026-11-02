@@ -205,6 +205,10 @@ canvas { max-height: 300px; margin-top: 20px; }
 .recap-toggle[aria-expanded="true"] { background: #eaf1ff; border-color: #b8cdef; color: #2456a6; }
 .recap-period { padding: 2px 6px; border-radius: 5px; background: #edf1f6; color: #68768a; font-size: 11px; font-weight: 400; white-space: nowrap; }
 .recap-toggle[aria-expanded="true"] .recap-chevron { transform: rotate(180deg); }
+.recap-control { position: relative; flex-shrink: 0; }
+.recap-options { position: absolute; top: calc(100% + 8px); right: 0; z-index: 10; display: flex; flex-direction: column; gap: 10px; width: 190px; padding: 12px; border: 1px solid #dce3ec; border-radius: 10px; background: #fff; box-shadow: 0 8px 24px rgba(38, 52, 73, .14); }
+.recap-options label { color: #68768a; font-size: 12px; font-weight: 600; }
+.recap-options .filter-select, .recap-options button { min-height: 34px; border-radius: 7px; }
 .chart-icon-button:focus-visible, .recap-toggle:focus-visible, .chart-period .filter-select:focus-visible { outline: 2px solid #3971c9; outline-offset: 3px; }
 .chips-container { display: flex; align-items: center; gap: 4px 8px; flex-wrap: wrap; flex: 1; }
 .controls-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }

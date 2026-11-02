@@ -1,0 +1,4 @@
+/cron_execution.log
+/.scraper.lock
+__pycache__/
+/.venv/

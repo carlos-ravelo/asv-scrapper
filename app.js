@@ -1,5 +1,5 @@
 import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/module.esm.js';
-import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=2';
+import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=3';
 import { createEloChart } from './chartManager.js?v=7';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
@@ -38,7 +38,8 @@ const state = new Proxy({
     eloData: [],
     selectedPlayers: [],
     directorySort: { key: 'elo', asc: false },
-    timeFilter: 'all'
+    timeFilter: 'all',
+    recapScope: '30'
 }, {
     set(target, property, value) {
         target[property] = value;
@@ -55,6 +56,9 @@ const state = new Proxy({
         }
         
         if (property === 'timeFilter') updateDashboard();
+        if (property === 'recapScope' && !document.getElementById('biweeklyRecap').hidden) {
+            renderRecap(document.getElementById('biweeklyRecap'), calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers, value));
+        }
         
         return true;
     }
@@ -149,7 +153,7 @@ function updateDashboard() {
     eloChartInstance = createEloChart(DOM.ctxChart, eloChartInstance, chartData, false);
     syncModalIfOpen(chartData);
     if (!document.getElementById('biweeklyRecap').hidden) {
-        renderRecap(document.getElementById('biweeklyRecap'), calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers));
+        renderRecap(document.getElementById('biweeklyRecap'), calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers, state.recapScope));
     }
 
     if (state.selectedPlayers.length <= 2) {
@@ -175,6 +179,7 @@ function updateDashboard() {
 Alpine.data('biweeklyRecap', () => ({
     exporting: false,
     recapVisible: false,
+    recapMenuOpen: false,
     status: '',
     show() {
         if (!eloChartInstance || this.exporting) return;
@@ -185,7 +190,7 @@ Alpine.data('biweeklyRecap', () => ({
             this.recapVisible = false;
             return;
         }
-        const recap = calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers);
+        const recap = calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers, state.recapScope);
         renderRecap(container, recap);
         this.recapVisible = true;
     },
@@ -194,7 +199,7 @@ Alpine.data('biweeklyRecap', () => ({
         this.exporting = true;
         this.status = '';
         try {
-            const recap = calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers);
+            const recap = calculateRecap(state.resultsData, state.eloData, new Date(), state.selectedPlayers, state.recapScope);
             renderRecap(document.getElementById('biweeklyRecap'), recap);
             await this.$nextTick();
             await downloadRecap(DOM.chartContainer, eloChartInstance, recap);
@@ -488,6 +493,10 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('change', (e) => {
+    if (e.target.id === 'recapScope') {
+        state.recapScope = e.target.value;
+        return;
+    }
     if (e.target.id === SELECTORS.TIME_FILTER || e.target.id === SELECTORS.MODAL_TIME_FILTER) {
         state.timeFilter = e.target.value; 
         DOM.timeFilter.value = e.target.value;
