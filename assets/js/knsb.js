@@ -9,6 +9,7 @@ const date = value => new Date(`${value}T12:00:00`).toLocaleDateString('en-GB', 
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
 const sourceURL = (kind, id) => /^\d+$/.test(String(id)) ? `https://knsb.netstand.nl/${kind}/view/${id}` : 'https://knsb.netstand.nl/';
 const source = (kind, id, text) => `<a href="${sourceURL(kind, id)}" target="_blank" rel="noopener">${esc(text)} ↗</a>`;
+const playerLink = player => /^\d+$/.test(String(player?.id)) ? `<button type="button" class="player-link" data-player="${esc(player.id)}">${esc(player.name)}</button>` : esc(player?.name || 'Unlisted player');
 const resultText = scores => scores ? scores.map(value => fmt(value, value % 1 ? 1 : 0)).join(' – ') : 'Pending';
 const form = values => `<div class="form" aria-label="Form: ${esc(values.join(', ') || 'no results')}">${values.map(value => `<span class="${value === 'W' ? 'win' : value === 'L' ? 'loss' : 'draw'}" title="${value === 'W' ? 'Win' : value === 'L' ? 'Loss' : 'Draw'}">${value}</span>`).join('')}</div>`;
 let data, selected, compared, metrics, catalog;
@@ -93,17 +94,8 @@ function renderFavorites() {
 }
 
 function renderOverview() {
-    const current = team(selected), stats = metrics.get(selected), next = nextMatch(data, selected, today);
-    const latest = teamMatches(data, selected).filter(match => match.status === 'completed').slice(-1)[0];
-    const shortDate = value => `${date(value)}${value.slice(0, 4) !== today.slice(0, 4) ? ` ${value.slice(0, 4)}` : ''}`;
-    let latestRow = '';
-    if (latest) {
-        const side = teamSide(latest, selected), index = side === 'home' ? 0 : 1;
-        const scores = [latest.score[index], latest.score[1 - index]];
-        const outcome = scores[0] > scores[1] ? 'Won' : scores[0] < scores[1] ? 'Lost' : 'Drew';
-        latestRow = `<div class="brief-fixture"><span class="brief-label">Last</span><div class="brief-opponent"><strong>${esc(teamName(latest[opposite(side)]))}</strong><span>${shortDate(latest.date)} · ${side === 'home' ? 'Home' : 'Away'}</span></div><button type="button" class="summary-result ${deltaClass(scores[0] - scores[1])}" data-match="${esc(latest.id)}" aria-label="${esc(`View last encounter: ${outcome.toLowerCase()} ${resultText(scores)} against ${teamName(latest[opposite(side)])}`)}">${outcome} ${resultText(scores)} ↗</button></div>`;
-    }
-    $('#teamOverview').innerHTML = `<div class="team-brief"><dl class="brief-stats"><div><dt>Position</dt><dd>${current.position} of ${data.teams.length}</dd></div><div><dt>Match points</dt><dd>${fmt(current.match_points)}</dd></div><div><dt>Average rating</dt><dd>${fmt(stats.rating)}</dd></div></dl>${next ? `<div class="brief-fixture" data-kind="next"><span class="brief-label">Next</span><div class="brief-opponent"><strong>${esc(teamName(next[opposite(teamSide(next, selected))]))}</strong><span>Round ${next.round} · ${shortDate(next.date)} · ${next.home === selected ? 'Home' : 'Away'}</span></div><button class="summary-action" type="button" data-prepare="${esc(next[opposite(teamSide(next, selected))])}">Compare</button></div>` : '<p class="brief-empty">No upcoming encounter.</p>'}${latestRow}</div>`;
+    const current = team(selected), stats = metrics.get(selected);
+    $('#teamOverview').innerHTML = `<div class="team-brief"><dl class="brief-stats"><div><dt>Position</dt><dd>${current.position} of ${data.teams.length}</dd></div><div><dt>Match points</dt><dd>${fmt(current.match_points)}</dd></div><div><dt>Average rating</dt><dd>${fmt(stats.rating)}</dd></div></dl></div>`;
 }
 
 function renderStandings() {
@@ -116,7 +108,7 @@ function renderStandings() {
         if (bv == null) return -1;
         return (av - bv) * sorting.direction || a.position - b.position;
     });
-    $('#standings tbody').innerHTML = rows.map(item => `<tr class="${item.id === selected ? 'selected-row' : ''}"><td>${item.position}</td><td><button type="button" class="team-link" data-team="${esc(item.id)}" aria-pressed="${item.id === selected}">${favorites.includes(item.id) ? '★ ' : ''}${esc(item.name)}</button></td><td>${item.played}</td><td><b>${fmt(item.match_points)}</b></td><td>${fmt(item.board_points, 1)}</td><td>${fmt(item.rating)}</td><td>${fmt(item.opposition)}</td><td class="${deltaClass(item.delta)}" title="${item.ratedGames} games with two rated players">${signed(item.delta)}</td><td>${form(item.form)}</td></tr>`).join('');
+    $('#standings tbody').innerHTML = rows.map(item => `<tr class="${item.id === selected ? 'selected-row' : item.id === compared ? 'compared-row' : ''}"><td>${item.position}</td><td><button type="button" class="team-link compare-team-choice" data-compare-team="${esc(item.id)}" ${item.id === selected ? 'disabled aria-label="Your selected team"' : `aria-pressed="${item.id === compared}" aria-label="Compare ${esc(item.name)} with ${esc(teamName(selected))}"`}>${favorites.includes(item.id) ? '★ ' : ''}${esc(item.name)}</button></td><td>${item.played}</td><td><b>${fmt(item.match_points)}</b></td><td>${fmt(item.board_points, 1)}</td><td>${fmt(item.rating)}</td><td>${fmt(item.opposition)}</td><td class="${deltaClass(item.delta)}" title="${item.ratedGames} games with two rated players">${signed(item.delta)}</td><td>${form(item.form)}</td></tr>`).join('');
     document.querySelectorAll('#standings th').forEach(th => {
         const button = th.querySelector('[data-sort]');
         th.removeAttribute('aria-sort');
@@ -125,6 +117,11 @@ function renderStandings() {
 }
 
 function renderComparison() {
+    $('#comparisonSelection').innerHTML = `<div class="comparison-chip reference-chip">${esc(teamName(selected))}<span>Your team</span></div>${compared ? `<div class="comparison-chip opponent-chip"><span>${esc(teamName(compared))}</span><button type="button" data-remove-comparison aria-label="Remove ${esc(teamName(compared))} from comparison">×</button></div>` : ''}`;
+    if (!compared || !team(compared) || compared === selected) {
+        $('#comparison').innerHTML = empty('Click a team name on the left to compare it with your team.');
+        return;
+    }
     const a = metrics.get(selected), b = metrics.get(compared);
     const lineupA = lastLineup(data, selected), lineupB = lastLineup(data, compared);
     const metricsHTML = [['Average rating', fmt(a.rating), fmt(b.rating)], ['Opponents faced · avg. rating', fmt(a.opposition), fmt(b.opposition)], ['Points above expected', signed(a.delta), signed(b.delta)], ['Wins by one board point', fmt(a.closeWins), fmt(b.closeWins)]]
@@ -135,11 +132,34 @@ function renderComparison() {
         lineups = `<h3>Last lineups, board by board</h3><p class="table-note">${esc(teamName(selected))}: ${date(lineupA.match.date)} · ${esc(teamName(compared))}: ${date(lineupB.match.date)}. Future lineups are not confirmed.</p><div class="table-scroll"><table class="lineup-table"><thead><tr><th>Board</th><th>${esc(teamName(selected))}</th><th>Rating gap</th><th>${esc(teamName(compared))}</th></tr></thead><tbody>${Array.from({ length: size }, (_, index) => {
             const left = lineupA.players[index], right = lineupB.players[index];
             const gap = left?.rating > 0 && right?.rating > 0 ? left.rating - right.rating : null;
-            return `<tr><td>${index + 1}</td><td>${left ? source('players', left.id, left.name) : '—'}<small>${fmt(left?.rating)} Elo</small></td><td class="${deltaClass(gap)}">${gap === null ? '—' : `${gap > 0 ? '+' : ''}${gap}`}<span class="rating-gap">left − right</span></td><td>${right ? source('players', right.id, right.name) : '—'}<small>${fmt(right?.rating)} Elo</small></td></tr>`;
+            return `<tr><td>${index + 1}</td><td>${left ? playerLink(left) : '—'}<small>${fmt(left?.rating)} Elo</small></td><td class="${deltaClass(gap)}">${gap === null ? '—' : `${gap > 0 ? '+' : ''}${gap}`}<span class="rating-gap">left − right</span></td><td>${right ? playerLink(right) : '—'}<small>${fmt(right?.rating)} Elo</small></td></tr>`;
         }).join('')}</tbody></table></div>`;
     }
     const meetings = data.matches.filter(m => m.status === 'completed' && [m.home, m.away].includes(selected) && [m.home, m.away].includes(compared));
-    $('#comparison').innerHTML = `<div class="compare-legend"><span>${esc(teamName(selected))}</span><span>${esc(teamName(compared))}</span></div><div class="comparison-metrics">${metricsHTML}</div><p class="insight">Based on ${a.played} and ${b.played} completed encounters; ${a.ratedGames} and ${b.ratedGames} rated games enter the expected-points comparison. A small sample can change quickly.</p>${meetings.map(m => `<p>Head to head this season: <button type="button" class="team-link" data-match="${esc(m.id)}">${esc(teamName(m.home))} ${resultText(m.score)} ${esc(teamName(m.away))} ↗</button></p>`).join('')}${lineups}`;
+    $('#comparison').innerHTML = `<div class="comparison-metrics">${metricsHTML}</div><p class="insight">Based on ${a.played} and ${b.played} completed encounters; ${a.ratedGames} and ${b.ratedGames} rated games enter the expected-points comparison. A small sample can change quickly.</p>${meetings.map(m => `<p>Head to head this season: <button type="button" class="team-link" data-match="${esc(m.id)}">${esc(teamName(m.home))} ${resultText(m.score)} ${esc(teamName(m.away))} ↗</button></p>`).join('')}${lineups}`;
+}
+
+function renderComparisonTeams() {
+    $('#comparisonTeams').innerHTML = [...data.teams].sort((a, b) => a.position - b.position).filter(item => item.id !== selected)
+        .map(item => `<button type="button" class="compare-team-choice" data-compare-team="${esc(item.id)}" aria-pressed="false"><span>${esc(item.name)}</span></button>`).join('');
+}
+
+function updateComparisonSelection() {
+    document.querySelectorAll('[data-compare-team]').forEach(button => {
+        const id = button.dataset.compareTeam;
+        const active = id === compared;
+        if (id !== selected) button.setAttribute('aria-pressed', String(active));
+        button.closest('#standings tr')?.classList.toggle('compared-row', active);
+    });
+}
+
+function chooseOpponent(id) {
+    compared = team(id) && id !== selected ? id : null;
+    const url = new URL(location.href);
+    if (compared) url.searchParams.set('against', compared); else url.searchParams.delete('against');
+    history.replaceState(null, '', url);
+    renderComparison();
+    updateComparisonSelection();
 }
 
 function renderCalendar() {
@@ -149,30 +169,30 @@ function renderCalendar() {
         const side = teamSide(match, selected), index = side === 'home' ? 0 : 1;
         const scores = match.score ? [match.score[index], match.score[1 - index]] : null;
         const css = scores ? scores[0] > scores[1] ? 'positive' : scores[0] < scores[1] ? 'negative' : '' : '';
-        return `<div class="fixture ${match.id === upcoming?.id ? 'next-fixture' : ''}"><div class="fixture-date">${date(match.date)}<small>Round ${match.round}</small></div><div class="fixture-opponent">${esc(teamName(match[opposite(side)]))}<small>${side === 'home' ? 'Home' : 'Away'}${match.id === upcoming?.id ? ' · Up next' : ''}${match.status !== 'completed' && match.date < today ? ' · Result pending' : ''}</small></div><button type="button" data-match="${esc(match.id)}" aria-label="${esc(`Round ${match.round}, ${teamName(match[opposite(side)])}, ${resultText(scores)}; view encounter`)}"><span class="${css}">${scores ? resultText(scores) : 'Details'}</span></button></div>`;
+        return `<div class="fixture ${match.id === upcoming?.id ? 'next-fixture' : ''}"><div class="fixture-date">${date(match.date)}<small>Round ${match.round}</small></div><div class="fixture-opponent"><button type="button" class="team-link" data-compare-team="${esc(match[opposite(side)])}" aria-pressed="${match[opposite(side)] === compared}">${esc(teamName(match[opposite(side)]))}</button><small>${side === 'home' ? 'Home' : 'Away'}${match.id === upcoming?.id ? ' · Up next' : ''}${match.status !== 'completed' && match.date < today ? ' · Result pending' : ''}</small></div><button type="button" data-match="${esc(match.id)}" aria-label="${esc(`Round ${match.round}, ${teamName(match[opposite(side)])}, ${resultText(scores)}; view encounter`)}"><span class="${css}">${scores ? resultText(scores) : 'Details'}</span></button></div>`;
     }).join('');
 }
 
 function renderPlayers() {
     const players = metrics.get(selected).players;
     $('#playersCount').textContent = `${players.length} players`;
-    $('#players').innerHTML = players.length ? `<div class="table-scroll"><table class="players-table"><thead><tr><th>Player</th><th>Rating¹</th><th>Games</th><th>Points</th><th>Avg. board</th></tr></thead><tbody>${players.map(player => `<tr><td>${source('players', player.id, player.name)}</td><td>${fmt(player.rating)}</td><td>${player.games}</td><td>${fmt(player.points, 1)}</td><td>${fmt(player.boards.reduce((sum, board) => sum + board, 0) / player.boards.length, 1)}</td></tr>`).join('')}</tbody></table></div><p class="table-note">¹ Latest rating recorded in this player’s encounters. Ordered by appearances. Walkovers are excluded.</p>` : empty('Players will appear here once individual results are published.');
+    $('#players').innerHTML = players.length ? `<div class="table-scroll"><table class="players-table"><thead><tr><th>Player</th><th>Rating¹</th><th>Games</th><th>Points</th><th>Avg. board</th></tr></thead><tbody>${players.map(player => `<tr><td>${playerLink(player)}</td><td>${fmt(player.rating)}</td><td>${player.games}</td><td>${fmt(player.points, 1)}</td><td>${fmt(player.boards.reduce((sum, board) => sum + board, 0) / player.boards.length, 1)}</td></tr>`).join('')}</tbody></table></div><p class="table-note">¹ Latest rating recorded in this player’s encounters. Ordered by appearances. Walkovers are excluded.</p>` : empty('Players will appear here once individual results are published.');
 }
 
 function applyTeam(id) {
     selected = id;
     const next = nextMatch(data, selected, today);
-    compared = next ? next[opposite(teamSide(next, selected))] : data.teams.find(t => t.id !== selected)?.id;
+    const requested = new URLSearchParams(location.search).get('against');
+    compared = requested !== selected && team(requested) ? requested : next ? next[opposite(teamSide(next, selected))] : data.teams.find(t => t.id !== selected)?.id;
     $('#teamSelect').value = catalogTeam(id).name;
     $('#teamSelect').dataset.team = id;
     closeTeamPicker();
-    $('#compareSelect').innerHTML = data.teams.filter(t => t.id !== selected).map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
-    $('#compareSelect').value = compared;
     $('#teamSource').href = sourceURL('teams', selected);
     const url = new URL(location.href);
     url.searchParams.set('team', selected);
+    if (requested && requested !== compared) url.searchParams.delete('against');
     history.replaceState(null, '', url);
-    renderFavorites(); renderOverview(); renderStandings(); renderComparison(); renderCalendar(); renderPlayers();
+    renderFavorites(); renderOverview(); renderStandings(); renderComparisonTeams(); renderComparison(); renderCalendar(); renderPlayers(); updateComparisonSelection();
 }
 
 function loadError(message, retryAction) {
@@ -229,8 +249,30 @@ function showMatch(id) {
     const match = data.matches.find(m => m.id === id);
     if (!match) return;
     $('#matchTitle').textContent = `${teamName(match.home)} ${match.score ? resultText(match.score) : 'vs'} ${teamName(match.away)}`;
-    $('#matchContent').innerHTML = `<p class="dialog-meta">Round ${match.round} · ${date(match.date)} ${match.date.slice(0, 4)} · ${source('pairings', match.id, 'Official encounter')}</p>${match.boards.length ? `<div class="table-scroll"><table class="lineup-table"><thead><tr><th>Board</th><th>${esc(teamName(match.home))}</th><th>Result</th><th>${esc(teamName(match.away))}</th></tr></thead><tbody>${match.boards.map(board => `<tr><td>${board.board}</td><td>${esc(board.home_player.name)}<small>${board.home_color === 'black' ? 'Black · ' : board.home_color === 'white' ? 'White · ' : ''}${fmt(board.home_rating)} Elo</small></td><td>${esc(board.raw_score || 'Pending')}</td><td>${esc(board.away_player.name)}<small>${board.home_color === 'black' ? 'White · ' : board.home_color === 'white' ? 'Black · ' : ''}${fmt(board.away_rating)} Elo</small></td></tr>`).join('')}</tbody></table></div>` : empty('Individual results are not published yet. Lineups, start time and venue should be confirmed with the team captain.')}`;
+    $('#matchContent').innerHTML = `<p class="dialog-meta">Round ${match.round} · ${date(match.date)} ${match.date.slice(0, 4)} · ${source('pairings', match.id, 'Official encounter')}</p>${match.boards.length ? `<div class="table-scroll"><table class="lineup-table"><thead><tr><th>Board</th><th>${esc(teamName(match.home))}</th><th>Result</th><th>${esc(teamName(match.away))}</th></tr></thead><tbody>${match.boards.map(board => `<tr><td>${board.board}</td><td>${playerLink(board.home_player)}<small>${board.home_color === 'black' ? 'Black · ' : board.home_color === 'white' ? 'White · ' : ''}${fmt(board.home_rating)} Elo</small></td><td>${esc(board.raw_score || 'Pending')}</td><td>${playerLink(board.away_player)}<small>${board.home_color === 'black' ? 'White · ' : board.home_color === 'white' ? 'Black · ' : ''}${fmt(board.away_rating)} Elo</small></td></tr>`).join('')}</tbody></table></div>` : empty('Individual results are not published yet. Lineups, start time and venue should be confirmed with the team captain.')}`;
     $('#matchDialog').showModal();
+}
+
+function showPlayer(id) {
+    const games = [];
+    let player;
+    [...data.matches].sort((a, b) => a.date.localeCompare(b.date) || a.round - b.round).forEach(match => {
+        match.boards.forEach(board => {
+            const side = board.home_player.id === id ? 'home' : board.away_player.id === id ? 'away' : null;
+            if (!side) return;
+            player = board[`${side}_player`];
+            const other = opposite(side), index = side === 'home' ? 0 : 1;
+            const color = !board.home_color ? '—' : side === 'home' ? board.home_color : board.home_color === 'white' ? 'black' : 'white';
+            games.push({ match, board, color, opponent: board[`${other}_player`],
+                opponentTeam: match[other], rating: board[`${side}_rating`], opponentRating: board[`${other}_rating`],
+                result: board.score ? resultText([board.score[index], board.score[1 - index]]) : board.raw_score || 'Pending' });
+        });
+    });
+    if (!player) return;
+    $('#playerTitle').textContent = player.name;
+    $('#playerContent').innerHTML = `<p class="dialog-meta">${esc(data.name)} · ${esc(data.season)} · ${games.length} recorded games</p><div class="table-scroll"><table class="player-games"><thead><tr><th>Date</th><th>Board</th><th>Color</th><th>Opponent</th><th>Rating</th><th>Opponent rating</th><th>Result</th></tr></thead><tbody>${games.map(game => `<tr><td>${date(game.match.date)}<small>Round ${game.match.round}</small></td><td>${game.board.board}</td><td>${game.color === '—' ? '—' : game.color === 'white' ? 'White' : 'Black'}</td><td>${playerLink(game.opponent)}<small>${esc(teamName(game.opponentTeam))}</small></td><td>${fmt(game.rating)}</td><td>${fmt(game.opponentRating)}</td><td><button type="button" class="team-link" data-match="${esc(game.match.id)}">${esc(game.result)}${game.board.forfeit ? ' (forfeit)' : ''} ↗</button></td></tr>`).join('')}</tbody></table></div><p class="table-note">Results are shown from this player’s side. ${source('players', player.id, 'Official player page')}</p>`;
+    if ($('#playerDialog').open) $('#playerDialog').close();
+    $('#playerDialog').showModal();
 }
 
 async function load() {
@@ -285,7 +327,6 @@ $('#teamOptions').addEventListener('click', event => {
     const option = event.target.closest('[data-team-option]');
     if (option) chooseTeam(option.dataset.teamOption);
 });
-$('#compareSelect').addEventListener('change', event => { compared = event.target.value; renderComparison(); });
 $('#performanceToggle').addEventListener('change', event => {
     $('#standings').classList.toggle('show-performance', event.target.checked);
     $('#performanceExplanation').hidden = !event.target.checked;
@@ -311,21 +352,32 @@ document.addEventListener('click', event => {
     if (!event.target.closest('.team-picker')) closeTeamPicker();
     const view = event.target.closest('[data-view]');
     if (view) setView(view.dataset.view);
+    const compareTeam = event.target.closest('[data-compare-team]');
+    if (compareTeam && compareTeam.dataset.compareTeam !== selected) {
+        const id = compareTeam.dataset.compareTeam;
+        const alreadyInComparison = Boolean(compareTeam.closest('#view-compare'));
+        chooseOpponent(compared === id && alreadyInComparison ? null : id);
+        if (!alreadyInComparison) {
+            setView('compare');
+            $('#comparisonTitle').focus({ preventScroll: true });
+            $('#tab-compare').scrollIntoView({ block: 'nearest' });
+        }
+    }
+    if (event.target.closest('[data-remove-comparison]')) {
+        chooseOpponent(null);
+        $('#comparisonTeams button')?.focus({ preventScroll: true });
+    }
+    const player = event.target.closest('[data-player]');
+    if (player) showPlayer(player.dataset.player);
     const teamButton = event.target.closest('[data-team]');
     if (teamButton) selectTeam(teamButton.dataset.team);
-    const prepare = event.target.closest('[data-prepare]');
-    if (prepare) {
-        compared = prepare.dataset.prepare;
-        $('#compareSelect').value = compared;
-        renderComparison();
-        setView('compare');
-        $('#compareSelect').focus({ preventScroll: true });
-    }
     const sort = event.target.closest('[data-sort]');
     if (sort) { sorting = { key: sort.dataset.sort, direction: sorting.key === sort.dataset.sort ? -sorting.direction : -1 }; renderStandings(); }
     const match = event.target.closest('[data-match]');
     if (match) showMatch(match.dataset.match);
 });
+$('#closePlayer').addEventListener('click', () => $('#playerDialog').close());
+$('#playerDialog').addEventListener('click', event => { if (event.target === $('#playerDialog')) { const rect = event.target.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) event.target.close(); } });
 $('#closeMatch').addEventListener('click', () => $('#matchDialog').close());
 $('#matchDialog').addEventListener('click', event => { if (event.target === $('#matchDialog')) { const rect = event.target.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) event.target.close(); } });
 setView(new URLSearchParams(location.search).get('view'));

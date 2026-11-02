@@ -9,13 +9,16 @@ Open [knsb.html](../knsb.html) through the same web server as ASV Stats.
 - [x] Switch directly between ASV teams and save favorites across groups.
 - [x] Save multiple favorite teams in the browser.
 - [x] Choose My team, Standings or Compare, with a shareable view URL.
-- [x] Expand the calendar and players only when needed.
+- [x] Keep the season calendar always visible; expand players when needed.
 - [x] Reveal performance metrics separately from the basic standings.
 - [x] See the next opponent, date, round and home/away status.
 - [x] Follow the complete season calendar and open individual encounters.
 - [x] Read the official standings and position history by round.
 - [x] Sort teams by points, average rating, opposition strength or performance against rating expectations.
 - [x] Compare any two teams, including their last published lineups by board.
+- [x] Click opponent names in standings or the calendar to open comparison; switch opponents in a stable list with visible selection marks.
+- [x] Change or remove the compared opponent and share the comparison URL.
+- [x] Open a player’s results inside the dashboard from any lineup or player list.
 - [x] See player names, ratings at each encounter, results and colors.
 - [x] Identify frequent players, their average board and points scored.
 - [x] See the sample size, source links and last update time.
