@@ -8,6 +8,9 @@ Open [knsb.html](../knsb.html) through the same web server as ASV Stats.
 - [x] Download only the selected group; reuse it when switching between its teams.
 - [x] Switch directly between ASV teams and save favorites across groups.
 - [x] Save multiple favorite teams in the browser.
+- [x] Choose My team, Standings or Compare, with a shareable view URL.
+- [x] Expand the calendar and players only when needed.
+- [x] Reveal performance metrics separately from the basic standings.
 - [x] See the next opponent, date, round and home/away status.
 - [x] Follow the complete season calendar and open individual encounters.
 - [x] Read the official standings and position history by round.

@@ -25,6 +25,20 @@ const teamName = id => team(id)?.name || 'Unknown team';
 const empty = message => `<p class="empty">${esc(message)}</p>`;
 const catalogTeam = id => catalog?.teams.find(item => item.id === id);
 
+function setView(view, focus = false) {
+    if (!['team', 'standings', 'compare'].includes(view)) view = 'team';
+    document.querySelectorAll('[data-view]').forEach(tab => {
+        const active = tab.dataset.view === view;
+        tab.setAttribute('aria-selected', String(active));
+        tab.tabIndex = active ? 0 : -1;
+        document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+        if (active && focus) tab.focus();
+    });
+    const url = new URL(location.href);
+    if (view === 'team') url.searchParams.delete('view'); else url.searchParams.set('view', view);
+    history.replaceState(null, '', url);
+}
+
 let activeOption = -1;
 function setActiveOption(index) {
     const options = [...document.querySelectorAll('[data-team-option]')];
@@ -81,7 +95,8 @@ function renderFavorites() {
 function renderOverview() {
     const current = team(selected), stats = metrics.get(selected), next = nextMatch(data, selected, today);
     const history = rankHistory(data, selected);
-    $('#teamOverview').innerHTML = `<div class="overview"><div class="team-summary"><h2>${esc(current.name)}</h2><p>${esc(data.name)} · ${esc(data.season)}</p><div class="team-numbers"><div><strong>${current.position}<small> / ${data.teams.length}</small></strong><span>Official position</span></div><div><strong>${fmt(current.match_points)}</strong><span>Match points</span></div><div><strong>${fmt(stats.rating)}</strong><span>Average rating</span></div></div><div class="position-history"><span>Position by round</span>${history.map(entry => `<span class="position-step">R${entry.round}: <b>${entry.position}</b></span>`).join('') || 'No results yet'}</div></div><div class="next-match">${next ? `<span class="fixture-label">Next encounter · Round ${next.round}</span><h3>${esc(teamName(next[opposite(teamSide(next, selected))]))}</h3><p>${date(next.date)} ${next.date.slice(0, 4)} · ${next.home === selected ? 'Home' : 'Away'}<br>Time and venue: check with your team captain.</p><button class="primary-button" type="button" data-prepare="${esc(next[opposite(teamSide(next, selected))])}">Compare with next opponent</button>` : '<span class="fixture-label">Season calendar</span><h3>No upcoming encounter</h3><p>Check the calendar below for results and any outstanding encounters.</p>'}</div></div>`;
+    const latest = teamMatches(data, selected).filter(match => match.status === 'completed').slice(-1)[0];
+    $('#teamOverview').innerHTML = `<div class="overview"><div class="team-summary"><h2>${esc(current.name)}</h2><p>${esc(data.name)} · ${esc(data.season)}</p><div class="team-numbers"><div><strong>${current.position}<small> / ${data.teams.length}</small></strong><span>Official position</span></div><div><strong>${fmt(current.match_points)}</strong><span>Match points</span></div><div><strong>${fmt(stats.rating)}</strong><span>Average rating</span></div></div><div class="position-history"><span>Position by round</span>${history.map(entry => `<span class="position-step">R${entry.round}: <b>${entry.position}</b></span>`).join('') || 'No results yet'}</div>${latest ? `<div class="latest-result"><span>Last encounter · ${date(latest.date)}</span><button type="button" class="team-link" data-match="${esc(latest.id)}">${esc(teamName(latest.home))} <b>${resultText(latest.score)}</b> ${esc(teamName(latest.away))} ↗</button></div>` : ''}</div><div class="next-match">${next ? `<span class="fixture-label">Next encounter · Round ${next.round}</span><h3>${esc(teamName(next[opposite(teamSide(next, selected))]))}</h3><p>${date(next.date)} ${next.date.slice(0, 4)} · ${next.home === selected ? 'Home' : 'Away'}<br>Time and venue: check with your team captain.</p><button class="primary-button" type="button" data-prepare="${esc(next[opposite(teamSide(next, selected))])}">Prepare encounter</button>` : '<span class="fixture-label">Season calendar</span><h3>No upcoming encounter</h3><p>Open your season below for results and any outstanding encounters.</p>'}</div></div>`;
 }
 
 function renderStandings() {
@@ -119,6 +134,7 @@ function renderComparison() {
 }
 
 function renderCalendar() {
+    $('#calendarCount').textContent = `${teamMatches(data, selected).length} encounters`;
     const upcoming = nextMatch(data, selected, today);
     $('#calendar').innerHTML = teamMatches(data, selected).map(match => {
         const side = teamSide(match, selected), index = side === 'home' ? 0 : 1;
@@ -130,6 +146,7 @@ function renderCalendar() {
 
 function renderPlayers() {
     const players = metrics.get(selected).players;
+    $('#playersCount').textContent = `${players.length} players`;
     $('#players').innerHTML = players.length ? `<div class="table-scroll"><table class="players-table"><thead><tr><th>Player</th><th>Rating¹</th><th>Games</th><th>Points</th><th>Avg. board</th></tr></thead><tbody>${players.map(player => `<tr><td>${source('players', player.id, player.name)}</td><td>${fmt(player.rating)}</td><td>${player.games}</td><td>${fmt(player.points, 1)}</td><td>${fmt(player.boards.reduce((sum, board) => sum + board, 0) / player.boards.length, 1)}</td></tr>`).join('')}</tbody></table></div><p class="table-note">¹ Latest rating recorded in this player’s encounters. Ordered by appearances. Walkovers are excluded.</p>` : empty('Players will appear here once individual results are published.');
 }
 
@@ -260,6 +277,22 @@ $('#teamOptions').addEventListener('click', event => {
     if (option) chooseTeam(option.dataset.teamOption);
 });
 $('#compareSelect').addEventListener('change', event => { compared = event.target.value; renderComparison(); });
+$('#performanceToggle').addEventListener('change', event => {
+    $('#standings').classList.toggle('show-performance', event.target.checked);
+    $('#performanceExplanation').hidden = !event.target.checked;
+    if (!event.target.checked && ['rating', 'opposition', 'delta'].includes(sorting.key)) {
+        sorting = { key: 'position', direction: 1 };
+        renderStandings();
+    }
+});
+document.querySelectorAll('[data-view]').forEach(tab => tab.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const tabs = [...document.querySelectorAll('[data-view]')];
+    const index = tabs.indexOf(tab);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    setView(tabs[next].dataset.view, true);
+}));
 $('#favoriteButton').addEventListener('click', () => {
     favorites = favorites.includes(selected) ? favorites.filter(id => id !== selected) : [...favorites, selected];
     try { localStorage.setItem('asv-knsb-favorites', JSON.stringify(favorites)); } catch { /* Session favorites still work. */ }
@@ -267,6 +300,8 @@ $('#favoriteButton').addEventListener('click', () => {
 });
 document.addEventListener('click', event => {
     if (!event.target.closest('.team-picker')) closeTeamPicker();
+    const view = event.target.closest('[data-view]');
+    if (view) setView(view.dataset.view);
     const teamButton = event.target.closest('[data-team]');
     if (teamButton) selectTeam(teamButton.dataset.team);
     const prepare = event.target.closest('[data-prepare]');
@@ -274,7 +309,7 @@ document.addEventListener('click', event => {
         compared = prepare.dataset.prepare;
         $('#compareSelect').value = compared;
         renderComparison();
-        $('#comparisonTitle').scrollIntoView({ behavior: 'instant', block: 'start' });
+        setView('compare');
         $('#compareSelect').focus({ preventScroll: true });
     }
     const sort = event.target.closest('[data-sort]');
@@ -284,4 +319,5 @@ document.addEventListener('click', event => {
 });
 $('#closeMatch').addEventListener('click', () => $('#matchDialog').close());
 $('#matchDialog').addEventListener('click', event => { if (event.target === $('#matchDialog')) { const rect = event.target.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) event.target.close(); } });
+setView(new URLSearchParams(location.search).get('view'));
 load();
