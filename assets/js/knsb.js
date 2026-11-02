@@ -1,4 +1,4 @@
-import { statsFor, nextMatch, teamMatches, teamSide, opposite, lastLineup, rankHistory } from './knsb-model.js?v=1';
+import { average, validRating, statsFor, nextMatch, teamMatches, teamSide, opposite, lastLineup, rankHistory } from './knsb-model.js?v=1';
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -125,21 +125,25 @@ function renderComparison() {
         $('#comparison').innerHTML = empty('Click a team name on the left to compare it with your team.');
         return;
     }
-    const a = metrics.get(selected), b = metrics.get(compared);
-    const lineupA = lastLineup(data, selected), lineupB = lastLineup(data, compared);
+    $('#comparison').innerHTML = teamComparisonHTML(selected, compared);
+}
+
+function teamComparisonHTML(firstId, secondId, reference = false) {
+    const a = metrics.get(firstId), b = metrics.get(secondId);
+    const lineupA = lastLineup(data, firstId), lineupB = lastLineup(data, secondId);
     const metricsHTML = [['Average rating', fmt(a.rating), fmt(b.rating)], ['Opponents faced · avg. rating', fmt(a.opposition), fmt(b.opposition)]]
         .map(([label, av, bv]) => `<div class="metric"><h3>${esc(label)}</h3><div class="metric-pair"><strong>${av}</strong><span>/</span><span>${bv}</span></div></div>`).join('');
     let lineups = empty('Both teams need a completed encounter before their last lineups can be compared.');
     if (lineupA && lineupB) {
         const size = Math.max(lineupA.players.length, lineupB.players.length);
-        lineups = `<h3>Last lineups, board by board</h3><p class="table-note">${esc(teamName(selected))}: ${date(lineupA.match.date)} · ${esc(teamName(compared))}: ${date(lineupB.match.date)}. Future lineups are not confirmed.</p><div class="table-scroll"><table class="lineup-table"><thead><tr><th>Board</th><th>${esc(teamName(selected))}</th><th>Rating gap</th><th>${esc(teamName(compared))}</th></tr></thead><tbody>${Array.from({ length: size }, (_, index) => {
+        lineups = `<h3>${reference ? 'Latest available lineups' : 'Last lineups, board by board'}</h3><p class="table-note">${esc(teamName(firstId))}: ${date(lineupA.match.date)} · ${esc(teamName(secondId))}: ${date(lineupB.match.date)}. ${reference ? 'From the latest completed encounters.' : 'Future lineups are not confirmed.'}</p><div class="table-scroll"><table class="lineup-table"><thead><tr><th>Board</th><th>${esc(teamName(firstId))}</th><th>Rating gap</th><th>${esc(teamName(secondId))}</th></tr></thead><tbody>${Array.from({ length: size }, (_, index) => {
             const left = lineupA.players[index], right = lineupB.players[index];
             const gap = left?.rating > 0 && right?.rating > 0 ? left.rating - right.rating : null;
             return `<tr><td>${index + 1}</td><td>${left ? playerLink(left) : '—'}<small>${fmt(left?.rating)} Elo</small></td><td class="${deltaClass(gap)}">${gap === null ? '—' : `${gap > 0 ? '+' : ''}${gap}`}<span class="rating-gap">left − right</span></td><td>${right ? playerLink(right) : '—'}<small>${fmt(right?.rating)} Elo</small></td></tr>`;
         }).join('')}</tbody></table></div>`;
     }
-    const meetings = data.matches.filter(m => m.status === 'completed' && [m.home, m.away].includes(selected) && [m.home, m.away].includes(compared));
-    $('#comparison').innerHTML = `<div class="comparison-metrics">${metricsHTML}</div><p class="insight">Based on ${a.played} and ${b.played} completed encounters, respectively.</p>${meetings.map(m => `<p>Head to head this season: <button type="button" class="team-link" data-match="${esc(m.id)}">${esc(teamName(m.home))} ${resultText(m.score)} ${esc(teamName(m.away))} ↗</button></p>`).join('')}${lineups}`;
+    const meetings = data.matches.filter(m => m.status === 'completed' && [m.home, m.away].includes(firstId) && [m.home, m.away].includes(secondId));
+    return `<div class="comparison-metrics">${metricsHTML}</div><p class="insight">Based on ${a.played} and ${b.played} completed encounters, respectively.</p>${meetings.map(m => `<p>Head to head this season: <button type="button" class="team-link" data-match="${esc(m.id)}">${esc(teamName(m.home))} ${resultText(m.score)} ${esc(teamName(m.away))} ↗</button></p>`).join('')}${lineups}`;
 }
 
 function renderComparisonTeams() {
@@ -168,13 +172,13 @@ function chooseOpponent(id) {
 function renderCalendar() {
     $('#calendarCount').textContent = `${teamMatches(data, selected).length} encounters`;
     const upcoming = nextMatch(data, selected, today);
-    $('#calendar').innerHTML = `<table class="calendar-table"><caption class="sr-only">Season schedule. Click an opponent to compare or a result to view the encounter.</caption><thead><tr><th scope="col">Round</th><th scope="col">Date</th><th scope="col">Opponent</th><th scope="col">Venue</th><th scope="col">Result</th></tr></thead><tbody>${teamMatches(data, selected).map(match => {
+    $('#calendar').innerHTML = `<table class="calendar-table"><caption class="sr-only">Season schedule. Click an opponent to compare or a result to view the encounter.</caption><thead><tr><th scope="col">Round</th><th scope="col">Date</th><th scope="col">Opponent</th><th scope="col">Venue</th><th scope="col">Encounter</th></tr></thead><tbody>${teamMatches(data, selected).map(match => {
         const side = teamSide(match, selected), index = side === 'home' ? 0 : 1;
         const scores = match.score ? [match.score[index], match.score[1 - index]] : null;
         const css = scores ? scores[0] > scores[1] ? 'positive' : scores[0] < scores[1] ? 'negative' : '' : '';
         const pending = match.status !== 'completed' && match.date < today;
         const dateLabel = `${date(match.date)}${match.date.slice(0, 4) !== today.slice(0, 4) ? ` ${match.date.slice(0, 4)}` : ''}`;
-        return `<tr class="fixture ${match.id === upcoming?.id ? 'next-fixture' : ''}"><td>${match.round}</td><td>${dateLabel}</td><td class="fixture-opponent"><button type="button" class="team-link" data-compare-team="${esc(match[opposite(side)])}" aria-pressed="${match[opposite(side)] === compared}">${esc(teamName(match[opposite(side)]))}</button>${match.id === upcoming?.id ? '<span class="next-label">Next</span>' : ''}</td><td>${side === 'home' ? 'Home' : 'Away'}</td><td><button type="button" data-match="${esc(match.id)}" aria-label="${esc(`Round ${match.round}, ${teamName(match[opposite(side)])}, ${resultText(scores)}; view encounter`)}"><span class="${css}">${scores ? resultText(scores) : pending ? 'Pending' : '—'}</span></button></td></tr>`;
+        return `<tr class="fixture ${match.id === upcoming?.id ? 'next-fixture' : ''}"><td>${match.round}</td><td>${dateLabel}</td><td class="fixture-opponent"><button type="button" class="team-link" data-compare-team="${esc(match[opposite(side)])}" aria-pressed="${match[opposite(side)] === compared}">${esc(teamName(match[opposite(side)]))}</button>${match.id === upcoming?.id ? '<span class="next-label">Next</span>' : ''}</td><td>${side === 'home' ? 'Home' : 'Away'}</td><td><button type="button" class="encounter-action" data-match="${esc(match.id)}" aria-label="${esc(`${scores ? 'View result and board comparison' : 'Compare teams'}: round ${match.round}, ${teamName(match[opposite(side)])}, ${scores ? resultText(scores) : pending ? 'result pending' : 'not played'}`)}">${scores ? `<span class="${css}">${resultText(scores)}</span><span class="encounter-cue">View ↗</span>` : '<span>Compare ↗</span>'}</button></td></tr>`;
     }).join('')}</tbody></table>`;
 }
 
@@ -254,7 +258,22 @@ function showMatch(id) {
     const match = data.matches.find(m => m.id === id);
     if (!match) return;
     $('#matchTitle').textContent = `${teamName(match.home)} ${match.score ? resultText(match.score) : 'vs'} ${teamName(match.away)}`;
-    $('#matchContent').innerHTML = `<p class="dialog-meta">Round ${match.round} · ${date(match.date)} ${match.date.slice(0, 4)} · ${source('pairings', match.id, 'Official encounter')}</p>${match.boards.length ? `<div class="table-scroll"><table class="lineup-table"><thead><tr><th>Board</th><th>${esc(teamName(match.home))}</th><th>Result</th><th>${esc(teamName(match.away))}</th></tr></thead><tbody>${match.boards.map(board => `<tr><td>${board.board}</td><td>${playerLink(board.home_player)}<small>${board.home_color === 'black' ? 'Black · ' : board.home_color === 'white' ? 'White · ' : ''}${fmt(board.home_rating)} Elo</small></td><td>${esc(board.raw_score || 'Pending')}</td><td>${playerLink(board.away_player)}<small>${board.home_color === 'black' ? 'White · ' : board.home_color === 'white' ? 'Black · ' : ''}${fmt(board.away_rating)} Elo</small></td></tr>`).join('')}</tbody></table></div>` : empty('Individual results are not published yet. Lineups, start time and venue should be confirmed with the team captain.')}`;
+    const metadata = `<p class="dialog-meta">Round ${match.round} · ${date(match.date)} ${match.date.slice(0, 4)} · ${source('pairings', match.id, 'Official encounter')}</p>`;
+    let content;
+    if (match.boards.length) {
+        const homeRating = average(match.boards.map(board => board.home_rating).filter(validRating));
+        const awayRating = average(match.boards.map(board => board.away_rating).filter(validRating));
+        content = `<div class="encounter-averages"><span>Lineup average rating</span><strong>${fmt(homeRating)}</strong><span>vs</span><strong>${fmt(awayRating)}</strong></div>${!match.score ? '<p class="encounter-status">Published boards · results incomplete</p>' : ''}<div class="table-scroll"><table class="lineup-table encounter-table"><thead><tr><th>Board</th><th>${esc(teamName(match.home))}</th><th>Result</th><th>${esc(teamName(match.away))}</th><th title="Home rating minus away rating">Rating gap</th></tr></thead><tbody>${match.boards.map(board => {
+            const gap = validRating(board.home_rating) && validRating(board.away_rating) ? board.home_rating - board.away_rating : null;
+            return `<tr><td>${board.board}</td><td>${playerLink(board.home_player)}<small>${board.home_color === 'black' ? 'Black · ' : board.home_color === 'white' ? 'White · ' : ''}${fmt(board.home_rating)} Elo</small></td><td>${esc(board.raw_score || 'Pending')}</td><td>${playerLink(board.away_player)}<small>${board.home_color === 'black' ? 'White · ' : board.home_color === 'white' ? 'Black · ' : ''}${fmt(board.away_rating)} Elo</small></td><td class="${deltaClass(gap)}">${gap === null ? '—' : `${gap > 0 ? '+' : ''}${gap}`}</td></tr>`;
+        }).join('')}</tbody></table></div>`;
+    } else if (match.score) {
+        content = empty('The team result is published; individual board results are not available yet.');
+    } else {
+        content = `<p class="encounter-status">${match.date < today ? 'Result not published' : 'Not played'} · reference lineups, not confirmed</p>${teamComparisonHTML(match.home, match.away, true)}`;
+    }
+    $('#matchContent').innerHTML = metadata + content;
+    if ($('#matchDialog').open) $('#matchDialog').close();
     $('#matchDialog').showModal();
 }
 

@@ -13,6 +13,8 @@ Open [knsb.html](../knsb.html) through the same web server as ASV Stats.
 - [x] Reveal performance metrics separately from the basic standings.
 - [x] See the next opponent, date, round and home/away status.
 - [x] Follow the complete season calendar and open individual encounters.
+- [x] Open played encounters with actual lineups, ratings, rating gaps and board results.
+- [x] Open upcoming encounters with a team comparison and clearly marked, unconfirmed reference lineups.
 - [x] Read the official standings and position history by round.
 - [x] Sort teams by points, average rating or opposition strength.
 - [x] Compare any two teams, including their last published lineups by board.
