@@ -3,7 +3,6 @@ import { statsFor, nextMatch, teamMatches, teamSide, opposite, lastLineup, rankH
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
 const fmt = (value, digits = 0) => Number.isFinite(value) ? value.toLocaleString('en-GB', { maximumFractionDigits: digits, minimumFractionDigits: digits }) : '—';
-const signed = value => Number.isFinite(value) ? `${value >= 0 ? '+' : '−'}${fmt(Math.abs(value), 1)}` : '—';
 const deltaClass = value => value > 0 ? 'positive' : value < 0 ? 'negative' : '';
 const date = value => new Date(`${value}T12:00:00`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
@@ -112,7 +111,7 @@ function renderStandings() {
         if (bv == null) return -1;
         return (av - bv) * sorting.direction || a.position - b.position;
     });
-    $('#standings tbody').innerHTML = rows.map(item => `<tr class="${item.id === selected ? 'selected-row' : item.id === compared ? 'compared-row' : ''}"><td>${item.position}</td><td><button type="button" class="team-link compare-team-choice" data-compare-team="${esc(item.id)}" ${item.id === selected ? 'disabled aria-label="Your selected team"' : `aria-pressed="${item.id === compared}" aria-label="Compare ${esc(item.name)} with ${esc(teamName(selected))}"`}>${favorites.includes(item.id) ? '★ ' : ''}${esc(item.name)}</button></td><td>${item.played}</td><td><b>${fmt(item.match_points)}</b></td><td>${fmt(item.board_points, 1)}</td><td>${fmt(item.rating)}</td><td>${fmt(item.opposition)}</td><td class="${deltaClass(item.delta)}" title="${item.ratedGames} games with two rated players">${signed(item.delta)}</td><td>${form(item.form)}</td></tr>`).join('');
+    $('#standings tbody').innerHTML = rows.map(item => `<tr class="${item.id === selected ? 'selected-row' : item.id === compared ? 'compared-row' : ''}"><td>${item.position}</td><td><button type="button" class="team-link compare-team-choice" data-compare-team="${esc(item.id)}" ${item.id === selected ? 'disabled aria-label="Your selected team"' : `aria-pressed="${item.id === compared}" aria-label="Compare ${esc(item.name)} with ${esc(teamName(selected))}"`}>${favorites.includes(item.id) ? '★ ' : ''}${esc(item.name)}</button></td><td>${item.played}</td><td><b>${fmt(item.match_points)}</b></td><td>${fmt(item.board_points, 1)}</td><td>${fmt(item.rating)}</td><td>${fmt(item.opposition)}</td><td>${form(item.form)}</td></tr>`).join('');
     document.querySelectorAll('#standings th').forEach(th => {
         const button = th.querySelector('[data-sort]');
         th.removeAttribute('aria-sort');
@@ -128,7 +127,7 @@ function renderComparison() {
     }
     const a = metrics.get(selected), b = metrics.get(compared);
     const lineupA = lastLineup(data, selected), lineupB = lastLineup(data, compared);
-    const metricsHTML = [['Average rating', fmt(a.rating), fmt(b.rating)], ['Opponents faced · avg. rating', fmt(a.opposition), fmt(b.opposition)], ['Points above expected', signed(a.delta), signed(b.delta)], ['Wins by one board point', fmt(a.closeWins), fmt(b.closeWins)]]
+    const metricsHTML = [['Average rating', fmt(a.rating), fmt(b.rating)], ['Opponents faced · avg. rating', fmt(a.opposition), fmt(b.opposition)]]
         .map(([label, av, bv]) => `<div class="metric"><h3>${esc(label)}</h3><div class="metric-pair"><strong>${av}</strong><span>/</span><span>${bv}</span></div></div>`).join('');
     let lineups = empty('Both teams need a completed encounter before their last lineups can be compared.');
     if (lineupA && lineupB) {
@@ -140,7 +139,7 @@ function renderComparison() {
         }).join('')}</tbody></table></div>`;
     }
     const meetings = data.matches.filter(m => m.status === 'completed' && [m.home, m.away].includes(selected) && [m.home, m.away].includes(compared));
-    $('#comparison').innerHTML = `<div class="comparison-metrics">${metricsHTML}</div><p class="insight">Based on ${a.played} and ${b.played} completed encounters; ${a.ratedGames} and ${b.ratedGames} rated games enter the expected-points comparison. A small sample can change quickly.</p>${meetings.map(m => `<p>Head to head this season: <button type="button" class="team-link" data-match="${esc(m.id)}">${esc(teamName(m.home))} ${resultText(m.score)} ${esc(teamName(m.away))} ↗</button></p>`).join('')}${lineups}`;
+    $('#comparison').innerHTML = `<div class="comparison-metrics">${metricsHTML}</div><p class="insight">Based on ${a.played} and ${b.played} completed encounters, respectively.</p>${meetings.map(m => `<p>Head to head this season: <button type="button" class="team-link" data-match="${esc(m.id)}">${esc(teamName(m.home))} ${resultText(m.score)} ${esc(teamName(m.away))} ↗</button></p>`).join('')}${lineups}`;
 }
 
 function renderComparisonTeams() {
@@ -169,12 +168,14 @@ function chooseOpponent(id) {
 function renderCalendar() {
     $('#calendarCount').textContent = `${teamMatches(data, selected).length} encounters`;
     const upcoming = nextMatch(data, selected, today);
-    $('#calendar').innerHTML = teamMatches(data, selected).map(match => {
+    $('#calendar').innerHTML = `<table class="calendar-table"><caption class="sr-only">Season schedule. Click an opponent to compare or a result to view the encounter.</caption><thead><tr><th scope="col">Round</th><th scope="col">Date</th><th scope="col">Opponent</th><th scope="col">Venue</th><th scope="col">Result</th></tr></thead><tbody>${teamMatches(data, selected).map(match => {
         const side = teamSide(match, selected), index = side === 'home' ? 0 : 1;
         const scores = match.score ? [match.score[index], match.score[1 - index]] : null;
         const css = scores ? scores[0] > scores[1] ? 'positive' : scores[0] < scores[1] ? 'negative' : '' : '';
-        return `<div class="fixture ${match.id === upcoming?.id ? 'next-fixture' : ''}"><div class="fixture-date">${date(match.date)}<small>Round ${match.round}</small></div><div class="fixture-opponent"><button type="button" class="team-link" data-compare-team="${esc(match[opposite(side)])}" aria-pressed="${match[opposite(side)] === compared}">${esc(teamName(match[opposite(side)]))}</button><small>${side === 'home' ? 'Home' : 'Away'}${match.id === upcoming?.id ? ' · Up next' : ''}${match.status !== 'completed' && match.date < today ? ' · Result pending' : ''}</small></div><button type="button" data-match="${esc(match.id)}" aria-label="${esc(`Round ${match.round}, ${teamName(match[opposite(side)])}, ${resultText(scores)}; view encounter`)}"><span class="${css}">${scores ? resultText(scores) : 'Details'}</span></button></div>`;
-    }).join('');
+        const pending = match.status !== 'completed' && match.date < today;
+        const dateLabel = `${date(match.date)}${match.date.slice(0, 4) !== today.slice(0, 4) ? ` ${match.date.slice(0, 4)}` : ''}`;
+        return `<tr class="fixture ${match.id === upcoming?.id ? 'next-fixture' : ''}"><td>${match.round}</td><td>${dateLabel}</td><td class="fixture-opponent"><button type="button" class="team-link" data-compare-team="${esc(match[opposite(side)])}" aria-pressed="${match[opposite(side)] === compared}">${esc(teamName(match[opposite(side)]))}</button>${match.id === upcoming?.id ? '<span class="next-label">Next</span>' : ''}</td><td>${side === 'home' ? 'Home' : 'Away'}</td><td><button type="button" data-match="${esc(match.id)}" aria-label="${esc(`Round ${match.round}, ${teamName(match[opposite(side)])}, ${resultText(scores)}; view encounter`)}"><span class="${css}">${scores ? resultText(scores) : pending ? 'Pending' : '—'}</span></button></td></tr>`;
+    }).join('')}</tbody></table>`;
 }
 
 function renderPlayers() {
@@ -342,7 +343,7 @@ $('#teamOptions').addEventListener('click', event => {
 $('#performanceToggle').addEventListener('change', event => {
     $('#standings').classList.toggle('show-performance', event.target.checked);
     $('#performanceExplanation').hidden = !event.target.checked;
-    if (!event.target.checked && ['rating', 'opposition', 'delta'].includes(sorting.key)) {
+    if (!event.target.checked && ['rating', 'opposition'].includes(sorting.key)) {
         sorting = { key: 'position', direction: 1 };
         renderStandings();
     }
