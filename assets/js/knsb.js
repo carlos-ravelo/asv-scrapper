@@ -55,6 +55,7 @@ function closeTeamPicker(restore = true) {
     $('#teamPopup').hidden = true;
     $('#teamSelect').setAttribute('aria-expanded', 'false');
     $('#teamSelect').removeAttribute('aria-activedescendant');
+    $('#teamPickerToggle').setAttribute('aria-label', 'Open team list');
     if (restore) $('#teamSelect').value = catalogTeam(selected)?.name || '';
 }
 
@@ -73,8 +74,11 @@ function renderTeamOptions(query = '') {
 
 function openTeamPicker() {
     if (!catalog) return;
+    $('#teamSelect').value = '';
+    $('#teamSelect').placeholder = 'Search teams…';
     $('#teamPopup').hidden = false;
     $('#teamSelect').setAttribute('aria-expanded', 'true');
+    $('#teamPickerToggle').setAttribute('aria-label', 'Close team list');
     renderTeamOptions();
 }
 
@@ -294,10 +298,17 @@ async function load() {
 }
 
 $('#teamSelect').addEventListener('focus', () => {
-    openTeamPicker();
-    $('#teamSelect').select();
+    if ($('#teamPopup').hidden) openTeamPicker();
 });
 $('#teamSelect').addEventListener('click', () => { if ($('#teamPopup').hidden) openTeamPicker(); });
+$('#teamPickerToggle').addEventListener('pointerdown', event => event.preventDefault());
+$('#teamPickerToggle').addEventListener('click', () => {
+    if (!$('#teamPopup').hidden) closeTeamPicker();
+    else {
+        openTeamPicker();
+        $('#teamSelect').focus({ preventScroll: true });
+    }
+});
 $('#teamSelect').addEventListener('input', event => {
     $('#teamPopup').hidden = false;
     $('#teamSelect').setAttribute('aria-expanded', 'true');
@@ -307,13 +318,14 @@ $('#teamSelect').addEventListener('keydown', event => {
     if (event.isComposing) return;
     if (event.key === 'Escape') { event.preventDefault(); closeTeamPicker(); }
     if (event.key === 'Tab') closeTeamPicker();
-    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
-        if (['Home', 'End'].includes(event.key) && $('#teamPopup').hidden) return;
+    if (event.altKey && event.key === 'ArrowUp') { event.preventDefault(); closeTeamPicker(); return; }
+    if (event.altKey && event.key === 'ArrowDown') { event.preventDefault(); openTeamPicker(); return; }
+    if (['ArrowDown', 'ArrowUp'].includes(event.key)) {
         event.preventDefault();
         const wasClosed = $('#teamPopup').hidden;
         if (wasClosed) openTeamPicker();
         const count = document.querySelectorAll('[data-team-option]').length;
-        setActiveOption(event.key === 'Home' ? 0 : event.key === 'End' ? count - 1 : wasClosed ? (event.key === 'ArrowUp' ? count - 1 : 0) : activeOption + (event.key === 'ArrowDown' ? 1 : -1));
+        setActiveOption(wasClosed ? (event.key === 'ArrowUp' ? count - 1 : 0) : activeOption + (event.key === 'ArrowDown' ? 1 : -1));
     }
     if (event.key === 'Enter' && !$('#teamPopup').hidden) {
         event.preventDefault();
@@ -369,7 +381,7 @@ document.addEventListener('click', event => {
     }
     const player = event.target.closest('[data-player]');
     if (player) showPlayer(player.dataset.player);
-    const teamButton = event.target.closest('[data-team]');
+    const teamButton = event.target.closest('button[data-team]');
     if (teamButton) selectTeam(teamButton.dataset.team);
     const sort = event.target.closest('[data-sort]');
     if (sort) { sorting = { key: sort.dataset.sort, direction: sorting.key === sort.dataset.sort ? -sorting.direction : -1 }; renderStandings(); }

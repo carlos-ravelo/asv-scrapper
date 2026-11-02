@@ -83,6 +83,26 @@ const WebSocket = require('ws');
         assert.equal(await evaluate('document.querySelectorAll("#calendar .fixture").length'), 9);
         assert.match(await evaluate('document.querySelector("#calendar .next-fixture").textContent'), /Almelo 2/);
         assert.deepEqual(groupRequests, ['/data/knsb/divisions/669.json'], 'Initial visit downloads only the selected group');
+        async function clickWithMouse(selector) {
+            const point = await evaluate(`(() => { const rect = document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect(); return { x: rect.left + Math.min(20, rect.width / 2), y: rect.top + rect.height / 2 }; })()`);
+            await send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 });
+            await send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 });
+        }
+        await clickWithMouse('#teamSelect');
+        assert.equal(await evaluate('document.querySelector("#teamSelect").value'), '', 'Opening starts a fresh query without deleting the selected team');
+        assert.equal(await evaluate('document.querySelectorAll("[data-team-option]").length'), 80);
+        await send('Input.insertText', { text: 'Hoogland 1' });
+        assert.equal(await evaluate('document.querySelectorAll("[data-team-option]").length'), 1, 'Typing immediately filters the complete list');
+        await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Home', code: 'Home', windowsVirtualKeyCode: 36, nativeVirtualKeyCode: 36 });
+        assert.equal(await evaluate('document.querySelector("#teamSelect").selectionStart'), 0, 'Text editing keys keep their native behavior');
+        await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape' });
+        assert.equal(await evaluate('document.querySelector("#teamSelect").value'), 'ASV 4', 'Cancelling preserves the committed selection');
+        await clickWithMouse('#teamPickerToggle');
+        assert.equal(await evaluate('document.querySelectorAll("[data-team-option]").length'), 80);
+        assert.equal(await evaluate('document.querySelector("#teamSelect").getAttribute("aria-expanded")'), 'true');
+        await clickWithMouse('#teamPickerToggle');
+        assert.equal(await evaluate('document.querySelector("#teamSelect").getAttribute("aria-expanded")'), 'false');
+        assert.deepEqual(groupRequests, ['/data/knsb/divisions/669.json'], 'Browsing options does not change the team or download data');
         async function openView(view) {
             await evaluate(`document.querySelector('#tab-${view}').click()`);
             assert.equal(await evaluate(`document.querySelector('#view-${view}').hidden`), false);
@@ -101,7 +121,7 @@ const WebSocket = require('ws');
             await evaluate(`document.querySelector('#teamSelect').focus(); document.querySelector('#teamSelect').click(); document.querySelector('#teamSelect').value = ''; document.querySelector('#teamSelect').dispatchEvent(new Event('input')); document.querySelector('[data-team-option="${id}"]').click()`);
             await waitFor(`${ready} && document.querySelector('#teamSelect').dataset.team === '${id}'`);
         }
-        await evaluate('document.querySelector("#teamSelect").focus()');
+        await clickWithMouse('#teamSelect');
         assert.equal(await evaluate('document.querySelector("#teamSelect").getAttribute("aria-expanded")'), 'true');
         assert.equal(await evaluate(`document.querySelectorAll('[data-team-option][data-asv="true"]').length`), 9);
         await evaluate('document.querySelector("#teamSelect").value="ASV 1"; document.querySelector("#teamSelect").dispatchEvent(new Event("input"))');

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Follow your KNSB team, prepare for the next round and compare the strength behind the standings.">
     <title>KNSB Teams · ASV Stats</title>
-    <link rel="stylesheet" href="assets/css/knsb.css?v=8">
+    <link rel="stylesheet" href="assets/css/knsb.css?v=9">
 </head>
 <body>
     <header class="site-header"><a class="brand" href="index.html"><span aria-hidden="true">♞</span> ASV Stats</a><nav aria-label="Main"><a href="index.html">Club players</a><a href="knsb.html" aria-current="page">KNSB teams</a></nav></header>
@@ -13,7 +13,7 @@
         <div class="page-heading"><div><h1>KNSB competition.</h1><p>Your team, the standings and the next encounter.</p></div><a id="divisionSource" href="https://knsb.netstand.nl/divisions/view/669" target="_blank" rel="noopener">Official competition ↗</a></div>
         <p id="loadStatus" role="status">Loading the competition…</p>
         <div id="dashboard" hidden>
-            <div class="team-toolbar"><div class="team-picker"><label for="teamSelect">Your team</label><div class="team-picker-field"><input id="teamSelect" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="teamOptions" autocomplete="off" placeholder="Search or select a team…"><span aria-hidden="true">⌄</span></div><div id="teamPopup" class="team-popup" hidden><div id="teamOptions" role="listbox" aria-label="Teams"></div><p id="searchStatus" role="status"></p></div></div><button id="favoriteButton" type="button" aria-pressed="false">☆ Save team</button><span id="competitionLabel"></span><span id="updatedAt"></span></div>
+            <div class="team-toolbar"><div class="team-picker"><label for="teamSelect">Your team</label><div class="team-picker-field"><input id="teamSelect" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="teamOptions" autocomplete="off" placeholder="Search or select a team…"><button type="button" id="teamPickerToggle" tabindex="-1" aria-label="Open team list" aria-controls="teamOptions">⌄</button></div><div id="teamPopup" class="team-popup" hidden><div id="teamOptions" role="listbox" aria-label="Teams"></div><p id="searchStatus" role="status"></p></div></div><button id="favoriteButton" type="button" aria-pressed="false">☆ Save team</button><span id="competitionLabel"></span><span id="updatedAt"></span></div>
             <div id="favorites" class="favorites" role="group" aria-label="Favorite teams"></div>
             <div id="groupContent" hidden>
             <div class="view-tabs" role="tablist" aria-label="Team views">
@@ -43,6 +43,6 @@
     <dialog id="matchDialog" aria-labelledby="matchTitle"><div class="dialog-header"><h2 id="matchTitle">Encounter</h2><button id="closeMatch" type="button" aria-label="Close encounter">×</button></div><div id="matchContent"></div></dialog>
     <dialog id="playerDialog" aria-labelledby="playerTitle"><div class="dialog-header"><h2 id="playerTitle">Player results</h2><button id="closePlayer" type="button" aria-label="Close player results">×</button></div><div id="playerContent"></div></dialog>
     <footer>ASV Stats <span>Public competition results from <a href="https://knsb.netstand.nl/" target="_blank" rel="noopener">KNSB / Netstand</a></span></footer>
-    <script type="module" src="assets/js/knsb.js?v=7"></script>
+    <script type="module" src="assets/js/knsb.js?v=9"></script>
 </body>
 </html>
