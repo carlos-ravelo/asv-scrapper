@@ -2,9 +2,11 @@
 
 Open [knsb.html](../knsb.html) through the same web server as ASV Stats.
 
-## First version · Klasse 4B, 2026–2027
+## ASV teams · 2026–2027
 
-- [x] Select any team in the group and share its URL.
+- [x] Search among teams in every group containing ASV 1–9 and share a team URL.
+- [x] Download only the selected group; reuse it when switching between its teams.
+- [x] Switch directly between ASV teams and save favorites across groups.
 - [x] Save multiple favorite teams in the browser.
 - [x] See the next opponent, date, round and home/away status.
 - [x] Follow the complete season calendar and open individual encounters.
@@ -19,7 +21,6 @@ Open [knsb.html](../knsb.html) through the same web server as ASV Stats.
 
 ## Next iterations
 
-- [ ] Add other ASV teams and their groups.
 - [ ] Switch seasons and compare historical encounters.
 - [ ] Show rating and lineup changes across rounds.
 - [ ] Compare the difficulty of the remaining schedule.
@@ -31,16 +32,16 @@ Open [knsb.html](../knsb.html) through the same web server as ASV Stats.
 
 ```bash
 python3 -m pip install -r requirements.txt
-python3 scripts/knsb_scraper.py
+python3 scripts/knsb_scraper.py --all-asv
 ```
 
 ```bash
 bash setup-cron.sh
 ```
 
-Cron runs both scrapers at 10:00 and 22:00 in the system time zone, with one lock and timestamped output in `cron_execution.log`. KNSB data is published atomically to `data/knsb.json`; changed previous versions are saved under `data/history/`. Historical snapshots describe what was published at each download, not when the games were actually played.
+Cron runs both scrapers at 10:00 and 22:00 in the system time zone, with one lock and timestamped output in `cron_execution.log`. KNSB data is published atomically per group to `data/knsb/divisions/<id>.json`; changed previous versions are saved under `data/knsb/divisions/history/`. The lightweight `data/knsb/catalog.json` lists the covered teams and groups. Historical snapshots describe what was published at each download, not when the games were actually played.
 
-The browser reads the saved JSON; it does not query Netstand on every visit. A failed or incomplete download leaves the last successful JSON available. The page flags data older than 36 hours.
+The browser first reads the small team catalog, then downloads only the selected group. Groups are reused during a visit; Netstand is queried only by the scraper. Discovery uses the configured competition (currently 69) and includes each group containing an ASV team once. To refresh one group, use `python3 scripts/knsb_scraper.py --division 669`. A failed or incomplete download leaves the last successful JSON available. The page flags data older than 36 hours.
 
 ## Checks
 

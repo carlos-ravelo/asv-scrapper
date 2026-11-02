@@ -6,7 +6,7 @@ const path = require('path');
     const root = path.resolve(__dirname, '..');
     const source = fs.readFileSync(path.join(root, 'assets/js/knsb-model.js'), 'utf8');
     const { statsFor, nextMatch, expectedScore, lastLineup, rankHistory } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
-    const data = JSON.parse(fs.readFileSync(path.join(root, 'data/knsb.json')));
+    const data = JSON.parse(fs.readFileSync(path.join(root, 'data/knsb/divisions/669.json')));
     assert.equal(data.matches.length, 45);
     assert.equal(data.matches.filter(m => m.status === 'completed').length, 15);
     const asv = statsFor(data, '7123');
@@ -33,6 +33,33 @@ const path = require('path');
         assert.equal(mp, team.match_points);
     }
     assert(Math.abs(data.teams.reduce((sum, team) => sum + statsFor(data, team.id).delta, 0)) < 1e-10);
+    const catalog = JSON.parse(fs.readFileSync(path.join(root, 'data/knsb/catalog.json')));
+    const asvTeams = catalog.teams.filter(team => team.is_asv).map(team => team.name).sort();
+    assert.deepEqual(asvTeams, Array.from({ length: 9 }, (_, index) => `ASV ${index + 1}`));
+    assert.equal(new Set(catalog.groups.map(group => group.id)).size, catalog.groups.length);
+    assert.equal(new Set(catalog.teams.map(team => team.id)).size, catalog.teams.length);
+    for (const group of catalog.groups) {
+        const dataset = JSON.parse(fs.readFileSync(path.join(root, `data/knsb/divisions/${group.id}.json`)));
+        assert.equal(dataset.division_id, group.id);
+        assert.equal(dataset.season, catalog.season);
+        assert.equal(dataset.matches.length, dataset.teams.length * (dataset.teams.length - 1) / 2);
+        assert.equal(new Set(dataset.matches.map(match => match.id)).size, dataset.matches.length);
+        assert.deepEqual(catalog.teams.filter(team => team.division_id === group.id).map(team => team.id).sort(), dataset.teams.map(team => team.id).sort());
+        for (const entry of dataset.teams) {
+            const completed = dataset.matches.filter(match => match.status === 'completed' && [match.home, match.away].includes(entry.id));
+            let boardPoints = 0, matchPoints = 0;
+            completed.forEach(match => {
+                const side = match.home === entry.id ? 0 : 1;
+                boardPoints += match.score[side];
+                matchPoints += match.score[side] > match.score[1 - side] ? 2 : match.score[side] === match.score[1 - side] ? 1 : 0;
+                if (match.boards.every(board => board.score)) assert.equal(match.boards.reduce((sum, board) => sum + board.score[side], 0), match.score[side]);
+            });
+            assert.equal(boardPoints, entry.board_points, `${entry.name} board points`);
+            assert.equal(matchPoints, entry.match_points, `${entry.name} match points`);
+            assert(Number.isFinite(statsFor(dataset, entry.id).played));
+        }
+        assert(Math.abs(dataset.teams.reduce((sum, team) => sum + (statsFor(dataset, team.id).delta || 0), 0)) < 1e-10);
+    }
     const sample = { teams: [{ id: 'a' }, { id: 'b' }], matches: [{ id: '1', home: 'a', away: 'b', date: '2026-01-01', round: 1, status: 'completed', score: [1, 0], boards: [{ board: 1, home_player: { id: 'p', name: 'Player' }, away_player: { id: null, name: 'Absent' }, home_rating: 1800, away_rating: 1800, score: [1, 0] }] }] };
     assert.equal(statsFor(sample, 'a').ratedGames, 0);
     assert.equal(statsFor(sample, 'a').delta, null);

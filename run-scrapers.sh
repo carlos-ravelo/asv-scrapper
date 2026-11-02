@@ -6,5 +6,5 @@ PYTHON_BIN="$PROJECT_DIR/.venv/bin/python"
 cd "$PROJECT_DIR" || exit 1
 status=0
 "$PYTHON_BIN" "$PROJECT_DIR/scripts/scrapper.py" || status=1
-"$PYTHON_BIN" "$PROJECT_DIR/scripts/knsb_scraper.py" || status=1
+"$PYTHON_BIN" "$PROJECT_DIR/scripts/knsb_scraper.py" --all-asv || status=1
 exit "$status"

@@ -38,6 +38,23 @@ def cells(row):
     return row.find_all(['td', 'th'], recursive=False)
 
 
+def parse_asv_groups(html):
+    content = BeautifulSoup(html, 'html.parser').select_one('#content')
+    groups = []
+    for heading in content.select('h1'):
+        link = heading.select_one('a[href*="/divisions/view/"]')
+        if not link:
+            continue
+        asv = [{'id': identity(a), 'name': a.get_text(' ', strip=True)}
+               for a in heading.find_next('table').select('a[href*="/teams/view/"]')
+               if re.fullmatch(r'ASV \d+', a.get_text(' ', strip=True))]
+        if asv:
+            groups.append({'id': identity(link), 'name': link.get_text(' ', strip=True), 'asv_teams': asv})
+    if not groups:
+        raise ValueError('No ASV teams found in competition')
+    return groups
+
+
 def parse_division(html):
     content = BeautifulSoup(html, 'html.parser').select_one('#content')
     if not content or not content.select_one('h1'):
@@ -97,8 +114,9 @@ def parse_round(html, round_info, pairings):
 
 def parse_boards(html, match):
     content = BeautifulSoup(html, 'html.parser').select_one('#content')
-    table = content.select_one('table')
-    if [identity(a) for a in table.select('thead a[href*="/teams/view/"]')] != [match['home'], match['away']]:
+    table = next((t for t in content.select('table')
+                  if [identity(a) for a in t.select('thead a[href*="/teams/view/"]')] == [match['home'], match['away']]), None)
+    if table is None:
         raise ValueError(f'Team mismatch in match {match["id"]}')
     boards = []
     for row in table.select('tbody tr'):
@@ -146,13 +164,20 @@ def scrape(division_id, output):
     logging.info('KNSB update started: division %s', division_id)
     division, pairings = parse_division(fetch(f'/divisions/view/{division_id}'))
     matches = []
+    round_pages = {}
     for round_info in division['rounds']:
-        matches.extend(parse_round(fetch(f'/rounds/view/{round_info["id"]}'), round_info, pairings))
+        html = fetch(f'/rounds/view/{round_info["id"]}')
+        round_pages[round_info['number']] = html
+        matches.extend(parse_round(html, round_info, pairings))
     if len(matches) != len(pairings) or len({m['id'] for m in matches}) != len(matches):
         raise ValueError('Incomplete or duplicate schedule; retaining previous data')
     for match in matches:
         if match['raw_score'] and match['raw_score'] != '-':
-            match['boards'] = parse_boards(fetch(match['source_url']), match)
+            html = round_pages[match['round']]
+            content = BeautifulSoup(html, 'html.parser')
+            embedded = any([identity(a) for a in table.select('thead a[href*="/teams/view/"]')] == [match['home'], match['away']]
+                           for table in content.select('table'))
+            match['boards'] = parse_boards(html if embedded else fetch(match['source_url']), match)
             if not match['boards']:
                 raise ValueError(f'Published result without boards: {match["id"]}')
         match['status'] = 'completed' if match['score'] is not None else 'partial' if match['boards'] else 'scheduled'
@@ -170,14 +195,53 @@ def scrape(division_id, output):
     logging.info('KNSB update complete: %s teams, %s matches', len(division['teams']), len(matches))
 
 
+def scrape_asv(competition_id, directory):
+    response = requests.get(f'{BASE}/scores/index/{competition_id}', timeout=30,
+                            headers={'User-Agent': 'ASV-Stats/1.0 (KNSB team dashboard)'})
+    response.raise_for_status()
+    groups = parse_asv_groups(response.text)
+    catalog = {'schema_version': 1, 'competition_id': competition_id, 'groups': [], 'teams': []}
+    failed = []
+    for group in groups:
+        output = directory / 'divisions' / f'{group["id"]}.json'
+        try:
+            scrape(group['id'], output)
+        except Exception:
+            logging.exception('Group %s failed; retaining last available data', group['id'])
+            failed.append(group['id'])
+        if not output.exists():
+            continue
+        dataset = json.loads(output.read_text())
+        if not catalog.get('season'):
+            catalog['season'] = dataset['season']
+        if dataset['season'] != catalog['season']:
+            raise ValueError('Mixed seasons in catalog; previous catalog retained')
+        catalog['groups'].append({**group, 'updated_at': dataset['updated_at']})
+        catalog['teams'].extend({'id': t['id'], 'name': t['name'], 'division_id': group['id'],
+                                 'is_asv': bool(re.fullmatch(r'ASV \d+', t['name']))} for t in dataset['teams'])
+    if not catalog['groups']:
+        raise ValueError('No available ASV groups; previous catalog retained')
+    catalog['updated_at'] = datetime.now(timezone.utc).isoformat()
+    atomic_json(directory / 'catalog.json', catalog)
+    logging.info('ASV catalog updated: %s groups, %s teams', len(catalog['groups']), len(catalog['teams']))
+    if failed:
+        raise RuntimeError(f'Groups could not be refreshed: {", ".join(failed)}')
+
+
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(message)s', datefmt='%Y-%m-%d %H:%M:%S %z')
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--division', default='669', type=lambda value: str(int(value)))
-    parser.add_argument('--output', type=Path, default=ROOT / 'data' / 'knsb.json')
+    parser.add_argument('--output', type=Path, help='Override the output path for a single group')
+    parser.add_argument('--all-asv', action='store_true', help='Refresh all groups containing ASV teams')
+    parser.add_argument('--competition', default='69', type=lambda value: str(int(value)))
+    parser.add_argument('--directory', type=Path, default=ROOT / 'data' / 'knsb')
     args = parser.parse_args()
     try:
-        scrape(args.division, args.output)
+        if args.all_asv:
+            scrape_asv(args.competition, args.directory)
+        else:
+            scrape(args.division, args.output or args.directory / 'divisions' / f'{args.division}.json')
     except Exception:
         logging.exception('KNSB update failed; previous data retained')
         raise SystemExit(1)

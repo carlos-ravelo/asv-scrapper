@@ -1,0 +1,589 @@
+{
+  "schema_version": 1,
+  "competition_id": "69",
+  "groups": [
+    {
+      "id": "660",
+      "name": "Klasse 2B",
+      "asv_teams": [
+        {
+          "id": "7023",
+          "name": "ASV 1"
+        }
+      ],
+      "updated_at": "2026-11-02T14:42:50.398784+00:00"
+    },
+    {
+      "id": "663",
+      "name": "Klasse 3B",
+      "asv_teams": [
+        {
+          "id": "7053",
+          "name": "ASV 2"
+        }
+      ],
+      "updated_at": "2026-11-02T14:43:02.701601+00:00"
+    },
+    {
+      "id": "664",
+      "name": "Klasse 3C",
+      "asv_teams": [
+        {
+          "id": "7063",
+          "name": "ASV 3"
+        }
+      ],
+      "updated_at": "2026-11-02T14:43:15.214205+00:00"
+    },
+    {
+      "id": "669",
+      "name": "Klasse 4B",
+      "asv_teams": [
+        {
+          "id": "7123",
+          "name": "ASV 4"
+        }
+      ],
+      "updated_at": "2026-11-02T14:43:27.365904+00:00"
+    },
+    {
+      "id": "678",
+      "name": "Klasse 5B",
+      "asv_teams": [
+        {
+          "id": "7209",
+          "name": "ASV 5"
+        }
+      ],
+      "updated_at": "2026-11-02T14:43:36.274560+00:00"
+    },
+    {
+      "id": "680",
+      "name": "Klasse 5D",
+      "asv_teams": [
+        {
+          "id": "7225",
+          "name": "ASV 6"
+        }
+      ],
+      "updated_at": "2026-11-02T14:43:45.636459+00:00"
+    },
+    {
+      "id": "690",
+      "name": "Klasse 6B",
+      "asv_teams": [
+        {
+          "id": "7304",
+          "name": "ASV 7"
+        }
+      ],
+      "updated_at": "2026-11-02T14:43:54.402739+00:00"
+    },
+    {
+      "id": "701",
+      "name": "Klasse 7B",
+      "asv_teams": [
+        {
+          "id": "7393",
+          "name": "ASV 9"
+        }
+      ],
+      "updated_at": "2026-11-02T14:44:03.832331+00:00"
+    },
+    {
+      "id": "702",
+      "name": "Klasse 7C",
+      "asv_teams": [
+        {
+          "id": "7401",
+          "name": "ASV 8"
+        }
+      ],
+      "updated_at": "2026-11-02T14:44:13.584734+00:00"
+    }
+  ],
+  "teams": [
+    {
+      "id": "7020",
+      "name": "Apeldoorn 2",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7026",
+      "name": "Blerick 1",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7019",
+      "name": "Maastricht 1",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7021",
+      "name": "BSV Bennekom 1",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7024",
+      "name": "KiNG 1",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7017",
+      "name": "Zuid Limburg 2",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7023",
+      "name": "ASV 1",
+      "division_id": "660",
+      "is_asv": true
+    },
+    {
+      "id": "7022",
+      "name": "BSG 1",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7018",
+      "name": "Paul Keres 3",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7025",
+      "name": "En Passant 1",
+      "division_id": "660",
+      "is_asv": false
+    },
+    {
+      "id": "7054",
+      "name": "Arnhemse Schaakacademie 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7055",
+      "name": "Laurierboom-Gambiet 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7048",
+      "name": "WSG Winterswijk 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7056",
+      "name": "PSV DoDO 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7053",
+      "name": "ASV 2",
+      "division_id": "663",
+      "is_asv": true
+    },
+    {
+      "id": "7052",
+      "name": "ASC 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7047",
+      "name": "Amersfoort 2",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7050",
+      "name": "Apeldoorn 3",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7051",
+      "name": "Zevenaar 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7049",
+      "name": "PION/Mook combinatie 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7057",
+      "name": "Amersfoort 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7064",
+      "name": "Moira-Domtoren 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7062",
+      "name": "Oud Zuylen Utrecht 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7065",
+      "name": "Rijswijk 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7063",
+      "name": "ASV 3",
+      "division_id": "664",
+      "is_asv": true
+    },
+    {
+      "id": "7059",
+      "name": "Leiderdorp 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7058",
+      "name": "Paul Keres 4",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7060",
+      "name": "Magnus Leidsche Rijn 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7061",
+      "name": "Fischer Z 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7066",
+      "name": "Almere 1",
+      "division_id": "664",
+      "is_asv": false
+    },
+    {
+      "id": "7117",
+      "name": "Lonneker 1",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7126",
+      "name": "Hoogland 1",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7124",
+      "name": "Almelo 2",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7125",
+      "name": "Edese Schaak Combinatie 1",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7123",
+      "name": "ASV 4",
+      "division_id": "669",
+      "is_asv": true
+    },
+    {
+      "id": "7118",
+      "name": "WSG Winterswijk 2",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7119",
+      "name": "ENO 1",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7122",
+      "name": "SG Max Euwe 4",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7120",
+      "name": "Doetinchem 1",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7121",
+      "name": "Wageningen 3",
+      "division_id": "669",
+      "is_asv": false
+    },
+    {
+      "id": "7208",
+      "name": "Zutphen 1",
+      "division_id": "678",
+      "is_asv": false
+    },
+    {
+      "id": "7207",
+      "name": "DSG Pallas 2",
+      "division_id": "678",
+      "is_asv": false
+    },
+    {
+      "id": "7212",
+      "name": "Borne 1",
+      "division_id": "678",
+      "is_asv": false
+    },
+    {
+      "id": "7206",
+      "name": "Veenendaal 3",
+      "division_id": "678",
+      "is_asv": false
+    },
+    {
+      "id": "7211",
+      "name": "Hardenberg 2",
+      "division_id": "678",
+      "is_asv": false
+    },
+    {
+      "id": "7209",
+      "name": "ASV 5",
+      "division_id": "678",
+      "is_asv": true
+    },
+    {
+      "id": "7205",
+      "name": "De Zeven Pionnen 1",
+      "division_id": "678",
+      "is_asv": false
+    },
+    {
+      "id": "7210",
+      "name": "Almelo 3",
+      "division_id": "678",
+      "is_asv": false
+    },
+    {
+      "id": "7228",
+      "name": "De Rode Loper 2",
+      "division_id": "680",
+      "is_asv": false
+    },
+    {
+      "id": "7224",
+      "name": "De Kentering 1",
+      "division_id": "680",
+      "is_asv": false
+    },
+    {
+      "id": "7221",
+      "name": "Zeist 1",
+      "division_id": "680",
+      "is_asv": false
+    },
+    {
+      "id": "7227",
+      "name": "De Vughtse Toren 1",
+      "division_id": "680",
+      "is_asv": false
+    },
+    {
+      "id": "7223",
+      "name": "De Stukkenjagers 5",
+      "division_id": "680",
+      "is_asv": false
+    },
+    {
+      "id": "7222",
+      "name": "Oisterwijk/Oude Toren Combinatie 1",
+      "division_id": "680",
+      "is_asv": false
+    },
+    {
+      "id": "7226",
+      "name": "Moira-Domtoren 3",
+      "division_id": "680",
+      "is_asv": false
+    },
+    {
+      "id": "7225",
+      "name": "ASV 6",
+      "division_id": "680",
+      "is_asv": true
+    },
+    {
+      "id": "7306",
+      "name": "Arnhemse Schaakacademie 3",
+      "division_id": "690",
+      "is_asv": false
+    },
+    {
+      "id": "7302",
+      "name": "Rijssen 1",
+      "division_id": "690",
+      "is_asv": false
+    },
+    {
+      "id": "7308",
+      "name": "Lonneker/Park Stokhorst 2",
+      "division_id": "690",
+      "is_asv": false
+    },
+    {
+      "id": "7304",
+      "name": "ASV 7",
+      "division_id": "690",
+      "is_asv": true
+    },
+    {
+      "id": "7307",
+      "name": "Drienerlo 1",
+      "division_id": "690",
+      "is_asv": false
+    },
+    {
+      "id": "7305",
+      "name": "ZSG 2",
+      "division_id": "690",
+      "is_asv": false
+    },
+    {
+      "id": "7301",
+      "name": "WSG Winterswijk 3",
+      "division_id": "690",
+      "is_asv": false
+    },
+    {
+      "id": "7303",
+      "name": "Apeldoorn 5",
+      "division_id": "690",
+      "is_asv": false
+    },
+    {
+      "id": "7391",
+      "name": "DSG Pallas 3",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
+      "id": "7396",
+      "name": "Hoogland 2",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
+      "id": "7389",
+      "name": "Almere 6",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
+      "id": "7390",
+      "name": "Veenendaal 4",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
+      "id": "7393",
+      "name": "ASV 9",
+      "division_id": "701",
+      "is_asv": true
+    },
+    {
+      "id": "7392",
+      "name": "SG Max Euwe 5",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
+      "id": "7394",
+      "name": "Almelo 4",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
+      "id": "7395",
+      "name": "Edese Schaak Combinatie 4",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
+      "id": "7401",
+      "name": "ASV 8",
+      "division_id": "702",
+      "is_asv": true
+    },
+    {
+      "id": "7397",
+      "name": "SMB 3",
+      "division_id": "702",
+      "is_asv": false
+    },
+    {
+      "id": "7399",
+      "name": "Tussen de Torens 2",
+      "division_id": "702",
+      "is_asv": false
+    },
+    {
+      "id": "7398",
+      "name": "PION/Mook combinatie 3",
+      "division_id": "702",
+      "is_asv": false
+    },
+    {
+      "id": "7477",
+      "name": "Zutphen 2",
+      "division_id": "702",
+      "is_asv": false
+    },
+    {
+      "id": "7402",
+      "name": "Wageningen 5",
+      "division_id": "702",
+      "is_asv": false
+    },
+    {
+      "id": "7400",
+      "name": "Apeldoorn 6",
+      "division_id": "702",
+      "is_asv": false
+    },
+    {
+      "id": "7404",
+      "name": "HMC Den Bosch 6",
+      "division_id": "702",
+      "is_asv": false
+    }
+  ],
+  "season": "KNSB competitie 2026-2027",
+  "updated_at": "2026-11-02T14:44:13.589317+00:00"
+}

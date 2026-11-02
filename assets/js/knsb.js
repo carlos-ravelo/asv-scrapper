@@ -11,7 +11,9 @@ const sourceURL = (kind, id) => /^\d+$/.test(String(id)) ? `https://knsb.netstan
 const source = (kind, id, text) => `<a href="${sourceURL(kind, id)}" target="_blank" rel="noopener">${esc(text)} ↗</a>`;
 const resultText = scores => scores ? scores.map(value => fmt(value, value % 1 ? 1 : 0)).join(' – ') : 'Pending';
 const form = values => `<div class="form" aria-label="Form: ${esc(values.join(', ') || 'no results')}">${values.map(value => `<span class="${value === 'W' ? 'win' : value === 'L' ? 'loss' : 'draw'}" title="${value === 'W' ? 'Win' : value === 'L' ? 'Loss' : 'Draw'}">${value}</span>`).join('')}</div>`;
-let data, selected, compared, metrics;
+let data, selected, compared, metrics, catalog;
+let loadSequence = 0;
+const groupCache = new Map();
 let favorites = [];
 let sorting = { key: 'position', direction: 1 };
 try {
@@ -21,12 +23,31 @@ try {
 const team = id => data.teams.find(item => item.id === id);
 const teamName = id => team(id)?.name || 'Unknown team';
 const empty = message => `<p class="empty">${esc(message)}</p>`;
+const catalogTeam = id => catalog?.teams.find(item => item.id === id);
+
+function renderTeamOptions() {
+    const query = $('#teamSearch').value.trim().toLocaleLowerCase();
+    const matches = catalog.teams.filter(t => t.name.toLocaleLowerCase().includes(query));
+    const asv = matches.filter(t => t.is_asv).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }));
+    const option = t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`;
+    const groups = catalog.groups.map(g => {
+        const others = matches.filter(t => !t.is_asv && t.division_id === g.id);
+        return others.length ? `<optgroup label="${esc(g.name)}">${others.map(option).join('')}</optgroup>` : '';
+    }).join('');
+    const hasSelected = matches.some(t => t.id === selected);
+    $('#teamSelect').innerHTML = `${!hasSelected ? '<option value="" disabled selected>Select a team…</option>' : ''}${asv.length ? `<optgroup label="ASV teams">${asv.map(option).join('')}</optgroup>` : ''}${groups}`;
+    $('#teamSelect').disabled = !matches.length;
+    if (hasSelected) $('#teamSelect').value = selected;
+    $('#searchStatus').textContent = matches.length ? `${matches.length} teams available across ${catalog.groups.length} groups with ASV teams.` : 'No teams found. Try a different name.';
+}
 
 function renderFavorites() {
     const saved = favorites.includes(selected);
     $('#favoriteButton').textContent = saved ? '★ Saved team' : '☆ Save team';
     $('#favoriteButton').setAttribute('aria-pressed', String(saved));
-    $('#favorites').innerHTML = favorites.filter(id => team(id)).map(id => `<button type="button" data-team="${esc(id)}" aria-pressed="${id === selected}">★ ${esc(teamName(id))}</button>`).join('');
+    $('#favorites').innerHTML = favorites.filter(id => catalogTeam(id)).map(id => `<button type="button" data-team="${esc(id)}" aria-pressed="${id === selected}">★ ${esc(catalogTeam(id).name)}</button>`).join('');
+    $('#asvTeams').innerHTML = catalog.teams.filter(t => t.is_asv).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }))
+        .map(t => `<button type="button" data-team="${esc(t.id)}" aria-pressed="${t.id === selected}">${esc(t.name)}</button>`).join('');
 }
 
 function renderOverview() {
@@ -84,12 +105,12 @@ function renderPlayers() {
     $('#players').innerHTML = players.length ? `<div class="table-scroll"><table class="players-table"><thead><tr><th>Player</th><th>Rating¹</th><th>Games</th><th>Points</th><th>Avg. board</th></tr></thead><tbody>${players.map(player => `<tr><td>${source('players', player.id, player.name)}</td><td>${fmt(player.rating)}</td><td>${player.games}</td><td>${fmt(player.points, 1)}</td><td>${fmt(player.boards.reduce((sum, board) => sum + board, 0) / player.boards.length, 1)}</td></tr>`).join('')}</tbody></table></div><p class="table-note">¹ Latest rating recorded in this player’s encounters. Ordered by appearances. Walkovers are excluded.</p>` : empty('Players will appear here once individual results are published.');
 }
 
-function selectTeam(id) {
-    if (!team(id)) return;
+function applyTeam(id) {
     selected = id;
     const next = nextMatch(data, selected, today);
     compared = next ? next[opposite(teamSide(next, selected))] : data.teams.find(t => t.id !== selected)?.id;
-    $('#teamSelect').value = selected;
+    $('#teamSearch').value = '';
+    renderTeamOptions();
     $('#compareSelect').innerHTML = data.teams.filter(t => t.id !== selected).map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
     $('#compareSelect').value = compared;
     $('#teamSource').href = sourceURL('teams', selected);
@@ -97,6 +118,56 @@ function selectTeam(id) {
     url.searchParams.set('team', selected);
     history.replaceState(null, '', url);
     renderFavorites(); renderOverview(); renderStandings(); renderComparison(); renderCalendar(); renderPlayers();
+}
+
+function loadError(message, retryAction) {
+    $('#loadStatus').hidden = false;
+    $('#loadStatus').replaceChildren(document.createTextNode(`${message} `));
+    const retry = document.createElement('button');
+    retry.textContent = 'Try again';
+    retry.addEventListener('click', retryAction);
+    $('#loadStatus').append(retry);
+}
+
+async function selectTeam(id) {
+    const entry = catalogTeam(id);
+    if (!entry || !/^\d+$/.test(entry.division_id)) return;
+    const sequence = ++loadSequence;
+    $('#groupContent').hidden = true;
+    $('#groupContent').setAttribute('aria-busy', 'true');
+    $('#favoriteButton').disabled = true;
+    $('#competitionLabel').textContent = catalog.groups.find(group => group.id === entry.division_id)?.name || '';
+    $('#updatedAt').textContent = '';
+    $('#loadStatus').hidden = false;
+    $('#loadStatus').textContent = `Loading ${entry.name}…`;
+    try {
+        let dataset = groupCache.get(entry.division_id);
+        if (!dataset) {
+            const response = await fetch(`./data/knsb/divisions/${entry.division_id}.json`, { cache: 'no-store' });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            dataset = await response.json();
+            if (dataset.schema_version !== 1 || dataset.division_id !== entry.division_id || !dataset.teams?.some(t => t.id === id) || !Array.isArray(dataset.matches)) throw new Error('Invalid competition data');
+            groupCache.set(entry.division_id, dataset);
+        }
+        if (sequence !== loadSequence) return;
+        data = dataset;
+        metrics = new Map(data.teams.map(t => [t.id, statsFor(data, t.id)]));
+        $('#competitionLabel').textContent = `${data.name} · ${data.season}`;
+        $('#divisionSource').href = sourceURL('divisions', data.division_id);
+        const updated = new Date(data.updated_at);
+        const stale = Date.now() - updated.getTime() > 36 * 60 * 60 * 1000;
+        $('#updatedAt').textContent = `${stale ? 'Data may be outdated · ' : ''}Updated ${updated.toLocaleString('en-GB', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} (Amsterdam)`;
+        $('#updatedAt').classList.toggle('stale', stale);
+        applyTeam(id);
+        $('#favoriteButton').disabled = false;
+        $('#loadStatus').hidden = true;
+        $('#groupContent').hidden = false;
+        $('#groupContent').setAttribute('aria-busy', 'false');
+    } catch {
+        if (sequence !== loadSequence) return;
+        $('#groupContent').setAttribute('aria-busy', 'false');
+        loadError(`Could not load ${entry.name}. Choose another team or try again.`, () => selectTeam(id));
+    }
 }
 
 function showMatch(id) {
@@ -109,34 +180,28 @@ function showMatch(id) {
 
 async function load() {
     try {
-        const response = await fetch('./data/knsb.json', { cache: 'no-store' });
+        const response = await fetch('./data/knsb/catalog.json', { cache: 'no-store' });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        data = await response.json();
-        if (data.schema_version !== 1 || !data.teams?.length || !Array.isArray(data.matches)) throw new Error('Invalid competition data');
-        metrics = new Map(data.teams.map(t => [t.id, statsFor(data, t.id)]));
-        $('#teamSelect').innerHTML = data.teams.map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
-        $('#competitionLabel').textContent = `${data.name} · ${data.season}`;
-        $('#divisionSource').href = sourceURL('divisions', data.division_id);
-        const updated = new Date(data.updated_at);
-        const stale = Date.now() - updated.getTime() > 36 * 60 * 60 * 1000;
-        $('#updatedAt').textContent = `${stale ? 'Data may be outdated · ' : ''}Updated ${updated.toLocaleString('en-GB', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} (Amsterdam)`;
-        $('#updatedAt').classList.toggle('stale', stale);
+        catalog = await response.json();
+        if (catalog.schema_version !== 1 || !catalog.teams?.length || !catalog.groups?.length) throw new Error('Invalid catalog');
         const requested = new URLSearchParams(location.search).get('team');
-        const initial = [requested, ...favorites, data.teams.find(t => t.name === 'ASV 4')?.id, data.teams[0].id].find(id => team(id));
-        selectTeam(initial);
-        $('#loadStatus').hidden = true;
+        const initial = [requested, ...favorites, catalog.teams.find(t => t.name === 'ASV 4')?.id, catalog.teams[0].id].find(id => catalogTeam(id));
+        renderTeamOptions();
+        renderFavorites();
         $('#dashboard').hidden = false;
+        await selectTeam(initial);
     } catch {
         $('#dashboard').hidden = true;
-        $('#loadStatus').replaceChildren(document.createTextNode('Competition data could not be loaded. '));
-        const retry = document.createElement('button');
-        retry.textContent = 'Try again';
-        retry.addEventListener('click', () => { $('#loadStatus').textContent = 'Loading the competition…'; load(); });
-        $('#loadStatus').append(retry);
+        loadError('Competition data could not be loaded.', load);
     }
 }
 
 $('#teamSelect').addEventListener('change', event => selectTeam(event.target.value));
+$('#teamSearch').addEventListener('input', renderTeamOptions);
+$('#teamSearch').addEventListener('keydown', event => {
+    const matches = [...$('#teamSelect').options].filter(option => option.value);
+    if (event.key === 'Enter' && matches.length === 1) { event.preventDefault(); selectTeam(matches[0].value); }
+});
 $('#compareSelect').addEventListener('change', event => { compared = event.target.value; renderComparison(); });
 $('#favoriteButton').addEventListener('click', () => {
     favorites = favorites.includes(selected) ? favorites.filter(id => id !== selected) : [...favorites, selected];

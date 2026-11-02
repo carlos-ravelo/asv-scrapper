@@ -10,7 +10,8 @@ Static dashboards for ASV club players and the KNSB team competition.
 | `assets/css/` | Dashboard stylesheets |
 | `scripts/` | Python scrapers |
 | `data/` | Published JSON and source CSV datasets |
-| `data/history/` | Previous KNSB datasets when results change |
+| `data/knsb/catalog.json` | Searchable catalog of ASV teams and their opponents |
+| `data/knsb/divisions/` | One dataset per covered group, with changes under `history/` |
 | `docs/` | Feature lists and operational notes |
 | `tests/` | Statistics, scraper and browser checks |
 | `tests/fixtures/` | Saved public HTML for offline parser checks |
@@ -28,7 +29,7 @@ Run either scraper separately:
 
 ```bash
 python3 scripts/scrapper.py
-python3 scripts/knsb_scraper.py
+python3 scripts/knsb_scraper.py --all-asv
 ```
 
 Both scrapers resolve their data paths relative to the repository, regardless of the shell's current directory.

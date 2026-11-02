@@ -10,10 +10,12 @@ const WebSocket = require('ws');
     const root = path.resolve(__dirname, '..');
     const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'asv-knsb-chrome-'));
     let failData = false, chrome, socket;
+    const groupRequests = [];
     const errors = [];
     const server = http.createServer((request, response) => {
         const pathname = new URL(request.url, 'http://localhost').pathname;
-        if (failData && pathname === '/data/knsb.json') { response.writeHead(503); response.end(); return; }
+        if (/^\/data\/knsb\/divisions\/\d+\.json$/.test(pathname)) groupRequests.push(pathname);
+        if (failData && pathname.startsWith('/data/knsb/divisions/')) { response.writeHead(503); response.end(); return; }
         const file = path.resolve(root, `.${decodeURIComponent(pathname)}`);
         if (!file.startsWith(root + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) { response.writeHead(404); response.end(); return; }
         response.setHeader('Content-Type', file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : file.endsWith('.json') ? 'application/json' : 'text/html');
@@ -74,12 +76,19 @@ const WebSocket = require('ws');
         await send('Page.enable');
         await send('Emulation.setDeviceMetricsOverride', { width: 1365, height: 1000, deviceScaleFactor: 1, mobile: false });
         await send('Page.navigate', { url });
-        const ready = '!document.querySelector("#dashboard").hidden';
+        const ready = '!document.querySelector("#groupContent").hidden';
         await waitFor(`document.querySelector('#dashboard') && ${ready}`);
         assert.equal(await evaluate('document.querySelectorAll("#standings tbody tr").length'), 10);
         assert.equal(await evaluate('document.querySelector("#teamSelect").value'), '7123');
         assert.equal(await evaluate('document.querySelectorAll("#calendar .fixture").length'), 9);
         assert.match(await evaluate('document.querySelector(".next-match").textContent'), /Almelo 2/);
+        assert.deepEqual(groupRequests, ['/data/knsb/divisions/669.json'], 'Initial visit downloads only the selected group');
+        assert.equal(await evaluate('document.querySelectorAll("#asvTeams button").length'), 9);
+        await evaluate('document.querySelector("#teamSearch").value="ASV 1"; document.querySelector("#teamSearch").dispatchEvent(new Event("input"))');
+        assert.equal(await evaluate('[...document.querySelector("#teamSelect").options].filter(option => option.value).length'), 1);
+        await evaluate('document.querySelector("#teamSearch").value="nothingmatches"; document.querySelector("#teamSearch").dispatchEvent(new Event("input"))');
+        assert.equal(await evaluate('document.querySelector("#teamSelect").disabled'), true);
+        await evaluate('document.querySelector("#teamSearch").value=""; document.querySelector("#teamSearch").dispatchEvent(new Event("input"))');
         await evaluate('document.querySelector("#favoriteButton").click()');
         await send('Page.reload');
         await waitFor(`document.querySelector('#dashboard') && ${ready}`);
@@ -107,10 +116,29 @@ const WebSocket = require('ws');
         fs.writeFileSync('/tmp/asv-knsb-mobile.png', Buffer.from(mobile.data, 'base64'));
         await evaluate('document.querySelector("#teamSelect").value="7126"; document.querySelector("#teamSelect").dispatchEvent(new Event("change"))');
         assert.equal(await evaluate('new URL(location.href).searchParams.get("team")'), '7126');
+        const allAsv = await evaluate('[...document.querySelectorAll("#asvTeams button")].map(button => ({ id: button.dataset.team, name: button.textContent }))');
+        for (const entry of allAsv) {
+            await evaluate(`document.querySelector('#asvTeams [data-team="${entry.id}"]').click()`);
+            await waitFor(`${ready} && document.querySelector('#teamSelect').value === '${entry.id}'`);
+            assert.equal(await evaluate('document.querySelector(".team-summary h2").textContent'), entry.name);
+        }
+        await evaluate(`document.querySelector('#asvTeams [data-team="7023"]').click()`);
+        await waitFor(`${ready} && document.querySelector('#teamSelect').value === '7023'`);
+        await evaluate('document.querySelector("#favoriteButton").click()');
+        await evaluate(`document.querySelector('#asvTeams [data-team="7123"]').click()`);
+        await waitFor(`${ready} && document.querySelector('#teamSelect').value === '7123'`);
+        assert.equal(await evaluate('document.querySelectorAll("#favorites button").length'), 2, 'Favorites span groups');
+        const before = groupRequests.length;
+        await evaluate(`document.querySelector('#favorites [data-team="7023"]').click()`);
+        await waitFor(`${ready} && document.querySelector('#teamSelect').value === '7023'`);
+        assert.equal(groupRequests.length, before, 'Previously visited groups are reused');
+        await send('Page.reload');
+        await waitFor(`document.querySelector('#groupContent') && ${ready}`);
+        assert.equal(await evaluate('document.querySelector(".team-summary h2").textContent'), 'ASV 1', 'Shared URL restores a different group');
         failData = true;
         await send('Page.reload');
         await waitFor('document.querySelector("#loadStatus button") !== null');
-        assert.equal(await evaluate('document.querySelector("#dashboard").hidden'), true);
+        assert.equal(await evaluate('document.querySelector("#groupContent").hidden'), true);
         failData = false;
         await evaluate('document.querySelector("#loadStatus button").click()');
         await waitFor(ready);

@@ -13,6 +13,41 @@ FIXTURES = Path(__file__).parent / 'fixtures' / 'knsb'
 
 
 class NetstandParsing(unittest.TestCase):
+    def test_discover_only_groups_containing_asv(self):
+        html = '''<div id="content">
+        <h1><a href="/divisions/view/1">Group A</a></h1><table><tr>
+        <td><a href="/teams/view/10">ASV 1</a></td><td><a href="/teams/view/11">ASV 2</a></td>
+        <td><a href="/teams/view/12">Other club</a></td></tr></table>
+        <h1><a href="/divisions/view/2">Group B</a></h1><table><tr>
+        <td><a href="/teams/view/13">Another club</a></td></tr></table></div>'''
+        groups = scraper.parse_asv_groups(html)
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(groups[0]['id'], '1')
+        self.assertEqual([team['name'] for team in groups[0]['asv_teams']], ['ASV 1', 'ASV 2'])
+
+    def test_all_asv_keeps_failed_group_and_updates_other_groups(self):
+        groups = [{'id': '1', 'name': 'A', 'asv_teams': [{'id': '10', 'name': 'ASV 1'}, {'id': '11', 'name': 'ASV 2'}]},
+                  {'id': '2', 'name': 'B', 'asv_teams': [{'id': '20', 'name': 'ASV 3'}]}]
+        with tempfile.TemporaryDirectory() as folder:
+            directory = Path(folder)
+            previous = {'season': '2026', 'updated_at': 'old', 'teams': [{'id': '20', 'name': 'ASV 3'}]}
+            scraper.atomic_json(directory / 'divisions' / '2.json', previous)
+
+            def refresh(group_id, output):
+                if group_id == '2':
+                    raise RuntimeError('offline')
+                scraper.atomic_json(output, {'season': '2026', 'updated_at': 'new', 'teams': groups[0]['asv_teams']})
+
+            with patch.object(scraper.requests, 'get'), patch.object(scraper, 'parse_asv_groups', return_value=groups), patch.object(scraper, 'scrape', side_effect=refresh) as refresh_mock:
+                with self.assertLogs(level='ERROR'), self.assertRaises(RuntimeError):
+                    scraper.scrape_asv('69', directory)
+            self.assertEqual(refresh_mock.call_count, 2)
+            catalog = json.loads((directory / 'catalog.json').read_text())
+            self.assertEqual(len(catalog['groups']), 2)
+            self.assertEqual(len(catalog['teams']), 3)
+            self.assertEqual(catalog['groups'][1]['updated_at'], 'old')
+            self.assertEqual(json.loads((directory / 'divisions' / '2.json').read_text()), previous)
+
     def test_division_and_round_schedule(self):
         division, pairs = scraper.parse_division((FIXTURES / 'division.html').read_text())
         self.assertEqual(len(division['teams']), 10)
