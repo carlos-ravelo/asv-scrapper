@@ -1,6 +1,7 @@
 import os
 import logging
 from io import StringIO
+from pathlib import Path
 from urllib.parse import urlparse
 import requests
 from bs4 import BeautifulSoup
@@ -16,8 +17,10 @@ logging.basicConfig(
 logging.info("Scraper execution started.")
 
 base_page_url = "https://www.asv-schaken.nl/interne-competitie/page/{}/"
-results_csv = "asv_results.csv"
-elo_csv = "asv_elo.csv"
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+results_csv = DATA_DIR / "asv_results.csv"
+elo_csv = DATA_DIR / "asv_elo.csv"
 max_pages = 10
 max_workers = 8  # parallel HTTP requests
 request_timeout = 30
@@ -242,7 +245,7 @@ def csv_to_json(csv_path, json_path):
     if not os.path.exists(csv_path):
         open(csv_path, 'a').close()
 
-csv_to_json(results_csv, "asv_results.json")
-csv_to_json(elo_csv, "asv_elo.json")
+csv_to_json(results_csv, DATA_DIR / "asv_results.json")
+csv_to_json(elo_csv, DATA_DIR / "asv_elo.json")
 
 logging.info("Incremental update and JSON generation complete.")

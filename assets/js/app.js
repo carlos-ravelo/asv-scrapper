@@ -99,8 +99,8 @@ function unlockBackgroundScroll() {
 // 3. INITIALIZATION
 // ==========================================
 Promise.all([
-    fetch('asv_results.json').then(res => res.json()),
-    fetch('asv_elo.json').then(res => res.json())
+    fetch('data/asv_results.json').then(res => res.json()),
+    fetch('data/asv_elo.json').then(res => res.json())
 ]).then(([results, elo]) => {
     state.resultsData = results;
     state.eloData = elo;

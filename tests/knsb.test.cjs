@@ -4,7 +4,7 @@ const path = require('path');
 
 (async () => {
     const root = path.resolve(__dirname, '..');
-    const source = fs.readFileSync(path.join(root, 'knsb-model.js'), 'utf8');
+    const source = fs.readFileSync(path.join(root, 'assets/js/knsb-model.js'), 'utf8');
     const { statsFor, nextMatch, expectedScore, lastLineup, rankHistory } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
     const data = JSON.parse(fs.readFileSync(path.join(root, 'data/knsb.json')));
     assert.equal(data.matches.length, 45);

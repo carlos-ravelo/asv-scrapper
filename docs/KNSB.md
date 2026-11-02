@@ -1,6 +1,6 @@
 # KNSB dashboard
 
-Open [knsb.html](knsb.html) through the same web server as ASV Stats.
+Open [knsb.html](../knsb.html) through the same web server as ASV Stats.
 
 ## First version · Klasse 4B, 2026–2027
 
@@ -31,7 +31,7 @@ Open [knsb.html](knsb.html) through the same web server as ASV Stats.
 
 ```bash
 python3 -m pip install -r requirements.txt
-python3 knsb_scraper.py
+python3 scripts/knsb_scraper.py
 ```
 
 ```bash

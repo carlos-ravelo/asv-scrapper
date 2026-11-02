@@ -1,7 +1,7 @@
 const assert = require('assert').strict;
 const fs = require('fs');
 (async () => {
-    const source = fs.readFileSync('recap.js', 'utf8');
+    const source = fs.readFileSync(require('path').join(__dirname, '../assets/js/recap.js'), 'utf8');
     const { calculateRecap } = await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64'));
     const now = new Date(2026, 9, 6, 12);
     const elo = (Naam, ELO, Publish_Date) => ({ Naam, ELO, Publish_Date });
