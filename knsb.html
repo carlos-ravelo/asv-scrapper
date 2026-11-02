@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Follow your KNSB team, prepare for the next round and compare the strength behind the standings.">
     <title>KNSB Teams · ASV Stats</title>
-    <link rel="stylesheet" href="assets/css/knsb.css?v=2">
+    <link rel="stylesheet" href="assets/css/knsb.css?v=3">
 </head>
 <body>
     <header class="site-header"><a class="brand" href="index.html"><span aria-hidden="true">♞</span> ASV Stats</a><nav aria-label="Main"><a href="index.html">Club players</a><a href="knsb.html" aria-current="page">KNSB teams</a></nav></header>
@@ -13,9 +13,7 @@
         <div class="page-heading"><div><h1>The story behind the standings.</h1><p>Follow your team. Know your next opponent.</p></div><a id="divisionSource" href="https://knsb.netstand.nl/divisions/view/669" target="_blank" rel="noopener">Official competition ↗</a></div>
         <p id="loadStatus" role="status">Loading the competition…</p>
         <div id="dashboard" hidden>
-            <div class="team-search"><label for="teamSearch">Find a team <input type="search" id="teamSearch" placeholder="ASV 6, Hoogland…" aria-controls="teamSelect" autocomplete="off"></label><p id="searchStatus" role="status"></p></div>
-            <div id="asvTeams" class="favorites asv-teams" role="group" aria-label="ASV teams"></div>
-            <div class="team-toolbar"><label for="teamSelect">Your team <select id="teamSelect"></select></label><button id="favoriteButton" type="button" aria-pressed="false">☆ Save team</button><span id="competitionLabel"></span><span id="updatedAt"></span></div>
+            <div class="team-toolbar"><div class="team-picker"><label for="teamSelect">Your team</label><div class="team-picker-field"><input id="teamSelect" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="teamOptions" autocomplete="off" placeholder="Search or select a team…"><span aria-hidden="true">⌄</span></div><div id="teamPopup" class="team-popup" hidden><div id="teamOptions" role="listbox" aria-label="Teams"></div><p id="searchStatus" role="status"></p></div></div><button id="favoriteButton" type="button" aria-pressed="false">☆ Save team</button><span id="competitionLabel"></span><span id="updatedAt"></span></div>
             <div id="favorites" class="favorites" role="group" aria-label="Favorite teams"></div>
             <div id="groupContent" hidden>
             <section id="teamOverview" aria-label="Selected team"></section>
@@ -31,6 +29,6 @@
     </main>
     <dialog id="matchDialog" aria-labelledby="matchTitle"><div class="dialog-header"><h2 id="matchTitle">Encounter</h2><button id="closeMatch" type="button" aria-label="Close encounter">×</button></div><div id="matchContent"></div></dialog>
     <footer>ASV Stats <span>Public competition results from <a href="https://knsb.netstand.nl/" target="_blank" rel="noopener">KNSB / Netstand</a></span></footer>
-    <script type="module" src="assets/js/knsb.js?v=2"></script>
+    <script type="module" src="assets/js/knsb.js?v=3"></script>
 </body>
 </html>

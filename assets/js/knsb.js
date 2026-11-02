@@ -25,20 +25,49 @@ const teamName = id => team(id)?.name || 'Unknown team';
 const empty = message => `<p class="empty">${esc(message)}</p>`;
 const catalogTeam = id => catalog?.teams.find(item => item.id === id);
 
-function renderTeamOptions() {
-    const query = $('#teamSearch').value.trim().toLocaleLowerCase();
-    const matches = catalog.teams.filter(t => t.name.toLocaleLowerCase().includes(query));
+let activeOption = -1;
+function setActiveOption(index) {
+    const options = [...document.querySelectorAll('[data-team-option]')];
+    activeOption = options.length ? Math.max(0, Math.min(index, options.length - 1)) : -1;
+    options.forEach((option, i) => option.classList.toggle('is-active', i === activeOption));
+    if (activeOption >= 0) {
+        $('#teamSelect').setAttribute('aria-activedescendant', options[activeOption].id);
+        options[activeOption].scrollIntoView({ block: 'nearest' });
+    } else $('#teamSelect').removeAttribute('aria-activedescendant');
+}
+
+function closeTeamPicker(restore = true) {
+    $('#teamPopup').hidden = true;
+    $('#teamSelect').setAttribute('aria-expanded', 'false');
+    $('#teamSelect').removeAttribute('aria-activedescendant');
+    if (restore) $('#teamSelect').value = catalogTeam(selected)?.name || '';
+}
+
+function renderTeamOptions(query = '') {
+    if (!catalog) return;
+    const matches = catalog.teams.filter(t => t.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
     const asv = matches.filter(t => t.is_asv).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }));
-    const option = t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`;
-    const groups = catalog.groups.map(g => {
-        const others = matches.filter(t => !t.is_asv && t.division_id === g.id);
-        return others.length ? `<optgroup label="${esc(g.name)}">${others.map(option).join('')}</optgroup>` : '';
-    }).join('');
-    const hasSelected = matches.some(t => t.id === selected);
-    $('#teamSelect').innerHTML = `${!hasSelected ? '<option value="" disabled selected>Select a team…</option>' : ''}${asv.length ? `<optgroup label="ASV teams">${asv.map(option).join('')}</optgroup>` : ''}${groups}`;
-    $('#teamSelect').disabled = !matches.length;
-    if (hasSelected) $('#teamSelect').value = selected;
-    $('#searchStatus').textContent = matches.length ? `${matches.length} teams available across ${catalog.groups.length} groups with ASV teams.` : 'No teams found. Try a different name.';
+    const option = t => `<button type="button" role="option" tabindex="-1" id="team-option-${esc(t.id)}" data-team-option="${esc(t.id)}" data-asv="${t.is_asv}" aria-selected="${t.id === selected}"><span>${esc(t.name)}</span><small>${esc(catalog.groups.find(g => g.id === t.division_id)?.name)}</small></button>`;
+    const group = (name, teams) => teams.length ? `<div role="group" aria-label="${esc(name)}"><div class="team-option-group" aria-hidden="true">${esc(name)}</div>${teams.map(option).join('')}</div>` : '';
+    $('#teamOptions').innerHTML = group('ASV teams', asv) + catalog.groups.map(g => group(g.name, matches.filter(t => !t.is_asv && t.division_id === g.id))).join('');
+    $('#searchStatus').textContent = matches.length ? `${matches.length} teams` : 'No teams found. Try a different name.';
+    activeOption = -1;
+    $('#teamSelect').removeAttribute('aria-activedescendant');
+    if (!$('#teamPopup').hidden) setActiveOption(0);
+}
+
+function openTeamPicker() {
+    if (!catalog) return;
+    $('#teamPopup').hidden = false;
+    $('#teamSelect').setAttribute('aria-expanded', 'true');
+    renderTeamOptions();
+}
+
+function chooseTeam(id) {
+    if (!catalogTeam(id)) return;
+    closeTeamPicker(false);
+    $('#teamSelect').value = catalogTeam(id).name;
+    selectTeam(id);
 }
 
 function renderFavorites() {
@@ -46,8 +75,7 @@ function renderFavorites() {
     $('#favoriteButton').textContent = saved ? '★ Saved team' : '☆ Save team';
     $('#favoriteButton').setAttribute('aria-pressed', String(saved));
     $('#favorites').innerHTML = favorites.filter(id => catalogTeam(id)).map(id => `<button type="button" data-team="${esc(id)}" aria-pressed="${id === selected}">★ ${esc(catalogTeam(id).name)}</button>`).join('');
-    $('#asvTeams').innerHTML = catalog.teams.filter(t => t.is_asv).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }))
-        .map(t => `<button type="button" data-team="${esc(t.id)}" aria-pressed="${t.id === selected}">${esc(t.name)}</button>`).join('');
+
 }
 
 function renderOverview() {
@@ -109,8 +137,9 @@ function applyTeam(id) {
     selected = id;
     const next = nextMatch(data, selected, today);
     compared = next ? next[opposite(teamSide(next, selected))] : data.teams.find(t => t.id !== selected)?.id;
-    $('#teamSearch').value = '';
-    renderTeamOptions();
+    $('#teamSelect').value = catalogTeam(id).name;
+    $('#teamSelect').dataset.team = id;
+    closeTeamPicker();
     $('#compareSelect').innerHTML = data.teams.filter(t => t.id !== selected).map(t => `<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');
     $('#compareSelect').value = compared;
     $('#teamSource').href = sourceURL('teams', selected);
@@ -196,11 +225,39 @@ async function load() {
     }
 }
 
-$('#teamSelect').addEventListener('change', event => selectTeam(event.target.value));
-$('#teamSearch').addEventListener('input', renderTeamOptions);
-$('#teamSearch').addEventListener('keydown', event => {
-    const matches = [...$('#teamSelect').options].filter(option => option.value);
-    if (event.key === 'Enter' && matches.length === 1) { event.preventDefault(); selectTeam(matches[0].value); }
+$('#teamSelect').addEventListener('focus', () => {
+    openTeamPicker();
+    $('#teamSelect').select();
+});
+$('#teamSelect').addEventListener('click', () => { if ($('#teamPopup').hidden) openTeamPicker(); });
+$('#teamSelect').addEventListener('input', event => {
+    $('#teamPopup').hidden = false;
+    $('#teamSelect').setAttribute('aria-expanded', 'true');
+    renderTeamOptions(event.target.value);
+});
+$('#teamSelect').addEventListener('keydown', event => {
+    if (event.isComposing) return;
+    if (event.key === 'Escape') { event.preventDefault(); closeTeamPicker(); }
+    if (event.key === 'Tab') closeTeamPicker();
+    if (['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) {
+        if (['Home', 'End'].includes(event.key) && $('#teamPopup').hidden) return;
+        event.preventDefault();
+        const wasClosed = $('#teamPopup').hidden;
+        if (wasClosed) openTeamPicker();
+        const count = document.querySelectorAll('[data-team-option]').length;
+        setActiveOption(event.key === 'Home' ? 0 : event.key === 'End' ? count - 1 : wasClosed ? (event.key === 'ArrowUp' ? count - 1 : 0) : activeOption + (event.key === 'ArrowDown' ? 1 : -1));
+    }
+    if (event.key === 'Enter' && !$('#teamPopup').hidden) {
+        event.preventDefault();
+        const option = document.querySelectorAll('[data-team-option]')[activeOption];
+        if (option) chooseTeam(option.dataset.teamOption);
+    }
+});
+$('#teamSelect').addEventListener('blur', () => closeTeamPicker());
+$('#teamOptions').addEventListener('pointerdown', event => { if (event.target.closest('[data-team-option]')) event.preventDefault(); });
+$('#teamOptions').addEventListener('click', event => {
+    const option = event.target.closest('[data-team-option]');
+    if (option) chooseTeam(option.dataset.teamOption);
 });
 $('#compareSelect').addEventListener('change', event => { compared = event.target.value; renderComparison(); });
 $('#favoriteButton').addEventListener('click', () => {
@@ -209,6 +266,7 @@ $('#favoriteButton').addEventListener('click', () => {
     renderFavorites(); renderStandings();
 });
 document.addEventListener('click', event => {
+    if (!event.target.closest('.team-picker')) closeTeamPicker();
     const teamButton = event.target.closest('[data-team]');
     if (teamButton) selectTeam(teamButton.dataset.team);
     const prepare = event.target.closest('[data-prepare]');
