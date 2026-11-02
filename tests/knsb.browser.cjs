@@ -113,9 +113,9 @@ const WebSocket = require('ws');
         assert.equal(await evaluate('document.querySelector("#calendarSection summary")'), null);
         assert(await evaluate('document.querySelector("#calendar .fixture").getBoundingClientRect().height > 0'));
         assert.equal(await evaluate('document.querySelectorAll("#teamOverview [data-kind], #teamOverview [data-match]").length'), 0);
-        assert.equal(await evaluate('document.querySelector("#playersSection").open'), false);
-        await evaluate('document.querySelector("#playersSection summary").click()');
         assert.equal(await evaluate('document.querySelector("#playersSection").open'), true);
+        await evaluate('document.querySelector("#playersSection summary").click()');
+        assert.equal(await evaluate('document.querySelector("#playersSection").open'), false);
         await evaluate('document.querySelector("#playersSection summary").click()');
         async function pickTeam(id) {
             await evaluate(`document.querySelector('#teamSelect').focus(); document.querySelector('#teamSelect').click(); document.querySelector('#teamSelect').value = ''; document.querySelector('#teamSelect').dispatchEvent(new Event('input')); document.querySelector('[data-team-option="${id}"]').click()`);
