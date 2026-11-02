@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASV Chess Tracker</title>
     <link rel="stylesheet" href="assets/css/style.css?v=32">
+    <link rel="stylesheet" href="assets/css/navigation.css?v=1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
     <script>Chart.register(ChartZoom);</script>
 </head>
 
-<body>
+<body class="club-page">
+    <header class="site-header"><a class="brand" href="index.html"><span aria-hidden="true">♞</span> ASV Stats</a><nav aria-label="Main"><a href="index.html" aria-current="page">Club players</a><a href="knsb.html">KNSB teams</a></nav></header>
     <div class="container">
         <h2>ASV Player Dashboard</h2>
-        <nav aria-label="Main" style="display:flex;gap:20px;margin-bottom:20px;font-size:14px"><a href="index.html" aria-current="page">Club players</a><a href="knsb.html">KNSB teams ↗</a></nav>
         <div class="dashboard-layout">
             
             <!-- Left Panel: Directory -->
