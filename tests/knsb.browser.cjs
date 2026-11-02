@@ -81,7 +81,7 @@ const WebSocket = require('ws');
         assert.equal(await evaluate('document.querySelectorAll("#standings tbody tr").length'), 10);
         assert.equal(await evaluate('document.querySelector("#teamSelect").dataset.team'), '7123');
         assert.equal(await evaluate('document.querySelectorAll("#calendar .fixture").length'), 9);
-        assert.match(await evaluate('document.querySelector(".next-match").textContent'), /Almelo 2/);
+        assert.match(await evaluate(`document.querySelector('[data-kind="next"]').textContent`), /Almelo 2/);
         assert.deepEqual(groupRequests, ['/data/knsb/divisions/669.json'], 'Initial visit downloads only the selected group');
         async function openView(view) {
             await evaluate(`document.querySelector('#tab-${view}').click()`);
@@ -167,7 +167,7 @@ const WebSocket = require('ws');
         const allAsv = JSON.parse(fs.readFileSync(path.join(root, 'data/knsb/catalog.json'))).teams.filter(team => team.is_asv);
         for (const entry of allAsv) {
             await pickTeam(entry.id);
-            assert.equal(await evaluate('document.querySelector(".team-summary h2").textContent'), entry.name);
+            assert.equal(await evaluate('document.querySelector("#teamSelect").value'), entry.name);
         }
         await pickTeam('7023');
         await waitFor(`${ready} && document.querySelector('#teamSelect').dataset.team === '7023'`);
@@ -181,7 +181,7 @@ const WebSocket = require('ws');
         assert.equal(groupRequests.length, before, 'Previously visited groups are reused');
         await send('Page.reload');
         await waitFor(`document.querySelector('#groupContent') && ${ready}`);
-        assert.equal(await evaluate('document.querySelector(".team-summary h2").textContent'), 'ASV 1', 'Shared URL restores a different group');
+        assert.equal(await evaluate('document.querySelector("#teamSelect").value'), 'ASV 1', 'Shared URL restores a different group');
         failData = true;
         await send('Page.reload');
         await waitFor('document.querySelector("#loadStatus button") !== null');

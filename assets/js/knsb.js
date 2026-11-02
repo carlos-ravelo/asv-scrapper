@@ -94,12 +94,21 @@ function renderFavorites() {
 
 function renderOverview() {
     const current = team(selected), stats = metrics.get(selected), next = nextMatch(data, selected, today);
-    const history = rankHistory(data, selected);
     const latest = teamMatches(data, selected).filter(match => match.status === 'completed').slice(-1)[0];
-    $('#teamOverview').innerHTML = `<div class="overview"><div class="team-summary"><h2>${esc(current.name)}</h2><p>${esc(data.name)} · ${esc(data.season)}</p><div class="team-numbers"><div><strong>${current.position}<small> / ${data.teams.length}</small></strong><span>Official position</span></div><div><strong>${fmt(current.match_points)}</strong><span>Match points</span></div><div><strong>${fmt(stats.rating)}</strong><span>Average rating</span></div></div><div class="position-history"><span>Position by round</span>${history.map(entry => `<span class="position-step">R${entry.round}: <b>${entry.position}</b></span>`).join('') || 'No results yet'}</div>${latest ? `<div class="latest-result"><span>Last encounter · ${date(latest.date)}</span><button type="button" class="team-link" data-match="${esc(latest.id)}">${esc(teamName(latest.home))} <b>${resultText(latest.score)}</b> ${esc(teamName(latest.away))} ↗</button></div>` : ''}</div><div class="next-match">${next ? `<span class="fixture-label">Next encounter · Round ${next.round}</span><h3>${esc(teamName(next[opposite(teamSide(next, selected))]))}</h3><p>${date(next.date)} ${next.date.slice(0, 4)} · ${next.home === selected ? 'Home' : 'Away'}<br>Time and venue: check with your team captain.</p><button class="primary-button" type="button" data-prepare="${esc(next[opposite(teamSide(next, selected))])}">Prepare encounter</button>` : '<span class="fixture-label">Season calendar</span><h3>No upcoming encounter</h3><p>Open your season below for results and any outstanding encounters.</p>'}</div></div>`;
+    const shortDate = value => `${date(value)}${value.slice(0, 4) !== today.slice(0, 4) ? ` ${value.slice(0, 4)}` : ''}`;
+    let latestRow = '';
+    if (latest) {
+        const side = teamSide(latest, selected), index = side === 'home' ? 0 : 1;
+        const scores = [latest.score[index], latest.score[1 - index]];
+        const outcome = scores[0] > scores[1] ? 'Won' : scores[0] < scores[1] ? 'Lost' : 'Drew';
+        latestRow = `<div class="brief-fixture"><span class="brief-label">Last</span><div class="brief-opponent"><strong>${esc(teamName(latest[opposite(side)]))}</strong><span>${shortDate(latest.date)} · ${side === 'home' ? 'Home' : 'Away'}</span></div><button type="button" class="summary-result ${deltaClass(scores[0] - scores[1])}" data-match="${esc(latest.id)}" aria-label="${esc(`View last encounter: ${outcome.toLowerCase()} ${resultText(scores)} against ${teamName(latest[opposite(side)])}`)}">${outcome} ${resultText(scores)} ↗</button></div>`;
+    }
+    $('#teamOverview').innerHTML = `<div class="team-brief"><dl class="brief-stats"><div><dt>Position</dt><dd>${current.position} of ${data.teams.length}</dd></div><div><dt>Match points</dt><dd>${fmt(current.match_points)}</dd></div><div><dt>Average rating</dt><dd>${fmt(stats.rating)}</dd></div></dl>${next ? `<div class="brief-fixture" data-kind="next"><span class="brief-label">Next</span><div class="brief-opponent"><strong>${esc(teamName(next[opposite(teamSide(next, selected))]))}</strong><span>Round ${next.round} · ${shortDate(next.date)} · ${next.home === selected ? 'Home' : 'Away'}</span></div><button class="summary-action" type="button" data-prepare="${esc(next[opposite(teamSide(next, selected))])}">Compare</button></div>` : '<p class="brief-empty">No upcoming encounter.</p>'}${latestRow}</div>`;
 }
 
 function renderStandings() {
+    const history = rankHistory(data, selected);
+    $('#positionHistory').innerHTML = history.length ? `<span>Position by round</span>${history.map(entry => `<span class="position-step">R${entry.round}: <b>${entry.position}</b></span>`).join('')}` : '';
     const rows = data.teams.map(item => ({ ...item, ...metrics.get(item.id) })).sort((a, b) => {
         const av = a[sorting.key], bv = b[sorting.key];
         if (av == null && bv == null) return a.position - b.position;

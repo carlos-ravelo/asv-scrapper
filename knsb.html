@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Follow your KNSB team, prepare for the next round and compare the strength behind the standings.">
     <title>KNSB Teams · ASV Stats</title>
-    <link rel="stylesheet" href="assets/css/knsb.css?v=4">
+    <link rel="stylesheet" href="assets/css/knsb.css?v=6">
 </head>
 <body>
     <header class="site-header"><a class="brand" href="index.html"><span aria-hidden="true">♞</span> ASV Stats</a><nav aria-label="Main"><a href="index.html">Club players</a><a href="knsb.html" aria-current="page">KNSB teams</a></nav></header>
@@ -30,6 +30,7 @@
             </section>
             <section id="view-standings" class="view-surface" role="tabpanel" aria-labelledby="tab-standings" tabindex="0" hidden>
             <div class="section-heading"><div><h2>Group standings</h2><p>See where your team stands in the group.</p></div><label class="performance-toggle"><input type="checkbox" id="performanceToggle" aria-controls="standings performanceExplanation">Compare performance</label></div>
+            <div id="positionHistory" class="position-history"></div>
             <p id="performanceExplanation" class="explanation" hidden>Ratings come from the players who actually played. Opponent rating shows the strength of the opposition faced so far.</p>
             <div class="table-scroll"><table id="standings"><caption class="sr-only">Group standings and team strength. Select a team to view its season.</caption><thead><tr><th scope="col">#</th><th scope="col">Team</th><th scope="col"><button data-sort="played">Played</button></th><th scope="col"><button data-sort="match_points">MP</button></th><th scope="col"><button data-sort="board_points">BP</button></th><th scope="col"><button data-sort="rating">Avg. rating</button></th><th scope="col"><button data-sort="opposition">Opponent rating</button></th><th scope="col"><button data-sort="delta">Above expected</button></th><th scope="col">Form</th></tr></thead><tbody></tbody></table></div>
             <p class="table-note">MP: match points. BP: board points. Form runs from oldest to newest. Click a metric to sort.</p>
@@ -41,6 +42,6 @@
     </main>
     <dialog id="matchDialog" aria-labelledby="matchTitle"><div class="dialog-header"><h2 id="matchTitle">Encounter</h2><button id="closeMatch" type="button" aria-label="Close encounter">×</button></div><div id="matchContent"></div></dialog>
     <footer>ASV Stats <span>Public competition results from <a href="https://knsb.netstand.nl/" target="_blank" rel="noopener">KNSB / Netstand</a></span></footer>
-    <script type="module" src="assets/js/knsb.js?v=4"></script>
+    <script type="module" src="assets/js/knsb.js?v=5"></script>
 </body>
 </html>
