@@ -168,9 +168,21 @@ const WebSocket = require('ws');
         assert.equal(await evaluate('window.standingsNode === document.querySelector("#standings tbody tr")'), true, 'Encounter preview does not rebuild standings');
         assert.equal(await evaluate('document.querySelectorAll("#matchContent tbody tr").length'), 8);
         assert.match(await evaluate('document.querySelector("#matchContent").textContent'), /1,755/);
-        assert.match(await evaluate('document.querySelector("#matchContent .encounter-averages").textContent'), /1,954.*1,895/);
+        assert.match(await evaluate('document.querySelector("#matchContent .table-note").textContent'), /ASV 4 \(1,895 Elo\) − Hoogland 1 \(1,954 Elo\)/);
         assert.match(await evaluate('document.querySelector("#matchContent thead").textContent'), /Rating gap/);
+        assert.equal(await evaluate('document.querySelector("#matchContent tbody tr td:last-child").textContent'), '-72', 'Away team rating gap uses the selected team perspective');
+        assert.match(await evaluate('document.querySelector("#matchContent th:last-child").title'), /ASV 4.*Hoogland 1/);
         assert.equal(await evaluate('document.querySelector("#matchContent .encounter-status")'), null, 'Played encounters show actual lineups');
+        const encounterStyles = () => evaluate(`(() => {
+            const selectors = ['#matchTitle', '#matchContent', '#matchContent .dialog-meta', '#matchContent .table-note', '.encounter-table th', '.encounter-table td', '.encounter-table .player-link', '.encounter-table small', '.encounter-result'];
+            return selectors.map(selector => {
+                const style = getComputedStyle(document.querySelector(selector));
+                return [style.fontSize, style.lineHeight, style.padding, style.margin, style.gap];
+            });
+        })()`);
+        const playedDesktopStyles = await encounterStyles();
+        assert(await evaluate('document.querySelectorAll(".encounter-win, .encounter-loss").length > 0'), 'Played results keep their outcome styles');
+
         await evaluate('document.querySelector("#matchContent [data-player]").click()');
         assert.equal(await evaluate('document.querySelector("#playerDialog").open'), true);
         assert(await evaluate('document.querySelectorAll("#playerContent tbody tr").length > 0'));
@@ -184,6 +196,14 @@ const WebSocket = require('ws');
         assert.equal(await evaluate('document.querySelector("#matchDialog").open'), true);
         assert.match(await evaluate('document.querySelector("#matchContent .encounter-status").textContent'), /reference lineups, not confirmed/);
         assert.equal(await evaluate('document.querySelectorAll("#matchContent .lineup-table tbody tr").length'), 8);
+        assert.equal(await evaluate('document.querySelector("#matchContent .comparison-metrics")'), null);
+        assert.match(await evaluate('document.querySelector("#matchContent .table-note").textContent'), /Rating gap: ASV 4 \(.* Elo\) − Almelo 2 \(.* Elo\)/);
+        assert.match(await evaluate('document.querySelector("#matchContent thead").textContent'), /Board.*Result.*Rating gap/);
+        assert.equal(await evaluate('document.querySelectorAll("#matchContent tbody strong").length'), 8);
+        assert.deepEqual(await encounterStyles(), playedDesktopStyles, 'View and Compare share desktop typography and spacing');
+        assert.equal(await evaluate('document.querySelectorAll(".encounter-win, .encounter-loss").length'), 0, 'Reference lineups have no outcome colors');
+
+
         assert.match(await evaluate('document.querySelector("#matchTitle").textContent'), /ASV 4.*Almelo 2/);
         assert.equal(await evaluate('document.querySelector("#teamSelect").dataset.team'), referenceBeforePreview);
         assert.equal(await evaluate('new URL(location.href).searchParams.get("against")'), opponentBeforePreview, 'Encounter preview does not replace comparison selections');
@@ -203,6 +223,11 @@ const WebSocket = require('ws');
         await evaluate('document.querySelector("#calendar .next-fixture .encounter-action").click()');
         assert.equal(await evaluate('Math.round(document.querySelector("#matchDialog").getBoundingClientRect().width)'), 390, 'Encounter preview uses the full mobile screen');
         assert.equal(await evaluate('document.querySelector("#matchDialog").scrollWidth <= document.querySelector("#matchDialog").clientWidth'), true);
+        const previewMobileStyles = await encounterStyles();
+        await evaluate('document.querySelector("#closeMatch").click(); document.querySelector("#calendar .encounter-cue").closest("button").click()');
+        assert.deepEqual(await encounterStyles(), previewMobileStyles, 'View and Compare share mobile typography and spacing');
+        assert.equal(await evaluate('document.querySelector("#matchDialog").scrollWidth <= document.querySelector("#matchDialog").clientWidth'), true, 'Played encounters also fit mobile width');
+
         await evaluate('document.querySelector("#closeMatch").click()');
         await evaluate('document.querySelector("#favorites [data-team]").click()');
         const mobile = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });

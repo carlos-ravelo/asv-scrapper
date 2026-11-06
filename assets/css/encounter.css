@@ -1,0 +1,124 @@
+.encounter-dialog {
+    --encounter-text: 12px;
+    --encounter-detail: 11px;
+    --encounter-gap: 12px;
+    width: min(800px, 95vw);
+    padding: 18px;
+    line-height: 1.4;
+}
+
+.encounter-dialog .dialog-header {
+    gap: var(--encounter-gap);
+    margin-bottom: var(--encounter-gap);
+}
+
+.encounter-dialog .dialog-header h2 {
+    font-size: 18px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.encounter-dialog .dialog-header button {
+    flex: 0 0 40px;
+    height: 40px;
+}
+
+.encounter-dialog #matchContent {
+    display: grid;
+    gap: var(--encounter-gap);
+    min-width: 0;
+}
+
+.encounter-dialog :is(.dialog-meta, .table-note, .encounter-status) {
+    margin: 0;
+    font-size: var(--encounter-text);
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.encounter-dialog .encounter-status {
+    padding: 8px 10px;
+    border-left: 3px solid var(--blue);
+    background: #edf3ff;
+    color: #375475;
+}
+
+.encounter-dialog .table-scroll {
+    min-width: 0;
+}
+
+.encounter-table {
+    table-layout: fixed;
+    font-size: var(--encounter-text);
+    line-height: 1.4;
+}
+
+.encounter-table :is(th, td) {
+    padding: 8px 7px;
+    font-size: inherit;
+    vertical-align: middle;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.encounter-table th:first-child { width: 42px; }
+.encounter-table th:nth-child(3) { width: 65px; }
+.encounter-table th:last-child { width: 70px; }
+.encounter-table :is(th, td):nth-child(3) { text-align: center; }
+.encounter-table :is(th, td):nth-child(4) { text-align: left; }
+
+.encounter-table .player-link {
+    min-height: 28px;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.encounter-table strong .player-link { font-weight: 700; }
+
+.encounter-table small {
+    display: block;
+    margin-top: 2px;
+    font-size: var(--encounter-detail);
+    line-height: 1.4;
+}
+
+.encounter-win { background: #f0f8f3; }
+.encounter-loss { background: #fff3f2; }
+
+.encounter-result {
+    display: inline-block;
+    padding: 3px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.encounter-result.win { color: var(--green); }
+.encounter-result.loss { color: var(--red); }
+
+@media (max-width: 600px) {
+    .encounter-dialog {
+        width: 100vw;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        padding: 12px;
+    }
+
+    .encounter-dialog .dialog-header {
+        position: sticky;
+        top: -12px;
+        z-index: 1;
+        padding: 12px 0;
+        background: white;
+    }
+
+    .encounter-dialog .dialog-header h2 { font-size: 16px; }
+    .encounter-table :is(th, td) { padding: 7px 4px; }
+    .encounter-table th:first-child { width: 34px; }
+    .encounter-table th:nth-child(3) { width: 54px; }
+    .encounter-table th:last-child { width: 54px; }
+}

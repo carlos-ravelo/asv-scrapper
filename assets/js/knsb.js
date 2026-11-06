@@ -9,6 +9,7 @@ const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Amsterdam', y
 const sourceURL = (kind, id) => /^\d+$/.test(String(id)) ? `https://knsb.netstand.nl/${kind}/view/${id}` : 'https://knsb.netstand.nl/';
 const source = (kind, id, text) => `<a href="${sourceURL(kind, id)}" target="_blank" rel="noopener">${esc(text)} ↗</a>`;
 const playerLink = player => /^\d+$/.test(String(player?.id)) ? `<button type="button" class="player-link" data-player="${esc(player.id)}">${esc(player.name)}</button>` : esc(player?.name || 'Unlisted player');
+const teamPlayerLink = (player, teamId) => teamId === selected ? `<strong>${playerLink(player)}</strong>` : playerLink(player);
 const resultText = scores => scores ? scores.map(value => fmt(value, value % 1 ? 1 : 0)).join(' – ') : 'Pending';
 const form = values => `<div class="form" aria-label="Form: ${esc(values.join(', ') || 'no results')}">${values.map(value => `<span class="${value === 'W' ? 'win' : value === 'L' ? 'loss' : 'draw'}" title="${value === 'W' ? 'Win' : value === 'L' ? 'Loss' : 'Draw'}">${value}</span>`).join('')}</div>`;
 let data, selected, metrics, catalog;
@@ -119,22 +120,41 @@ function renderStandings() {
     });
 }
 
-function teamComparisonHTML(firstId, secondId, reference = false) {
-    const a = metrics.get(firstId), b = metrics.get(secondId);
-    const lineupA = lastLineup(data, firstId), lineupB = lastLineup(data, secondId);
-    const metricsHTML = [['Average rating', fmt(a.rating), fmt(b.rating)], ['Opponents faced · avg. rating', fmt(a.opposition), fmt(b.opposition)]]
-        .map(([label, av, bv]) => `<div class="metric"><h3>${esc(label)}</h3><div class="metric-pair"><strong>${av}</strong><span>/</span><span>${bv}</span></div></div>`).join('');
-    let lineups = empty('Both teams need a completed encounter before their last lineups can be compared.');
-    if (lineupA && lineupB) {
-        const size = Math.max(lineupA.players.length, lineupB.players.length);
-        lineups = `<h3>${reference ? 'Latest available lineups' : 'Last lineups, board by board'}</h3><p class="table-note">${esc(teamName(firstId))}: ${date(lineupA.match.date)} · ${esc(teamName(secondId))}: ${date(lineupB.match.date)}. ${reference ? 'From the latest completed encounters.' : 'Future lineups are not confirmed.'}</p><div class="table-scroll"><table class="lineup-table"><thead><tr><th>Board</th><th>${esc(teamName(firstId))}</th><th>Rating gap</th><th>${esc(teamName(secondId))}</th></tr></thead><tbody>${Array.from({ length: size }, (_, index) => {
-            const left = lineupA.players[index], right = lineupB.players[index];
-            const gap = left?.rating > 0 && right?.rating > 0 ? left.rating - right.rating : null;
-            return `<tr><td>${index + 1}</td><td>${left ? playerLink(left) : '—'}<small>${fmt(left?.rating)} Elo</small></td><td class="${deltaClass(gap)}">${gap === null ? '—' : `${gap > 0 ? '+' : ''}${gap}`}<span class="rating-gap">left − right</span></td><td>${right ? playerLink(right) : '—'}<small>${fmt(right?.rating)} Elo</small></td></tr>`;
-        }).join('')}</tbody></table></div>`;
-    }
-    const meetings = data.matches.filter(m => m.status === 'completed' && [m.home, m.away].includes(firstId) && [m.home, m.away].includes(secondId));
-    return `<div class="comparison-metrics">${metricsHTML}</div><p class="insight">Based on ${a.played} and ${b.played} completed encounters, respectively.</p>${meetings.map(m => `<p>Head to head this season: <button type="button" class="team-link" data-match="${esc(m.id)}">${esc(teamName(m.home))} ${resultText(m.score)} ${esc(teamName(m.away))} ↗</button></p>`).join('')}${lineups}`;
+function referenceBoards(homeLineup, awayLineup) {
+    if (!homeLineup || !awayLineup) return [];
+    const boardNumbers = [...new Set([...homeLineup.players, ...awayLineup.players].map(player => player.board))].sort((a, b) => a - b);
+    return boardNumbers.map(board => {
+        const home = homeLineup.players.find(player => player.board === board);
+        const away = awayLineup.players.find(player => player.board === board);
+        return { board, home_player: home, away_player: away, home_rating: home?.rating, away_rating: away?.rating };
+    });
+}
+
+function ratingGapHTML(gap) {
+    return `<td class="${deltaClass(gap)}">${gap === null ? '—' : `${gap > 0 ? '+' : ''}${gap}`}</td>`;
+}
+
+function encounterPlayerHTML(player, rating, teamId, color) {
+    const colorLabel = color === 'white' ? 'White · ' : color === 'black' ? 'Black · ' : '';
+    return `<td>${player ? teamPlayerLink(player, teamId) : '—'}<small>${colorLabel}${fmt(rating)} Elo</small></td>`;
+}
+
+function encounterResultHTML(board, referenceTeam, homeId, preview) {
+    const index = referenceTeam === homeId ? 0 : 1;
+    const outcome = board.score ? board.score[index] > board.score[1 - index] ? 'win' : board.score[index] < board.score[1 - index] ? 'loss' : 'draw' : '';
+    const label = outcome === 'win' ? 'Won' : outcome === 'loss' ? 'Lost' : outcome === 'draw' ? 'Draw' : '';
+    const description = label ? ` · ${label} (${teamName(referenceTeam)})` : preview ? 'Not played' : '';
+    return { outcome, html: `<td><span class="encounter-result ${outcome}">${esc(board.raw_score || (preview ? '—' : 'Pending'))}${description ? `<span class="sr-only">${esc(description)}</span>` : ''}</span></td>` };
+}
+
+function encounterTableHTML(match, boards, referenceTeam, gapLabel, preview = false) {
+    const rows = boards.map(board => {
+        const gap = validRating(board.home_rating) && validRating(board.away_rating) ? (board.home_rating - board.away_rating) * (referenceTeam === match.home ? 1 : -1) : null;
+        const awayColor = board.home_color === 'white' ? 'black' : board.home_color === 'black' ? 'white' : null;
+        const result = encounterResultHTML(board, referenceTeam, match.home, preview);
+        return `<tr class="encounter-${result.outcome || 'pending'}"><td>${esc(board.board)}</td>${encounterPlayerHTML(board.home_player, board.home_rating, match.home, board.home_color)}${result.html}${encounterPlayerHTML(board.away_player, board.away_rating, match.away, awayColor)}${ratingGapHTML(gap)}</tr>`;
+    }).join('');
+    return `<div class="table-scroll"><table class="lineup-table encounter-table"><thead><tr><th>Board</th><th>${esc(teamName(match.home))}</th><th>Result</th><th>${esc(teamName(match.away))}</th><th title="${esc(gapLabel)}">Rating gap</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function renderCalendar() {
@@ -222,21 +242,31 @@ async function selectTeam(id) {
 function showMatch(id) {
     const match = data.matches.find(m => m.id === id);
     if (!match) return;
+    const referenceTeam = match.away === selected ? match.away : match.home;
+    const opponentTeam = referenceTeam === match.home ? match.away : match.home;
+    const preview = !match.boards.length && !match.score;
+    const homeLineup = preview ? lastLineup(data, match.home) : null;
+    const awayLineup = preview ? lastLineup(data, match.away) : null;
+    const boards = preview ? referenceBoards(homeLineup, awayLineup) : match.boards;
+    const lineupRating = teamId => average(boards.map(board => board[`${teamId === match.home ? 'home' : 'away'}_rating`]).filter(validRating));
+    const ratingLabel = teamId => `${teamName(teamId)}${boards.length ? ` (${fmt(lineupRating(teamId))} Elo)` : ''}`;
+    const gapLabel = `${ratingLabel(referenceTeam)} − ${ratingLabel(opponentTeam)}`;
+    const resultIndex = referenceTeam === match.home ? 0 : 1;
     $('#matchTitle').textContent = `${teamName(match.home)} ${match.score ? resultText(match.score) : 'vs'} ${teamName(match.away)}`;
-    const metadata = `<p class="dialog-meta">Round ${match.round} · ${date(match.date)} ${match.date.slice(0, 4)} · ${source('pairings', match.id, 'Official encounter')}</p>`;
-    let content;
-    if (match.boards.length) {
-        const homeRating = average(match.boards.map(board => board.home_rating).filter(validRating));
-        const awayRating = average(match.boards.map(board => board.away_rating).filter(validRating));
-        content = `<div class="encounter-averages"><span>Lineup average rating</span><strong>${fmt(homeRating)}</strong><span>vs</span><strong>${fmt(awayRating)}</strong></div>${!match.score ? '<p class="encounter-status">Published boards · results incomplete</p>' : ''}<div class="table-scroll"><table class="lineup-table encounter-table"><thead><tr><th>Board</th><th>${esc(teamName(match.home))}</th><th>Result</th><th>${esc(teamName(match.away))}</th><th title="Home rating minus away rating">Rating gap</th></tr></thead><tbody>${match.boards.map(board => {
-            const gap = validRating(board.home_rating) && validRating(board.away_rating) ? board.home_rating - board.away_rating : null;
-            return `<tr><td>${board.board}</td><td>${playerLink(board.home_player)}<small>${board.home_color === 'black' ? 'Black · ' : board.home_color === 'white' ? 'White · ' : ''}${fmt(board.home_rating)} Elo</small></td><td>${esc(board.raw_score || 'Pending')}</td><td>${playerLink(board.away_player)}<small>${board.home_color === 'black' ? 'White · ' : board.home_color === 'white' ? 'Black · ' : ''}${fmt(board.away_rating)} Elo</small></td><td class="${deltaClass(gap)}">${gap === null ? '—' : `${gap > 0 ? '+' : ''}${gap}`}</td></tr>`;
-        }).join('')}</tbody></table></div>`;
-    } else if (match.score) {
-        content = empty('The team result is published; individual board results are not available yet.');
-    } else {
-        content = `<p class="encounter-status">${match.date < today ? 'Result not published' : 'Not played'} · reference lineups, not confirmed</p>${teamComparisonHTML(match.home, match.away, true)}`;
+    $('#matchTitle').className = deltaClass(match.score ? match.score[resultIndex] - match.score[1 - resultIndex] : 0);
+    const metadata = `<p class="dialog-meta">Round ${match.round} · ${date(match.date)} ${match.date.slice(0, 4)} · ${source('pairings', match.id, 'Official encounter')}</p><p class="table-note">Rating gap: ${esc(gapLabel)}.</p>`;
+    let content = '';
+    if (preview) {
+        content = `<p class="encounter-status">${match.date < today ? 'Result not published' : 'Not played'} · reference lineups, not confirmed</p>`;
+        if (homeLineup && awayLineup) {
+            content += `<p class="table-note">Latest available lineups · ${esc(teamName(match.home))}: ${date(homeLineup.match.date)} · ${esc(teamName(match.away))}: ${date(awayLineup.match.date)}.</p>`;
+        }
+    } else if (boards.length && !match.score) {
+        content = '<p class="encounter-status">Published boards · results incomplete</p>';
     }
+    content += boards.length
+        ? encounterTableHTML(match, boards, referenceTeam, gapLabel, preview)
+        : empty(preview ? 'Both teams need a completed encounter before their last lineups can be compared.' : 'The team result is published; individual board results are not available yet.');
     $('#matchContent').innerHTML = metadata + content;
     if ($('#matchDialog').open) $('#matchDialog').close();
     $('#matchDialog').showModal();
