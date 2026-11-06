@@ -34,6 +34,12 @@ const path = require('path');
     }
     assert(Math.abs(data.teams.reduce((sum, team) => sum + statsFor(data, team.id).delta, 0)) < 1e-10);
     const catalog = JSON.parse(fs.readFileSync(path.join(root, 'data/knsb/catalog.json')));
+    assert(catalog.players.length > 0);
+    assert.equal(new Set(catalog.players.map(player => `${player.team_id}:${player.id}`)).size, catalog.players.length);
+    for (const entry of catalog.teams) {
+        const dataset = JSON.parse(fs.readFileSync(path.join(root, `data/knsb/divisions/${entry.division_id}.json`)));
+        assert.deepEqual(catalog.players.filter(player => player.team_id === entry.id).map(player => player.id).sort(), statsFor(dataset, entry.id).players.map(player => player.id).sort());
+    }
     const asvTeams = catalog.teams.filter(team => team.is_asv).map(team => team.name).sort();
     assert.deepEqual(asvTeams, Array.from({ length: 9 }, (_, index) => `ASV ${index + 1}`));
     assert.equal(new Set(catalog.groups.map(group => group.id)).size, catalog.groups.length);

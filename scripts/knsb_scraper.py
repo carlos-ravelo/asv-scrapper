@@ -195,12 +195,29 @@ def scrape(division_id, output):
     logging.info('KNSB update complete: %s teams, %s matches', len(division['teams']), len(matches))
 
 
+def search_players(dataset):
+    players = {}
+    for match in dataset.get('matches', []):
+        for board in match['boards']:
+            result = board.get('score')
+            if (not result or len(result) != 2 or
+                    any(not isinstance(v, (int, float)) or not 0 <= v <= 1 for v in result) or
+                    sum(result) != 1 or board.get('forfeit') or
+                    not all((board.get(f'{side}_player') or {}).get('id') for side in ('home', 'away'))):
+                continue
+            for side in ('home', 'away'):
+                player = board[f'{side}_player']
+                players[(player['id'], match[side])] = {
+                    'id': player['id'], 'name': player['name'], 'team_id': match[side]}
+    return sorted(players.values(), key=lambda player: (player['name'].casefold(), player['team_id']))
+
+
 def scrape_asv(competition_id, directory):
     response = requests.get(f'{BASE}/scores/index/{competition_id}', timeout=30,
                             headers={'User-Agent': 'ASV-Stats/1.0 (KNSB team dashboard)'})
     response.raise_for_status()
     groups = parse_asv_groups(response.text)
-    catalog = {'schema_version': 1, 'competition_id': competition_id, 'groups': [], 'teams': []}
+    catalog = {'schema_version': 1, 'competition_id': competition_id, 'groups': [], 'teams': [], 'players': []}
     failed = []
     for group in groups:
         output = directory / 'divisions' / f'{group["id"]}.json'
@@ -216,6 +233,7 @@ def scrape_asv(competition_id, directory):
             catalog['season'] = dataset['season']
         if dataset['season'] != catalog['season']:
             raise ValueError('Mixed seasons in catalog; previous catalog retained')
+        catalog['players'].extend(search_players(dataset))
         catalog['groups'].append({**group, 'updated_at': dataset['updated_at']})
         catalog['teams'].extend({'id': t['id'], 'name': t['name'], 'division_id': group['id'],
                                  'is_asv': bool(re.fullmatch(r'ASV \d+', t['name']))} for t in dataset['teams'])

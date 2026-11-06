@@ -21,3 +21,5 @@ main{max-width:940px;margin:auto;padding:20px}.page-heading{display:flex;justify
 .player-games .player-game-win{background:#e6f4ea}.player-games .player-game-loss{background:#fce8e6}.player-games .player-game-draw{background:#f8f9fa}.player-result{padding:3px 6px;border-radius:4px;white-space:nowrap}.player-result.win{color:#155724}.player-result.loss{color:#721c24}
 
 
+
+#teamOptions .player-search-option small{display:block;margin-top:3px;white-space:normal;line-height:1.4;font-weight:400}.players-table .searched-player{background:#edf3ff}.players-table .searched-player td:first-child{box-shadow:inset 3px 0 var(--blue)}

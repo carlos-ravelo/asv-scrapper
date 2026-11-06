@@ -40,6 +40,8 @@ function setView(view, focus = false) {
     history.replaceState(null, '', url);
 }
 
+const searchKey = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase().trim().replace(/\s+/g, ' ');
+let highlightedPlayer = null;
 let activeOption = -1;
 function setActiveOption(index) {
     const options = [...document.querySelectorAll('[data-team-option]')];
@@ -61,12 +63,20 @@ function closeTeamPicker(restore = true) {
 
 function renderTeamOptions(query = '') {
     if (!catalog) return;
-    const matches = catalog.teams.filter(t => t.name.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+    const key = searchKey(query);
+    const matches = catalog.teams.filter(t => searchKey(t.name).includes(key));
+    const players = key.length >= 2 ? (catalog.players || []).filter(player => key.split(' ').every(part => searchKey(player.name).includes(part))) : [];
     const asv = matches.filter(t => t.is_asv).sort((a, b) => a.name.localeCompare(b.name, 'en', { numeric: true }));
     const option = t => `<button type="button" role="option" tabindex="-1" id="team-option-${esc(t.id)}" data-team-option="${esc(t.id)}" data-asv="${t.is_asv}" aria-selected="${t.id === selected}"><span>${esc(t.name)}</span><small>${esc(catalog.groups.find(g => g.id === t.division_id)?.name)}</small></button>`;
     const group = (name, teams) => teams.length ? `<div role="group" aria-label="${esc(name)}"><div class="team-option-group" aria-hidden="true">${esc(name)}</div>${teams.map(option).join('')}</div>` : '';
     $('#teamOptions').innerHTML = group('ASV teams', asv) + catalog.groups.map(g => group(g.name, matches.filter(t => !t.is_asv && t.division_id === g.id))).join('');
-    $('#searchStatus').textContent = matches.length ? `${matches.length} teams` : 'No teams found. Try a different name.';
+    if (players.length) {
+        $('#teamOptions').insertAdjacentHTML('beforeend', `<div role="group" aria-label="Players"><div class="team-option-group" aria-hidden="true">Players</div>${players.slice(0, 30).map(player => {
+            const entry = catalogTeam(player.team_id);
+            return `<button type="button" role="option" tabindex="-1" id="player-option-${esc(player.team_id)}-${esc(player.id)}" data-team-option="${esc(player.team_id)}" data-search-player="${esc(player.id)}" aria-selected="false" class="player-search-option"><span>${esc(player.name)}<small>Played for ${esc(entry?.name)} · ${esc(catalog.groups.find(g => g.id === entry?.division_id)?.name)}</small></span></button>`;
+        }).join('')}</div>`);
+    }
+    $('#searchStatus').textContent = matches.length || players.length ? `${matches.length} teams${key.length >= 2 ? ` · ${players.length} player results${players.length > 30 ? ' (first 30 shown; keep typing to narrow)' : ''}` : ' · Type 2 characters to find players'}` : 'No teams found or players with recorded games. Try a different name.';
     activeOption = -1;
     $('#teamSelect').removeAttribute('aria-activedescendant');
     if (!$('#teamPopup').hidden) setActiveOption(0);
@@ -75,18 +85,18 @@ function renderTeamOptions(query = '') {
 function openTeamPicker() {
     if (!catalog) return;
     $('#teamSelect').value = '';
-    $('#teamSelect').placeholder = 'Search teams…';
+    $('#teamSelect').placeholder = 'Search teams or players…';
     $('#teamPopup').hidden = false;
     $('#teamSelect').setAttribute('aria-expanded', 'true');
     $('#teamPickerToggle').setAttribute('aria-label', 'Close team list');
     renderTeamOptions();
 }
 
-function chooseTeam(id) {
+function chooseTeam(id, playerId = null) {
     if (!catalogTeam(id)) return;
     closeTeamPicker(false);
     $('#teamSelect').value = catalogTeam(id).name;
-    selectTeam(id);
+    selectTeam(id, playerId);
 }
 
 function renderFavorites() {
@@ -173,7 +183,7 @@ function renderCalendar() {
 function renderPlayers() {
     const players = metrics.get(selected).players;
     $('#playersCount').textContent = `${players.length} players`;
-    $('#players').innerHTML = players.length ? `<div class="table-scroll"><table class="players-table"><thead><tr><th>Player</th><th>Rating¹</th><th>Games</th><th>Points</th><th>Avg. board</th></tr></thead><tbody>${players.map(player => `<tr><td>${playerLink(player)}</td><td>${fmt(player.rating)}</td><td>${player.games}</td><td>${fmt(player.points, 1)}</td><td>${fmt(player.boards.reduce((sum, board) => sum + board, 0) / player.boards.length, 1)}</td></tr>`).join('')}</tbody></table></div><p class="table-note">¹ Latest rating recorded in this player’s encounters. Ordered by appearances. Walkovers are excluded.</p>` : empty('Players will appear here once individual results are published.');
+    $('#players').innerHTML = players.length ? `<div class="table-scroll"><table class="players-table"><thead><tr><th>Player</th><th>Rating¹</th><th>Games</th><th>Points</th><th>Avg. board</th></tr></thead><tbody>${players.map(player => `<tr class="${player.id === highlightedPlayer ? 'searched-player' : ''}"><td>${playerLink(player)}</td><td>${fmt(player.rating)}</td><td>${player.games}</td><td>${fmt(player.points, 1)}</td><td>${fmt(player.boards.reduce((sum, board) => sum + board, 0) / player.boards.length, 1)}</td></tr>`).join('')}</tbody></table></div><p class="table-note">¹ Latest rating recorded in this player’s encounters. Ordered by appearances. Walkovers are excluded.</p>` : empty('Players will appear here once individual results are published.');
 }
 
 function applyTeam(id) {
@@ -198,7 +208,7 @@ function loadError(message, retryAction) {
     $('#loadStatus').append(retry);
 }
 
-async function selectTeam(id) {
+async function selectTeam(id, playerId = null) {
     const entry = catalogTeam(id);
     if (!entry || !/^\d+$/.test(entry.division_id)) return;
     const sequence = ++loadSequence;
@@ -227,15 +237,25 @@ async function selectTeam(id) {
         const stale = Date.now() - updated.getTime() > 36 * 60 * 60 * 1000;
         $('#updatedAt').textContent = `${stale ? 'Data may be outdated · ' : ''}Updated ${updated.toLocaleString('en-GB', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} (Amsterdam)`;
         $('#updatedAt').classList.toggle('stale', stale);
+        highlightedPlayer = playerId;
         applyTeam(id);
         $('#favoriteButton').disabled = false;
         $('#loadStatus').hidden = true;
         $('#groupContent').hidden = false;
         $('#groupContent').setAttribute('aria-busy', 'false');
+        if (playerId) {
+            setView('team');
+            $('#playersSection').open = true;
+            const row = [...document.querySelectorAll('#players tr')].find(row => row.querySelector('[data-player]')?.dataset.player === playerId);
+            if (row) {
+                row.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+                row.querySelector('[data-player]').focus({ preventScroll: true });
+            }
+        }
     } catch {
         if (sequence !== loadSequence) return;
         $('#groupContent').setAttribute('aria-busy', 'false');
-        loadError(`Could not load ${entry.name}. Choose another team or try again.`, () => selectTeam(id));
+        loadError(`Could not load ${entry.name}. Choose another team or try again.`, () => selectTeam(id, playerId));
     }
 }
 
@@ -346,14 +366,14 @@ $('#teamSelect').addEventListener('keydown', event => {
     if (event.key === 'Enter' && !$('#teamPopup').hidden) {
         event.preventDefault();
         const option = document.querySelectorAll('[data-team-option]')[activeOption];
-        if (option) chooseTeam(option.dataset.teamOption);
+        if (option) chooseTeam(option.dataset.teamOption, option.dataset.searchPlayer);
     }
 });
 $('#teamSelect').addEventListener('blur', () => closeTeamPicker());
 $('#teamOptions').addEventListener('pointerdown', event => { if (event.target.closest('[data-team-option]')) event.preventDefault(); });
 $('#teamOptions').addEventListener('click', event => {
     const option = event.target.closest('[data-team-option]');
-    if (option) chooseTeam(option.dataset.teamOption);
+    if (option) chooseTeam(option.dataset.teamOption, option.dataset.searchPlayer);
 });
 $('#performanceToggle').addEventListener('change', event => {
     $('#standings').classList.toggle('show-performance', event.target.checked);
