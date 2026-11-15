@@ -3,7 +3,7 @@ import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=3';
 import { createEloChart } from './chartManager.js?v=7';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
-import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js?v=2';
+import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js?v=3';
 import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js?v=2';
 
 // ==========================================
@@ -16,6 +16,7 @@ const DOM = {
     historyContainer: document.getElementById(SELECTORS.HISTORY_CONTAINER),
     emptyState: document.getElementById(SELECTORS.EMPTY_STATE),
     statsContainer: document.getElementById(SELECTORS.STATS_CONTAINER),
+    playerChips: document.getElementById(SELECTORS.PLAYER_CHIPS),
     modalChips: document.getElementById(SELECTORS.MODAL_CHIPS),
     clearBtn: document.getElementById(SELECTORS.BTN_CLEAR.substring(1)),
     directorySearch: document.getElementById(SELECTORS.DIR_SEARCH),
@@ -139,6 +140,7 @@ function updateDashboard() {
     if (DOM.emptyState) DOM.emptyState.style.display = 'none';
     if (DOM.chartContainer) DOM.chartContainer.style.display = 'block';
 
+    renderPlayerChips(DOM.playerChips, state.selectedPlayers, state.eloData);
     renderPlayerChips(DOM.modalChips, state.selectedPlayers, state.eloData);
 
     const cutoffDate = getCutoffDate();

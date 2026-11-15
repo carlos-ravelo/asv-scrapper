@@ -1,0 +1,14 @@
+.fide-search-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    min-height: 28px;
+    vertical-align: middle;
+    border-radius: 4px;
+    opacity: .65;
+}
+.fide-search-link img { display: block; width: 23px; height: 16px; }
+.fide-search-link:hover, .fide-search-link:focus-visible { opacity: 1; background: #edf3ff; }
+.fide-search-link:focus-visible { outline: 2px solid #3971c9; outline-offset: 2px; }

@@ -1,4 +1,5 @@
 import { SELECTORS } from './constants.js';
+import { createFideSearchLink } from './fide-search.js?v=1';
 export const chartColors = ['#0056b3', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
 
 export const UI_CLASSES = Object.freeze({
@@ -117,6 +118,7 @@ export function renderPlayerChips(container, selectedPlayers, eloData) {
         clone.querySelector(UI_CLASSES.CHIP_NAME).textContent = player;
         clone.querySelector(UI_CLASSES.CHIP_ELO).textContent = `(${lastElo})`;
         clone.querySelector(UI_CLASSES.CHIP_CLOSE).dataset.player = player;
+        chip.insertBefore(createFideSearchLink(player), clone.querySelector(UI_CLASSES.CHIP_CLOSE));
         
         container.appendChild(clone);
     });

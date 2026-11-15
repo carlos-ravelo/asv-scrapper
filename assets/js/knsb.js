@@ -1,4 +1,5 @@
 import { average, validRating, statsFor, nextMatch, teamMatches, teamSide, opposite, lastLineup, rankHistory } from './knsb-model.js?v=1';
+import { createFideSearchLink } from './fide-search.js?v=1';
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -311,6 +312,7 @@ function showPlayer(id) {
     if (!player) return;
     $('#playerTitle').textContent = player.name;
     $('#playerContent').innerHTML = `<p class="dialog-meta">${esc(data.name)} · ${esc(data.season)} · ${games.length} recorded games</p><div class="table-scroll"><table class="player-games"><thead><tr><th>Date</th><th>Board</th><th>Color</th><th>Opponent</th><th>Rating</th><th>Opponent rating</th><th>Result</th></tr></thead><tbody>${games.map(game => `<tr class="player-game-${game.outcome}"><td>${date(game.match.date)}<small>Round ${game.match.round}</small></td><td>${game.board.board}</td><td>${game.color === '—' ? '—' : game.color === 'white' ? 'White' : 'Black'}</td><td>${playerLink(game.opponent)}<small>${esc(teamName(game.opponentTeam))}</small></td><td>${fmt(game.rating)}</td><td>${fmt(game.opponentRating)}</td><td><button type="button" class="team-link player-result ${game.outcome}" data-match="${esc(game.match.id)}">${game.outcome ? `${game.outcome === 'win' ? 'Won' : game.outcome === 'loss' ? 'Lost' : 'Draw'} · ` : ''}${esc(game.result)}${game.board.forfeit ? ' (forfeit)' : ''} ↗</button></td></tr>`).join('')}</tbody></table></div><p class="table-note">Results are shown from this player’s side. ${source('players', player.id, 'Official player page')}</p>`;
+    $('#playerContent > .table-note').append(' · ', createFideSearchLink(player.name));
     if ($('#playerDialog').open) $('#playerDialog').close();
     $('#playerDialog').showModal();
 }

@@ -6,6 +6,7 @@
     <title>ASV Chess Tracker</title>
     <link rel="stylesheet" href="assets/css/style.css?v=33">
     <link rel="stylesheet" href="assets/css/navigation.css?v=1">
+    <link rel="stylesheet" href="assets/css/player-links.css?v=1">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.2.0/dist/chartjs-plugin-zoom.min.js"></script>
@@ -83,6 +84,7 @@
                 </div>
 
                 <div id="chartContainer" class="chart-container" style="display: none;">
+                    <div id="playerChipsContainer" class="chips-container" role="group" aria-label="Selected players"></div>
                     <div id="playerStatsContainer" class="stats-container" style="display: none;"></div>
                     <div class="chart-frame">
                             <button type="button" id="maximizeChartBtn" class="chart-icon-button" aria-label="Expand chart" title="Expand chart" data-html2canvas-ignore>
@@ -115,7 +117,7 @@
         </div>
     </div>
     
-    <script type="module" src="assets/js/app.js?v=34"></script>
+    <script type="module" src="assets/js/app.js?v=36"></script>
     
     <!-- Modal -->
     <div id="chartModal" class="modal-overlay" style="display: none;">
