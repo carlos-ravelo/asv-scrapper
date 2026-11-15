@@ -1,5 +1,6 @@
 import { SELECTORS } from './constants.js';
 import { createFideSearchLink } from './fide-search.js?v=1';
+import { createRatingLookup } from './dataProcessor.js?v=3';
 export const chartColors = ['#0056b3', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
 
 export const UI_CLASSES = Object.freeze({
@@ -10,7 +11,7 @@ export const UI_CLASSES = Object.freeze({
     STAT_WINRATE: '.stat-winrate',
     STAT_TOTAL: '.stat-total',
     STAT_RIVAL: '.stat-rival',
-    STAT_BESTWIN: '.stat-bestwin',
+    STAT_BESTRESULT: '.stat-bestresult',
     STAT_STREAK: '.stat-streak',
     HISTORY_ROW: '.history-row',
     COL_DATE: '.col-date',
@@ -166,11 +167,12 @@ export function renderStats(statsContainer, stats) {
             rivalContainer.textContent = "N/A";
         }
 
-        const bestWinContainer = clone.querySelector(UI_CLASSES.STAT_BESTWIN);
-        if (stats.bestWin) {
-            bestWinContainer.appendChild(createPlayerLinkNode(stats.bestWin.opponent, ` (${stats.bestWin.elo})`));
+        const bestResultContainer = clone.querySelector(UI_CLASSES.STAT_BESTRESULT);
+        if (stats.bestResult) {
+            bestResultContainer.append(`${stats.bestResult.outcome} vs `,
+                createPlayerLinkNode(stats.bestResult.opponent, ` (${stats.bestResult.elo})`));
         } else {
-            bestWinContainer.textContent = "N/A";
+            bestResultContainer.textContent = 'N/A';
         }
         
         renderStreak(clone.querySelector(UI_CLASSES.STAT_STREAK), stats.streak);
@@ -200,9 +202,10 @@ export function renderStats(statsContainer, stats) {
     }
 }
 
-export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
+export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers, eloData = []) {
     if (!tbody || !DOM.tpl.historyRow) return;
     tbody.innerHTML = "";
+    const ratingAt = createRatingLookup(eloData);
     
     matchesToDisplay.sort((a, b) => {
         const da = a.Publish_Date && a.Publish_Date !== 'Unknown' ? a.Publish_Date : '';
@@ -239,6 +242,17 @@ export function renderHistoryTable(tbody, matchesToDisplay, selectedPlayers) {
         blackSpan.textContent = match.Zwartspeler || '';
         blackSpan.dataset.player = match.Zwartspeler;
         if (isBlack) blackSpan.classList.add(UI_CLASSES.TEXT_BOLD);
+
+        if (selectedPlayers.length === 1) {
+            [[whiteSpan, match.Witspeler], [blackSpan, match.Zwartspeler]].forEach(([span, name]) => {
+                const rating = ratingAt(name, match.Publish_Date);
+                const label = document.createElement('small');
+                label.className = 'history-rating';
+                label.textContent = rating === null ? ' —' : ` (${rating})`;
+                label.title = rating === null ? 'No published rating available for this date' : 'Latest published club rating on or before this result’s publication date';
+                span.after(label);
+            });
+        }
         
         clone.querySelector(UI_CLASSES.COL_RESULT).textContent = match.Uitslag || '';
         

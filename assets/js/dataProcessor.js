@@ -118,11 +118,25 @@ function calculateStreak(player, matches) {
     });
 }
 
-function getLatestElo(playerName, eloData) {
-    const history = eloData
-        .filter(r => r.Naam === playerName && r.Publish_Date && r.Publish_Date !== 'Unknown')
-        .sort((a, b) => a.Publish_Date.localeCompare(b.Publish_Date));
-    return history.length > 0 ? history[history.length - 1].ELO : 'N/A';
+export function createRatingLookup(eloData) {
+    const histories = new Map();
+    eloData.forEach(row => {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(row.Publish_Date) || !Number.isFinite(Number(row.ELO)) || Number(row.ELO) <= 0) return;
+        if (!histories.has(row.Naam)) histories.set(row.Naam, []);
+        histories.get(row.Naam).push({ date: row.Publish_Date, rating: Number(row.ELO) });
+    });
+    histories.forEach(history => history.sort((a, b) => a.date.localeCompare(b.date)));
+    return (name, date) => {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+        const history = histories.get(name) || [];
+        let low = 0, high = history.length;
+        while (low < high) {
+            const mid = Math.floor((low + high) / 2);
+            if (history[mid].date <= date) low = mid + 1;
+            else high = mid;
+        }
+        return low ? history[low - 1].rating : null;
+    };
 }
 
 export function getPlayerStats(selectedPlayers, matches, eloData) {
@@ -130,8 +144,8 @@ export function getPlayerStats(selectedPlayers, matches, eloData) {
         const player = selectedPlayers[0];
         let wins = 0, losses = 0, draws = 0;
         const rivalCounts = {};
-        let bestWin = null;
-        let bestWinElo = -1;
+        let bestResult = null;
+        const ratingAt = createRatingLookup(eloData);
 
         matches.forEach(match => {
             const isWhite = match.Witspeler === player;
@@ -144,16 +158,16 @@ export function getPlayerStats(selectedPlayers, matches, eloData) {
 
             if (won) {
                 wins++;
-                const oppEloStr = getLatestElo(opponent, eloData);
-                const oppElo = parseInt(oppEloStr) || 0;
-                if (oppElo > bestWinElo) {
-                    bestWinElo = oppElo;
-                    bestWin = { opponent, elo: oppEloStr };
-                }
             } else if (lost) {
                 losses++;
             } else if (match.Uitslag === '½-½') {
                 draws++;
+            }
+            if (won || match.Uitslag === '½-½') {
+                const oppElo = ratingAt(opponent, match.Publish_Date);
+                if (oppElo !== null && (!bestResult || oppElo > bestResult.elo || (oppElo === bestResult.elo && won && bestResult.outcome === 'Draw'))) {
+                    bestResult = { opponent, elo: oppElo, outcome: won ? 'Win' : 'Draw' };
+                }
             }
         });
 
@@ -178,7 +192,7 @@ export function getPlayerStats(selectedPlayers, matches, eloData) {
             wins, losses, draws,
             totalGames: total,
             winRate,
-            bestWin,
+            bestResult,
             rivals: { names: mostFrequentRivals, count: maxRivalGames },
             streak
         };

@@ -3,8 +3,8 @@ import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=3';
 import { createEloChart } from './chartManager.js?v=7';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
-import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js?v=3';
-import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js?v=2';
+import { chartColors, renderPlayerChips, highlightDirectoryRows, renderStats, renderHistoryTable, renderDirectoryTable } from './uiComponents.js?v=4';
+import { getSortedDirectory, getChartData, getFilteredMatches, getPlayerStats } from './dataProcessor.js?v=3';
 
 // ==========================================
 // 1. DOM CACHE
@@ -167,7 +167,7 @@ function updateDashboard() {
         renderStats(DOM.statsContainer, statsData);
         renderStats(DOM.modalStatsContainer, statsData); // Update modal stats
 
-        renderHistoryTable(DOM.matchHistoryBody, matchesToDisplay, state.selectedPlayers);
+        renderHistoryTable(DOM.matchHistoryBody, matchesToDisplay, state.selectedPlayers, state.eloData);
     } else {
         if (DOM.historyContainer) DOM.historyContainer.style.display = 'none';
         renderStats(DOM.statsContainer, null);

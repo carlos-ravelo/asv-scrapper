@@ -282,6 +282,7 @@ canvas { max-height: 300px; margin-top: 20px; }
 .text-muted { color: #6c757d; font-size: 13px; }
 .history-cell { padding: 8px; border-bottom: 1px solid #ddd; }
 .history-title { margin-top: 0; }
+.history-rating { color: #637585; font-size: 11px; white-space: nowrap; }
 
 /* --- Dynamic Row and Text Colors --- */
 .row-win { background-color: #e6f4ea; }
