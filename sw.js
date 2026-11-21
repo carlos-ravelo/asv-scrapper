@@ -1,6 +1,6 @@
 const scope = new URL(self.registration.scope);
 const prefix = `asv-stats-shell:${scope.pathname}:`;
-const cacheName = `${prefix}v1`;
+const cacheName = `${prefix}v2`;
 const assets = [
     'index.html', 'knsb.html', 'manifest.json',
     'assets/css/encounter.css', 'assets/css/knsb.css', 'assets/css/navigation.css',

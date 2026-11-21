@@ -75,7 +75,9 @@ const WebSocket = require('ws');
         await send('Runtime.enable');
         await send('Page.enable');
         await send('Emulation.setDeviceMetricsOverride', { width: 1365, height: 1000, deviceScaleFactor: 1, mobile: false });
-        await send('Page.navigate', { url });
+        await send('Page.navigate', { url: url.replace('/knsb.html', '/index.html?p=Carlos+Omar+Ravelo+Ivarez') });
+        await waitFor("document.querySelector('a[href=\"knsb.html\"]') !== null");
+        await evaluate("document.querySelector('a[href=\"knsb.html\"]').click()");
         const ready = '!document.querySelector("#groupContent").hidden';
         await waitFor(`document.querySelector('#dashboard') && ${ready}`);
         assert.equal(await evaluate('document.querySelectorAll("#standings tbody tr").length'), 10);
@@ -88,6 +90,24 @@ const WebSocket = require('ws');
             await send('Input.dispatchMouseEvent', { type: 'mousePressed', ...point, button: 'left', clickCount: 1 });
             await send('Input.dispatchMouseEvent', { type: 'mouseReleased', ...point, button: 'left', clickCount: 1 });
         }
+        await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true });
+        await send('Emulation.setTouchEmulationEnabled', { enabled: true });
+        async function tap(selector) {
+            const point = await evaluate(`(() => { const element = document.querySelector(${JSON.stringify(selector)}); element.scrollIntoView({ block: 'center' }); const rect = element.getBoundingClientRect(); return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }; })()`);
+            await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [point] });
+            await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        }
+        for (const id of ['7393', '7123']) {
+            await tap('#teamSelect');
+            await evaluate("document.querySelector('#teamSelect').blur()");
+            assert.equal(await evaluate('document.querySelector("#teamPopup").hidden'), false, 'Losing input focus without a new focus target keeps touch options available');
+            await tap(`[data-team-option="${id}"]`);
+            await waitFor(`${ready} && document.querySelector('#teamSelect').dataset.team === '${id}'`);
+            assert.equal(await evaluate('new URL(location.href).searchParams.get("team")'), id);
+        }
+        await send('Emulation.setTouchEmulationEnabled', { enabled: false });
+        await send('Emulation.setDeviceMetricsOverride', { width: 1365, height: 1000, deviceScaleFactor: 1, mobile: false });
+        await evaluate('window.scrollTo(0, 0)');
         await clickWithMouse('#teamSelect');
         assert.equal(await evaluate('document.querySelector("#teamSelect").value'), '', 'Opening starts a fresh query without deleting the selected team');
         assert.equal(await evaluate('document.querySelectorAll("[data-team-option]").length'), 80);
@@ -102,7 +122,7 @@ const WebSocket = require('ws');
         assert.equal(await evaluate('document.querySelector("#teamSelect").getAttribute("aria-expanded")'), 'true');
         await clickWithMouse('#teamPickerToggle');
         assert.equal(await evaluate('document.querySelector("#teamSelect").getAttribute("aria-expanded")'), 'false');
-        assert.deepEqual(groupRequests, ['/data/knsb/divisions/669.json'], 'Browsing options does not change the team or download data');
+        assert.deepEqual(groupRequests, ['/data/knsb/divisions/669.json', '/data/knsb/divisions/701.json'], 'Browsing options does not change the team or download data');
         async function openView(view) {
             await evaluate(`document.querySelector('#tab-${view}').click()`);
             assert.equal(await evaluate(`document.querySelector('#view-${view}').hidden`), false);

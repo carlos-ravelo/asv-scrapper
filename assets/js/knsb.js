@@ -374,8 +374,12 @@ $('#teamSelect').addEventListener('keydown', event => {
         if (option) chooseTeam(option.dataset.teamOption, option.dataset.searchPlayer);
     }
 });
-$('#teamSelect').addEventListener('blur', () => closeTeamPicker());
-$('#teamOptions').addEventListener('pointerdown', event => { if (event.target.closest('[data-team-option]')) event.preventDefault(); });
+$('.team-picker').addEventListener('focusout', event => {
+    if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) closeTeamPicker();
+});
+$('#teamOptions').addEventListener('pointerdown', event => {
+    if (event.pointerType === 'mouse' && event.target.closest('[data-team-option]')) event.preventDefault();
+});
 $('#teamOptions').addEventListener('click', event => {
     const option = event.target.closest('[data-team-option]');
     if (option) chooseTeam(option.dataset.teamOption, option.dataset.searchPlayer);
