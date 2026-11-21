@@ -18,6 +18,12 @@ Static dashboards for ASV club players and the KNSB team competition.
 
 Serve this directory through a static web server. The existing local server exposes the dashboards at `http://localhost:5000/` and `http://localhost:5000/knsb.html`.
 
+## Install ASV Stats
+
+Open [ASV Stats](https://asv-stats.carlos-ravelo.nl/) and install it from the browser menu. After a successful online visit, the app can reopen both screens offline. Club statistics and KNSB team groups become available offline after their data has loaded successfully. Saved data is labeled, and reloading with a connection requests the latest datasets.
+
+The PWA uses local copies of its browser libraries. Increase the shell cache version in `sw.js` when changing the interface or those libraries. Scraper updates do not require a cache version change.
+
 ## Update data
 
 ```bash

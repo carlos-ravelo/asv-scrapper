@@ -1,5 +1,6 @@
-import Alpine from 'https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/module.esm.js';
-import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=3';
+import Alpine from '../vendor/alpine.esm.js';
+import { loadDataset } from './data.js';
+import { calculateRecap, renderRecap, downloadRecap } from './recap.js?v=4';
 import { createEloChart } from './chartManager.js?v=7';
 import { MAX_SELECTED_PLAYERS, SELECTORS } from './constants.js';
 import { removeAccents } from './utils.js';
@@ -100,15 +101,25 @@ function unlockBackgroundScroll() {
 // 3. INITIALIZATION
 // ==========================================
 Promise.all([
-    fetch('data/asv_results.json').then(res => res.json()),
-    fetch('data/asv_elo.json').then(res => res.json())
+    loadDataset('data/asv_results.json', Array.isArray),
+    loadDataset('data/asv_elo.json', Array.isArray)
 ]).then(([results, elo]) => {
-    state.resultsData = results;
-    state.eloData = elo;
+    state.resultsData = results.data;
+    state.eloData = elo.data;
+    if (results.saved || elo.saved) showClubDataStatus('Showing the last downloaded club data.');
     renderLanding();
     renderSavedViews();
     loadStateFromStorageOrUrl();
-}).catch(error => console.error("Error loading JSON data:", error));
+}).catch(error => {
+    showClubDataStatus('Club data could not be loaded. Connect to the internet and reload.');
+    console.error('Error loading JSON data:', error);
+});
+
+function showClubDataStatus(message) {
+    const status = document.getElementById('clubDataStatus');
+    status.textContent = message;
+    status.hidden = false;
+}
 
 // ==========================================
 // 4. UI ORCHESTRATION

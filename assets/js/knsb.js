@@ -1,5 +1,6 @@
 import { average, validRating, statsFor, nextMatch, teamMatches, teamSide, opposite, lastLineup, rankHistory } from './knsb-model.js?v=1';
 import { createFideSearchLink } from './fide-search.js?v=1';
+import { loadDataset } from './data.js';
 
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -221,23 +222,23 @@ async function selectTeam(id, playerId = null) {
     $('#loadStatus').hidden = false;
     $('#loadStatus').textContent = `Loading ${entry.name}…`;
     try {
-        let dataset = groupCache.get(entry.division_id);
-        if (!dataset) {
-            const response = await fetch(`./data/knsb/divisions/${entry.division_id}.json`, { cache: 'no-store' });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            dataset = await response.json();
-            if (dataset.schema_version !== 1 || dataset.division_id !== entry.division_id || !dataset.teams?.some(t => t.id === id) || !Array.isArray(dataset.matches)) throw new Error('Invalid competition data');
-            groupCache.set(entry.division_id, dataset);
+        let group = groupCache.get(entry.division_id);
+        if (!group) {
+            group = await loadDataset(`data/knsb/divisions/${entry.division_id}.json`, dataset =>
+                dataset?.schema_version === 1 && dataset.division_id === entry.division_id
+                && Array.isArray(dataset.teams) && dataset.teams.some(t => t.id === id) && Array.isArray(dataset.matches));
+            groupCache.set(entry.division_id, group);
         }
         if (sequence !== loadSequence) return;
-        data = dataset;
+        data = group.data;
         metrics = new Map(data.teams.map(t => [t.id, statsFor(data, t.id)]));
         $('#competitionLabel').textContent = `${data.name} · ${data.season}`;
         $('#divisionSource').href = sourceURL('divisions', data.division_id);
         const updated = new Date(data.updated_at);
         const stale = Date.now() - updated.getTime() > 36 * 60 * 60 * 1000;
-        $('#updatedAt').textContent = `${stale ? 'Data may be outdated · ' : ''}Updated ${updated.toLocaleString('en-GB', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} (Amsterdam)`;
-        $('#updatedAt').classList.toggle('stale', stale);
+        const dataNotice = group.saved ? 'Showing saved data · ' : stale ? 'Data may be outdated · ' : '';
+        $('#updatedAt').textContent = `${dataNotice}Updated ${updated.toLocaleString('en-GB', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} (Amsterdam)`;
+        $('#updatedAt').classList.toggle('stale', stale || group.saved);
         highlightedPlayer = playerId;
         applyTeam(id);
         $('#favoriteButton').disabled = false;
@@ -256,7 +257,9 @@ async function selectTeam(id, playerId = null) {
     } catch {
         if (sequence !== loadSequence) return;
         $('#groupContent').setAttribute('aria-busy', 'false');
-        loadError(`Could not load ${entry.name}. Choose another team or try again.`, () => selectTeam(id, playerId));
+        const message = navigator.onLine ? `Could not load ${entry.name}. Choose another team or try again.`
+            : `No saved data for ${entry.name}. Connect to the internet or choose a team you opened before.`;
+        loadError(message, () => selectTeam(id, playerId));
     }
 }
 
@@ -319,10 +322,10 @@ function showPlayer(id) {
 
 async function load() {
     try {
-        const response = await fetch('./data/knsb/catalog.json', { cache: 'no-store' });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        catalog = await response.json();
-        if (catalog.schema_version !== 1 || !catalog.teams?.length || !catalog.groups?.length) throw new Error('Invalid catalog');
+        const result = await loadDataset('data/knsb/catalog.json', value => value?.schema_version === 1
+            && Array.isArray(value.teams) && value.teams.length > 0 && Array.isArray(value.groups) && value.groups.length > 0);
+        catalog = result.data;
+        $('#savedCatalogNotice').hidden = !result.saved;
         const requested = new URLSearchParams(location.search).get('team');
         const initial = [requested, ...favorites, catalog.teams.find(t => t.name === 'ASV 4')?.id, catalog.teams[0].id].find(id => catalogTeam(id));
         renderTeamOptions();
