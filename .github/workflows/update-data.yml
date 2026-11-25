@@ -50,6 +50,7 @@ jobs:
           PY
 
       - name: Commit updated data
+        id: commit
         run: |
           git add data
           if git diff --cached --quiet; then
@@ -61,6 +62,21 @@ jobs:
           git commit -m "Update data $(date -u +'%Y-%m-%d %H:%M UTC')"
           git pull --rebase
           git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      # Cloudflare's Git integration does not always receive pushes, so the deploy is requested explicitly.
+      # CLOUDFLARE_DEPLOY_HOOK is the Deploy Hook URL (Worker asv-stats → Settings → Builds → Deploy Hooks).
+      - name: Deploy to Cloudflare
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "::warning::CLOUDFLARE_DEPLOY_HOOK is not set; relying on Cloudflare's Git integration."
+            exit 0
+          fi
+          curl -fsS -X POST "$DEPLOY_HOOK" -o /dev/null
+          echo "Cloudflare build requested."
 
       # Data that was scraped successfully is still published; the run is then marked as failed
       # so GitHub sends a notification.

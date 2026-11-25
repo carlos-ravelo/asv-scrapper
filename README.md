@@ -49,7 +49,7 @@ Both scrapers resolve their data paths relative to the repository, regardless of
 
 ## Scheduled updates
 
-GitHub Actions runs [`update-data.yml`](.github/workflows/update-data.yml) at 09:00 and 21:00 UTC and on demand (**Actions → Update data → Run workflow**). It checks the parsers against the saved HTML, runs `run-scrapers.sh`, validates the JSON and commits `data/` when it changed. That push triggers the Cloudflare deployment. If a scraper fails, the data that did update is still published and the run is marked as failed, so GitHub sends a notification.
+GitHub Actions runs [`update-data.yml`](.github/workflows/update-data.yml) at 09:00 and 21:00 UTC and on demand (**Actions → Update data → Run workflow**). It checks the parsers against the saved HTML, runs `run-scrapers.sh`, validates the JSON and commits `data/` when it changed. It then calls the Cloudflare Deploy Hook stored in the `CLOUDFLARE_DEPLOY_HOOK` secret, so the deployment does not depend on Cloudflare receiving the push. If a scraper fails, the data that did update is still published and the run is marked as failed, so GitHub sends a notification.
 
 `setup-cron.sh` remains as a fallback to run the same job from any machine with cron.
 
