@@ -6,7 +6,9 @@ const path = require('path');
     const root = path.resolve(__dirname, '..');
     const source = fs.readFileSync(path.join(root, 'assets/js/knsb-model.js'), 'utf8');
     const { statsFor, nextMatch, expectedScore, lastLineup, rankHistory } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
-    const data = JSON.parse(fs.readFileSync(path.join(root, 'data/knsb/divisions/669.json')));
+    // Frozen snapshot of division 669 (ASV 1) after round 3: the live data/knsb files are
+    // refreshed by the scheduled scraper, so exact counts are asserted against this fixture only.
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/knsb/division-669.json')));
     assert.equal(data.matches.length, 45);
     assert.equal(data.matches.filter(m => m.status === 'completed').length, 15);
     const asv = statsFor(data, '7123');
