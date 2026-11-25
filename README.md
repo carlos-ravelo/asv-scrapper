@@ -16,7 +16,14 @@ Static dashboards for ASV club players and the KNSB team competition.
 | `tests/` | Statistics, scraper and browser checks |
 | `tests/fixtures/` | Saved public HTML for offline parser checks |
 
-Serve this directory through a static web server. The existing local server exposes the dashboards at `http://localhost:5000/` and `http://localhost:5000/knsb.html`.
+The site is this directory, served as static files. Production runs on Cloudflare Workers static assets (`wrangler.jsonc`); `.assetsignore` keeps scripts, tests and docs out of the published site, and `worker/index.js` only serves `index.html` at `/`. Cloudflare deploys every push to `main`.
+
+Preview locally (Node 22 in Docker, nothing installed on the host):
+
+```bash
+docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD":/app -w /app -p 127.0.0.1:8787:8787 \
+  node:22-bookworm-slim npx -y wrangler@4.45.0 dev --ip 0.0.0.0 --port 8787
+```
 
 ## Install ASV Stats
 
@@ -42,11 +49,9 @@ Both scrapers resolve their data paths relative to the repository, regardless of
 
 ## Scheduled updates
 
-```bash
-bash setup-cron.sh
-```
+GitHub Actions runs [`update-data.yml`](.github/workflows/update-data.yml) at 09:00 and 21:00 UTC and on demand (**Actions → Update data → Run workflow**). It checks the parsers against the saved HTML, runs `run-scrapers.sh`, validates the JSON and commits `data/` when it changed. That push triggers the Cloudflare deployment. If a scraper fails, the data that did update is still published and the run is marked as failed, so GitHub sends a notification.
 
-The root-level shell scripts are the stable entry points for cron. They use `.venv/bin/python` when available, otherwise `/usr/bin/python3`. The installed job runs at 10:00 and 22:00 in the system time zone, prevents overlapping runs and appends output to `cron_execution.log`.
+`setup-cron.sh` remains as a fallback to run the same job from any machine with cron.
 
 ## Checks
 

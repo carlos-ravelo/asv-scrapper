@@ -2,3 +2,7 @@
 /.scraper.lock
 __pycache__/
 /.venv/
+/.wrangler/
+/node_modules/
+# Previous-version snapshots; git history keeps them once Actions commits data.
+/data/knsb/divisions/history/

@@ -1,0 +1,17 @@
+{
+	// Static hosting for asv-stats.carlos-ravelo.nl on Cloudflare Workers. worker/index.js only answers "/".
+	// Files excluded from publishing are listed in .assetsignore.
+	"$schema": "https://unpkg.com/wrangler@4/config-schema.json",
+	"name": "asv-stats",
+	"compatibility_date": "2026-11-13",
+	"main": "worker/index.js",
+	"assets": {
+		"directory": ".",
+		"binding": "ASSETS",
+		// Serve index.html and knsb.html at their own URLs, as Nginx did; the service worker precaches them.
+		"html_handling": "none",
+		"not_found_handling": "none"
+	},
+	"workers_dev": true,
+	"preview_urls": true
+}
