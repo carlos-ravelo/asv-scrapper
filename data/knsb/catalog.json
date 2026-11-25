@@ -11,7 +11,7 @@
           "name": "ASV 1"
         }
       ],
-      "updated_at": "2026-11-21T09:00:34.390867+00:00"
+      "updated_at": "2026-11-25T09:00:30.695142+00:00"
     },
     {
       "id": "663",
@@ -22,7 +22,7 @@
           "name": "ASV 2"
         }
       ],
-      "updated_at": "2026-11-21T09:00:46.910106+00:00"
+      "updated_at": "2026-11-25T09:00:44.045410+00:00"
     },
     {
       "id": "664",
@@ -33,7 +33,7 @@
           "name": "ASV 3"
         }
       ],
-      "updated_at": "2026-11-21T09:00:59.372233+00:00"
+      "updated_at": "2026-11-25T09:00:57.478475+00:00"
     },
     {
       "id": "669",
@@ -44,7 +44,7 @@
           "name": "ASV 4"
         }
       ],
-      "updated_at": "2026-11-21T09:01:13.109514+00:00"
+      "updated_at": "2026-11-25T09:01:11.769949+00:00"
     },
     {
       "id": "678",
@@ -55,7 +55,7 @@
           "name": "ASV 5"
         }
       ],
-      "updated_at": "2026-11-21T09:01:22.644405+00:00"
+      "updated_at": "2026-11-25T09:01:20.805367+00:00"
     },
     {
       "id": "680",
@@ -66,7 +66,7 @@
           "name": "ASV 6"
         }
       ],
-      "updated_at": "2026-11-21T09:01:32.014854+00:00"
+      "updated_at": "2026-11-25T09:01:29.499998+00:00"
     },
     {
       "id": "690",
@@ -77,7 +77,7 @@
           "name": "ASV 7"
         }
       ],
-      "updated_at": "2026-11-21T09:01:41.081094+00:00"
+      "updated_at": "2026-11-25T09:01:38.601550+00:00"
     },
     {
       "id": "701",
@@ -88,7 +88,7 @@
           "name": "ASV 9"
         }
       ],
-      "updated_at": "2026-11-21T09:01:49.628705+00:00"
+      "updated_at": "2026-11-25T09:01:47.567273+00:00"
     },
     {
       "id": "702",
@@ -99,7 +99,7 @@
           "name": "ASV 8"
         }
       ],
-      "updated_at": "2026-11-21T09:01:58.214985+00:00"
+      "updated_at": "2026-11-25T09:01:56.217276+00:00"
     }
   ],
   "teams": [
@@ -122,8 +122,8 @@
       "is_asv": false
     },
     {
-      "id": "7021",
-      "name": "BSV Bennekom 1",
+      "id": "7017",
+      "name": "Zuid Limburg 2",
       "division_id": "660",
       "is_asv": false
     },
@@ -134,8 +134,8 @@
       "is_asv": false
     },
     {
-      "id": "7017",
-      "name": "Zuid Limburg 2",
+      "id": "7021",
+      "name": "BSV Bennekom 1",
       "division_id": "660",
       "is_asv": false
     },
@@ -144,6 +144,12 @@
       "name": "ASV 1",
       "division_id": "660",
       "is_asv": true
+    },
+    {
+      "id": "7025",
+      "name": "En Passant 1",
+      "division_id": "660",
+      "is_asv": false
     },
     {
       "id": "7022",
@@ -158,10 +164,10 @@
       "is_asv": false
     },
     {
-      "id": "7025",
-      "name": "En Passant 1",
-      "division_id": "660",
-      "is_asv": false
+      "id": "7053",
+      "name": "ASV 2",
+      "division_id": "663",
+      "is_asv": true
     },
     {
       "id": "7054",
@@ -172,6 +178,12 @@
     {
       "id": "7055",
       "name": "Laurierboom-Gambiet 1",
+      "division_id": "663",
+      "is_asv": false
+    },
+    {
+      "id": "7052",
+      "name": "ASC 1",
       "division_id": "663",
       "is_asv": false
     },
@@ -188,26 +200,14 @@
       "is_asv": false
     },
     {
-      "id": "7053",
-      "name": "ASV 2",
-      "division_id": "663",
-      "is_asv": true
-    },
-    {
-      "id": "7052",
-      "name": "ASC 1",
+      "id": "7050",
+      "name": "Apeldoorn 3",
       "division_id": "663",
       "is_asv": false
     },
     {
       "id": "7047",
       "name": "Amersfoort 2",
-      "division_id": "663",
-      "is_asv": false
-    },
-    {
-      "id": "7050",
-      "name": "Apeldoorn 3",
       "division_id": "663",
       "is_asv": false
     },
@@ -236,14 +236,14 @@
       "is_asv": false
     },
     {
-      "id": "7062",
-      "name": "Oud Zuylen Utrecht 1",
+      "id": "7065",
+      "name": "Rijswijk 1",
       "division_id": "664",
       "is_asv": false
     },
     {
-      "id": "7065",
-      "name": "Rijswijk 1",
+      "id": "7059",
+      "name": "Leiderdorp 1",
       "division_id": "664",
       "is_asv": false
     },
@@ -254,14 +254,14 @@
       "is_asv": true
     },
     {
-      "id": "7059",
-      "name": "Leiderdorp 1",
+      "id": "7058",
+      "name": "Paul Keres 4",
       "division_id": "664",
       "is_asv": false
     },
     {
-      "id": "7058",
-      "name": "Paul Keres 4",
+      "id": "7062",
+      "name": "Oud Zuylen Utrecht 1",
       "division_id": "664",
       "is_asv": false
     },
@@ -290,14 +290,14 @@
       "is_asv": false
     },
     {
-      "id": "7126",
-      "name": "Hoogland 1",
+      "id": "7124",
+      "name": "Almelo 2",
       "division_id": "669",
       "is_asv": false
     },
     {
-      "id": "7124",
-      "name": "Almelo 2",
+      "id": "7126",
+      "name": "Hoogland 1",
       "division_id": "669",
       "is_asv": false
     },
@@ -362,6 +362,12 @@
       "is_asv": false
     },
     {
+      "id": "7209",
+      "name": "ASV 5",
+      "division_id": "678",
+      "is_asv": true
+    },
+    {
       "id": "7206",
       "name": "Veenendaal 3",
       "division_id": "678",
@@ -372,12 +378,6 @@
       "name": "Hardenberg 2",
       "division_id": "678",
       "is_asv": false
-    },
-    {
-      "id": "7209",
-      "name": "ASV 5",
-      "division_id": "678",
-      "is_asv": true
     },
     {
       "id": "7205",
@@ -392,14 +392,14 @@
       "is_asv": false
     },
     {
-      "id": "7228",
-      "name": "De Rode Loper 2",
+      "id": "7224",
+      "name": "De Kentering 1",
       "division_id": "680",
       "is_asv": false
     },
     {
-      "id": "7224",
-      "name": "De Kentering 1",
+      "id": "7228",
+      "name": "De Rode Loper 2",
       "division_id": "680",
       "is_asv": false
     },
@@ -410,14 +410,14 @@
       "is_asv": false
     },
     {
-      "id": "7227",
-      "name": "De Vughtse Toren 1",
+      "id": "7226",
+      "name": "Moira-Domtoren 3",
       "division_id": "680",
       "is_asv": false
     },
     {
-      "id": "7223",
-      "name": "De Stukkenjagers 5",
+      "id": "7227",
+      "name": "De Vughtse Toren 1",
       "division_id": "680",
       "is_asv": false
     },
@@ -428,8 +428,8 @@
       "is_asv": false
     },
     {
-      "id": "7226",
-      "name": "Moira-Domtoren 3",
+      "id": "7223",
+      "name": "De Stukkenjagers 5",
       "division_id": "680",
       "is_asv": false
     },
@@ -446,32 +446,20 @@
       "is_asv": false
     },
     {
-      "id": "7302",
-      "name": "Rijssen 1",
-      "division_id": "690",
-      "is_asv": false
-    },
-    {
       "id": "7308",
       "name": "Lonneker/Park Stokhorst 2",
       "division_id": "690",
       "is_asv": false
     },
     {
-      "id": "7304",
-      "name": "ASV 7",
-      "division_id": "690",
-      "is_asv": true
-    },
-    {
-      "id": "7307",
-      "name": "Drienerlo 1",
+      "id": "7302",
+      "name": "Rijssen 1",
       "division_id": "690",
       "is_asv": false
     },
     {
-      "id": "7305",
-      "name": "ZSG 2",
+      "id": "7307",
+      "name": "Drienerlo 1",
       "division_id": "690",
       "is_asv": false
     },
@@ -482,15 +470,21 @@
       "is_asv": false
     },
     {
-      "id": "7303",
-      "name": "Apeldoorn 5",
+      "id": "7305",
+      "name": "ZSG 2",
       "division_id": "690",
       "is_asv": false
     },
     {
-      "id": "7391",
-      "name": "DSG Pallas 3",
-      "division_id": "701",
+      "id": "7304",
+      "name": "ASV 7",
+      "division_id": "690",
+      "is_asv": true
+    },
+    {
+      "id": "7303",
+      "name": "Apeldoorn 5",
+      "division_id": "690",
       "is_asv": false
     },
     {
@@ -506,16 +500,10 @@
       "is_asv": false
     },
     {
-      "id": "7390",
-      "name": "Veenendaal 4",
+      "id": "7391",
+      "name": "DSG Pallas 3",
       "division_id": "701",
       "is_asv": false
-    },
-    {
-      "id": "7393",
-      "name": "ASV 9",
-      "division_id": "701",
-      "is_asv": true
     },
     {
       "id": "7392",
@@ -524,10 +512,22 @@
       "is_asv": false
     },
     {
+      "id": "7390",
+      "name": "Veenendaal 4",
+      "division_id": "701",
+      "is_asv": false
+    },
+    {
       "id": "7394",
       "name": "Almelo 4",
       "division_id": "701",
       "is_asv": false
+    },
+    {
+      "id": "7393",
+      "name": "ASV 9",
+      "division_id": "701",
+      "is_asv": true
     },
     {
       "id": "7395",
@@ -548,14 +548,20 @@
       "is_asv": false
     },
     {
-      "id": "7399",
-      "name": "Tussen de Torens 2",
+      "id": "7398",
+      "name": "PION/Mook combinatie 3",
       "division_id": "702",
       "is_asv": false
     },
     {
-      "id": "7398",
-      "name": "PION/Mook combinatie 3",
+      "id": "7400",
+      "name": "Apeldoorn 6",
+      "division_id": "702",
+      "is_asv": false
+    },
+    {
+      "id": "7399",
+      "name": "Tussen de Torens 2",
       "division_id": "702",
       "is_asv": false
     },
@@ -568,12 +574,6 @@
     {
       "id": "7402",
       "name": "Wageningen 5",
-      "division_id": "702",
-      "is_asv": false
-    },
-    {
-      "id": "7400",
-      "name": "Apeldoorn 6",
       "division_id": "702",
       "is_asv": false
     },
@@ -631,6 +631,11 @@
       "team_id": "7020"
     },
     {
+      "id": "2567042",
+      "name": "Both, A. (Bert)",
+      "team_id": "7018"
+    },
+    {
       "id": "2577024",
       "name": "Brouwer, R. (Rein)",
       "team_id": "7022"
@@ -659,6 +664,11 @@
       "id": "2593792",
       "name": "Clopés Llahi, J. (Judit)",
       "team_id": "7022"
+    },
+    {
+      "id": "2573989",
+      "name": "Colijn, E.J. (Erik-Jan)",
+      "team_id": "7024"
     },
     {
       "id": "2570535",
@@ -826,6 +836,11 @@
       "team_id": "7024"
     },
     {
+      "id": "2607283",
+      "name": "Juszczak, A. (Aleksander)",
+      "team_id": "7019"
+    },
+    {
       "id": "2574764",
       "name": "Kaufmann, T.F.C. (Thomas)",
       "team_id": "7024"
@@ -834,6 +849,11 @@
       "id": "2573301",
       "name": "Kerkhof, M.A. (Michel)",
       "team_id": "7018"
+    },
+    {
+      "id": "2608661",
+      "name": "Kienitz, A. (André)",
+      "team_id": "7026"
     },
     {
       "id": "2568913",
@@ -854,6 +874,11 @@
       "id": "2604618",
       "name": "Kuipers, E.F. (Eelco)",
       "team_id": "7020"
+    },
+    {
+      "id": "2596391",
+      "name": "Köhler, C. (Christian)",
+      "team_id": "7026"
     },
     {
       "id": "2575269",
@@ -1013,6 +1038,11 @@
     {
       "id": "2609562",
       "name": "Roggeveen, P. (Pieter)",
+      "team_id": "7018"
+    },
+    {
+      "id": "2609847",
+      "name": "Rosmalen van, J. (Joost)",
       "team_id": "7018"
     },
     {
@@ -1266,6 +1296,11 @@
       "team_id": "7049"
     },
     {
+      "id": "2574694",
+      "name": "Flohr, R.E. (Ron)",
+      "team_id": "7047"
+    },
+    {
       "id": "2566155",
       "name": "Fraikin, E.H. (Eric)",
       "team_id": "7052"
@@ -1274,6 +1309,16 @@
       "id": "2577206",
       "name": "Funke, R. (Reinhard)",
       "team_id": "7048"
+    },
+    {
+      "id": "2567819",
+      "name": "Gils van, M.H.C. (Martin)",
+      "team_id": "7052"
+    },
+    {
+      "id": "2613017",
+      "name": "Grayer, K.E. (Kyle)",
+      "team_id": "7053"
     },
     {
       "id": "2572084",
@@ -1289,6 +1334,11 @@
       "id": "2595353",
       "name": "Haan de, M. (Matteo)",
       "team_id": "7056"
+    },
+    {
+      "id": "2575534",
+      "name": "Harbers, G.J.M. (Gerard)",
+      "team_id": "7048"
     },
     {
       "id": "2579515",
@@ -1796,6 +1846,11 @@
       "team_id": "7063"
     },
     {
+      "id": "2568153",
+      "name": "Graaf de, E.G.A. (Evert)",
+      "team_id": "7062"
+    },
+    {
       "id": "2572472",
       "name": "Groot, P. (Pim)",
       "team_id": "7066"
@@ -1881,6 +1936,11 @@
       "team_id": "7065"
     },
     {
+      "id": "2568695",
+      "name": "Kooij van der, P. (Paul)",
+      "team_id": "7058"
+    },
+    {
       "id": "2570708",
       "name": "Krol, B.J. (Bart)",
       "team_id": "7066"
@@ -1889,6 +1949,11 @@
       "id": "2568913",
       "name": "Kronemeijer, S. (Simon)",
       "team_id": "7058"
+    },
+    {
+      "id": "2568756",
+      "name": "Kruijf, C.A. (Caspar)",
+      "team_id": "7066"
     },
     {
       "id": "2576367",
@@ -2081,6 +2146,11 @@
       "team_id": "7064"
     },
     {
+      "id": "2580173",
+      "name": "Stoppels, V. (Victor)",
+      "team_id": "7060"
+    },
+    {
       "id": "2599529",
       "name": "Straat, R.F. (Rody)",
       "team_id": "7064"
@@ -2241,6 +2311,11 @@
       "team_id": "7117"
     },
     {
+      "id": "2573745",
+      "name": "Bos, C. (Chris)",
+      "team_id": "7119"
+    },
+    {
       "id": "2580672",
       "name": "Breider, J.H. (Jayden)",
       "team_id": "7124"
@@ -2299,6 +2374,11 @@
       "id": "2585769",
       "name": "Dries-Heuten op den, R. (Rachel)",
       "team_id": "7119"
+    },
+    {
+      "id": "2604295",
+      "name": "Eigenraam, A.E. (Sander)",
+      "team_id": "7126"
     },
     {
       "id": "2575497",
@@ -2641,6 +2721,11 @@
       "team_id": "7117"
     },
     {
+      "id": "2569364",
+      "name": "Schuurmans, J.P.M. (Han)",
+      "team_id": "7118"
+    },
+    {
       "id": "2596044",
       "name": "Slagter, W. (Willem)",
       "team_id": "7125"
@@ -2663,6 +2748,11 @@
     {
       "id": "2611355",
       "name": "Stigter, M. (Marc)",
+      "team_id": "7121"
+    },
+    {
+      "id": "2575473",
+      "name": "Taylor, F.H.B. (Frank)",
       "team_id": "7121"
     },
     {
@@ -2699,6 +2789,11 @@
       "id": "2576112",
       "name": "Vries de, R. (Ruben)",
       "team_id": "7125"
+    },
+    {
+      "id": "2600799",
+      "name": "Vucht van, S. (Sander)",
+      "team_id": "7120"
     },
     {
       "id": "2587456",
@@ -2841,6 +2936,11 @@
       "team_id": "7212"
     },
     {
+      "id": "2708269",
+      "name": "Eisink, T. (Tijmen)",
+      "team_id": "7212"
+    },
+    {
       "id": "2569040",
       "name": "Elskamp, D. (Dries)",
       "team_id": "7205"
@@ -2896,6 +2996,11 @@
       "team_id": "7212"
     },
     {
+      "id": "2576818",
+      "name": "Ingen Schenau van, D. (Dik)",
+      "team_id": "7210"
+    },
+    {
       "id": "2572350",
       "name": "Jansz, W.F.E. (Wilfred)",
       "team_id": "7209"
@@ -2926,9 +3031,19 @@
       "team_id": "7210"
     },
     {
+      "id": "2568718",
+      "name": "Kloppers, E. (Eric)",
+      "team_id": "7208"
+    },
+    {
       "id": "2603945",
       "name": "Knoef, K.C.M. (Koen)",
       "team_id": "7210"
+    },
+    {
+      "id": "2568067",
+      "name": "Knuiman, J.J.E. (Jan)",
+      "team_id": "7209"
     },
     {
       "id": "2604026",
@@ -3041,6 +3156,11 @@
       "team_id": "7210"
     },
     {
+      "id": "2571596",
+      "name": "Rindertsma, C. (Chris)",
+      "team_id": "7207"
+    },
+    {
       "id": "2574236",
       "name": "Rol, A. (Art)",
       "team_id": "7212"
@@ -3099,6 +3219,11 @@
       "id": "2611475",
       "name": "Tienhoven van, R.M. (Richard)",
       "team_id": "7208"
+    },
+    {
+      "id": "2604068",
+      "name": "Uijthof, H. (Henk)",
+      "team_id": "7212"
     },
     {
       "id": "2576464",
@@ -3191,6 +3316,11 @@
       "team_id": "7226"
     },
     {
+      "id": "2606724",
+      "name": "Bijsterveld van, Y. (Yvo)",
+      "team_id": "7221"
+    },
+    {
       "id": "2610305",
       "name": "Bolleman, D.L. (Dani)",
       "team_id": "7223"
@@ -3238,6 +3368,11 @@
     {
       "id": "2591349",
       "name": "Duong, R. (Ralf)",
+      "team_id": "7224"
+    },
+    {
+      "id": "2596116",
+      "name": "Eijndhoven van, P.J. (Piet)",
       "team_id": "7224"
     },
     {
@@ -3291,6 +3426,11 @@
       "team_id": "7221"
     },
     {
+      "id": "2566573",
+      "name": "Hendriks, G.W. (Gerben)",
+      "team_id": "7225"
+    },
+    {
       "id": "2570372",
       "name": "Hoekstra, IJ. (IJntze)",
       "team_id": "7221"
@@ -3311,6 +3451,11 @@
       "team_id": "7223"
     },
     {
+      "id": "2605321",
+      "name": "Jansen, S. (Sven)",
+      "team_id": "7224"
+    },
+    {
       "id": "2578292",
       "name": "Kaemingk, J.G. (Johann)",
       "team_id": "7221"
@@ -3329,6 +3474,16 @@
       "id": "2590542",
       "name": "Kirilov, A. (Alexander)",
       "team_id": "7221"
+    },
+    {
+      "id": "2566547",
+      "name": "Kloppenborg, J. (Jos)",
+      "team_id": "7226"
+    },
+    {
+      "id": "2590410",
+      "name": "Klute, L.R.W. (Leon)",
+      "team_id": "7228"
     },
     {
       "id": "2570380",
@@ -3356,6 +3511,11 @@
       "team_id": "7222"
     },
     {
+      "id": "2601217",
+      "name": "Meerwijk, A.J. (Arend-Jan)",
+      "team_id": "7223"
+    },
+    {
       "id": "2583303",
       "name": "Meeuwsen, E. (Erwin)",
       "team_id": "7223"
@@ -3374,6 +3534,16 @@
       "id": "2575116",
       "name": "Orsouw van, H. (Hans)",
       "team_id": "7222"
+    },
+    {
+      "id": "2575056",
+      "name": "Oskam, W. (Wendela)",
+      "team_id": "7221"
+    },
+    {
+      "id": "2570210",
+      "name": "Otten, J. (Jan)",
+      "team_id": "7223"
     },
     {
       "id": "2567179",
@@ -3466,6 +3636,11 @@
       "team_id": "7228"
     },
     {
+      "id": "2596337",
+      "name": "Toorn van der, R. (Rick)",
+      "team_id": "7228"
+    },
+    {
       "id": "2605710",
       "name": "Tulfer, P.M. (Paul)",
       "team_id": "7225"
@@ -3531,9 +3706,19 @@
       "team_id": "7228"
     },
     {
+      "id": "2575124",
+      "name": "Wolf de, R. (Rob)",
+      "team_id": "7222"
+    },
+    {
       "id": "2610245",
       "name": "Wolleswinkel, M. (Maarten)",
       "team_id": "7223"
+    },
+    {
+      "id": "2573137",
+      "name": "Zon van, R.C.M. (Richard)",
+      "team_id": "7222"
     },
     {
       "id": "2572284",
@@ -3621,6 +3806,11 @@
       "team_id": "7301"
     },
     {
+      "id": "2608844",
+      "name": "Drent, E.A. (Erik)",
+      "team_id": "7304"
+    },
+    {
       "id": "2705237",
       "name": "Essen van, M. (Mylan)",
       "team_id": "7305"
@@ -3629,6 +3819,16 @@
       "id": "2706733",
       "name": "Haarmeijer, L. (Leon)",
       "team_id": "7305"
+    },
+    {
+      "id": "2595745",
+      "name": "Hage, I.M. (Martijn)",
+      "team_id": "7308"
+    },
+    {
+      "id": "2578536",
+      "name": "Harmsel ter, G. (Rutger)",
+      "team_id": "7302"
     },
     {
       "id": "2589740",
@@ -3729,6 +3929,11 @@
       "id": "2573773",
       "name": "Logtenberg, M. (Martin)",
       "team_id": "7305"
+    },
+    {
+      "id": "2605213",
+      "name": "Lopez Janssen, M. (Manuel)",
+      "team_id": "7304"
     },
     {
       "id": "2575805",
@@ -3871,6 +4076,11 @@
       "team_id": "7305"
     },
     {
+      "id": "2576262",
+      "name": "Timmerman, J.W. (Jan Willem)",
+      "team_id": "7302"
+    },
+    {
       "id": "2599027",
       "name": "Twilhaar Borda, E. (Emmanuel)",
       "team_id": "7306"
@@ -3916,6 +4126,16 @@
       "team_id": "7304"
     },
     {
+      "id": "2607449",
+      "name": "Waal de, W.J.A. (Wouter)",
+      "team_id": "7301"
+    },
+    {
+      "id": "2571322",
+      "name": "Webbink, J. (Jan)",
+      "team_id": "7305"
+    },
+    {
       "id": "2566409",
       "name": "Weenink, W.A. (Anton)",
       "team_id": "7303"
@@ -3956,6 +4176,11 @@
       "team_id": "7307"
     },
     {
+      "id": "2589754",
+      "name": "Akbar, A. (Aahil)",
+      "team_id": "7389"
+    },
+    {
       "id": "2582091",
       "name": "Atalyan, T. (Thomas)",
       "team_id": "7394"
@@ -3964,6 +4189,11 @@
       "id": "2574564",
       "name": "Beelen van, J.H. (Jaap-Hille)",
       "team_id": "7390"
+    },
+    {
+      "id": "2573347",
+      "name": "Beers, P.J. (Pim)",
+      "team_id": "7389"
     },
     {
       "id": "2577079",
@@ -3989,6 +4219,11 @@
       "id": "2573988",
       "name": "Butzelaar, C. (Cor)",
       "team_id": "7392"
+    },
+    {
+      "id": "2571408",
+      "name": "Crompvoets, R.M. (Robert)",
+      "team_id": "7394"
     },
     {
       "id": "2603993",
@@ -4076,6 +4311,11 @@
       "team_id": "7396"
     },
     {
+      "id": "2605198",
+      "name": "Hekman, P. (Peter)",
+      "team_id": "7395"
+    },
+    {
       "id": "2566425",
       "name": "Henneberke, G.A. (George)",
       "team_id": "7394"
@@ -4094,6 +4334,16 @@
       "id": "2573683",
       "name": "Hooimeijer, A.M. (Ariën)",
       "team_id": "7393"
+    },
+    {
+      "id": "2583614",
+      "name": "Hooning, J.J. (Joost)",
+      "team_id": "7396"
+    },
+    {
+      "id": "2572034",
+      "name": "Hovestadt, L.J.C. (Leo)",
+      "team_id": "7390"
     },
     {
       "id": "2574877",
@@ -4129,6 +4379,11 @@
       "id": "2587504",
       "name": "Kappert, P. (Peter)",
       "team_id": "7393"
+    },
+    {
+      "id": "2576926",
+      "name": "Kappert, S.A.B. (Stijn)",
+      "team_id": "7395"
     },
     {
       "id": "2604344",
@@ -4216,6 +4471,11 @@
       "team_id": "7392"
     },
     {
+      "id": "2569740",
+      "name": "Munnik de, H.T.H. (Herman)",
+      "team_id": "7393"
+    },
+    {
       "id": "2574520",
       "name": "Offringa, J.G. (Jan)",
       "team_id": "7390"
@@ -4234,6 +4494,11 @@
       "id": "2609934",
       "name": "Plette, E. (Eibert)",
       "team_id": "7396"
+    },
+    {
+      "id": "2609781",
+      "name": "Post, K. (Kevin)",
+      "team_id": "7395"
     },
     {
       "id": "2579824",
@@ -4264,6 +4529,11 @@
       "id": "2605027",
       "name": "Salihovic, E. (Edvin)",
       "team_id": "7391"
+    },
+    {
+      "id": "2589755",
+      "name": "Samala, G.G. (Gagan Gandiva)",
+      "team_id": "7389"
     },
     {
       "id": "2570835",
@@ -4299,6 +4569,11 @@
       "id": "2609726",
       "name": "Steeman, R.P.M. (Robert)",
       "team_id": "7394"
+    },
+    {
+      "id": "2577066",
+      "name": "Teijens van, O.A.T. (Onno)",
+      "team_id": "7392"
     },
     {
       "id": "2606241",
@@ -4341,6 +4616,11 @@
       "team_id": "7394"
     },
     {
+      "id": "2609930",
+      "name": "Wildschut, T. (Thomas)",
+      "team_id": "7394"
+    },
+    {
       "id": "2604022",
       "name": "Winters, J.M.R. (Han)",
       "team_id": "7393"
@@ -4354,6 +4634,11 @@
       "id": "2576729",
       "name": "Wolters, R.S. (Rens)",
       "team_id": "7390"
+    },
+    {
+      "id": "2576603",
+      "name": "Wullur, K. (King)",
+      "team_id": "7391"
     },
     {
       "id": "2582374",
@@ -4456,6 +4741,11 @@
       "team_id": "7398"
     },
     {
+      "id": "2584052",
+      "name": "Cloosterman, M. (Max)",
+      "team_id": "7397"
+    },
+    {
       "id": "2568814",
       "name": "Deemen van, P. (Paul)",
       "team_id": "7397"
@@ -4489,6 +4779,11 @@
       "id": "2602138",
       "name": "Enden van den, J. (Jan)",
       "team_id": "7402"
+    },
+    {
+      "id": "2611067",
+      "name": "Feenstra, B. (Bram)",
+      "team_id": "7397"
     },
     {
       "id": "2577708",
@@ -4546,6 +4841,11 @@
       "team_id": "7401"
     },
     {
+      "id": "2576029",
+      "name": "Hijl, V.S.M. (Veronique)",
+      "team_id": "7400"
+    },
+    {
       "id": "2605798",
       "name": "Hilbrink, J.A.M.C. (Coen)",
       "team_id": "7477"
@@ -4554,6 +4854,11 @@
       "id": "2600747",
       "name": "Hoorn van, R. (Rene)",
       "team_id": "7401"
+    },
+    {
+      "id": "2600935",
+      "name": "Houten van, R. (Robin)",
+      "team_id": "7400"
     },
     {
       "id": "2573936",
@@ -4656,6 +4961,11 @@
       "team_id": "7402"
     },
     {
+      "id": "2576381",
+      "name": "Norris, D.G. (David)",
+      "team_id": "7398"
+    },
+    {
       "id": "2601962",
       "name": "Oostra, J.L. (Jonas)",
       "team_id": "7402"
@@ -4704,6 +5014,11 @@
       "id": "2607536",
       "name": "Rijswijk, B. (Bjorn)",
       "team_id": "7397"
+    },
+    {
+      "id": "2567438",
+      "name": "Ruegebrink, G.J. (Gerrit)",
+      "team_id": "7477"
     },
     {
       "id": "2570546",
@@ -4766,14 +5081,29 @@
       "team_id": "7404"
     },
     {
+      "id": "2712933",
+      "name": "Voetée, R. (Rosa)",
+      "team_id": "7399"
+    },
+    {
       "id": "2610791",
       "name": "Volynskyi, I. (Igor)",
       "team_id": "7477"
     },
     {
+      "id": "2604192",
+      "name": "Welberg, J.W. (Jan-Willem)",
+      "team_id": "7401"
+    },
+    {
       "id": "2609829",
       "name": "Westerhof, S. (Siem)",
       "team_id": "7401"
+    },
+    {
+      "id": "2595095",
+      "name": "Wouw van de, M. (Martijn)",
+      "team_id": "7399"
     },
     {
       "id": "2613053",
@@ -4787,5 +5117,5 @@
     }
   ],
   "season": "KNSB competitie 2026-2027",
-  "updated_at": "2026-11-21T09:01:58.220503+00:00"
+  "updated_at": "2026-11-25T09:01:56.225619+00:00"
 }
