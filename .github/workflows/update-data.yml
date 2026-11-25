@@ -1,0 +1,71 @@
+name: Update data
+
+# Twice a day, roughly 10:00 and 22:00 in Amsterdam (09:00/21:00 UTC; one hour earlier in summer time).
+# GitHub may start scheduled runs a few minutes late.
+on:
+  schedule:
+    - cron: "0 9,21 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-data
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Check parsers against saved HTML
+        run: python -m unittest discover -s tests -p 'test_knsb*.py'
+
+      - name: Run scrapers
+        id: scrape
+        run: |
+          set +e
+          bash run-scrapers.sh
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Validate published JSON
+        run: |
+          python - <<'PY'
+          import json, pathlib
+          files = sorted(pathlib.Path("data").rglob("*.json"))
+          for path in files:
+              json.loads(path.read_text(encoding="utf-8"))
+          print(f"{len(files)} JSON files are valid")
+          PY
+
+      - name: Commit updated data
+        run: |
+          git add data
+          if git diff --cached --quiet; then
+            echo "No data changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Update data $(date -u +'%Y-%m-%d %H:%M UTC')"
+          git pull --rebase
+          git push
+
+      # Data that was scraped successfully is still published; the run is then marked as failed
+      # so GitHub sends a notification.
+      - name: Report scraper failure
+        if: steps.scrape.outputs.status != '0'
+        run: |
+          echo "::error::At least one scraper failed (exit status ${{ steps.scrape.outputs.status }})."
+          exit 1

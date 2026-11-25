@@ -9,64 +9,64 @@
       "id": "7208",
       "name": "Zutphen 1",
       "position": 1,
-      "match_points": 4.0,
-      "board_points": 11.5,
+      "match_points": 6.0,
+      "board_points": 16.0,
       "source_url": "https://knsb.netstand.nl/teams/view/7208"
     },
     {
       "id": "7207",
       "name": "DSG Pallas 2",
       "position": 2,
-      "match_points": 3.0,
-      "board_points": 10.5,
+      "match_points": 5.0,
+      "board_points": 16.0,
       "source_url": "https://knsb.netstand.nl/teams/view/7207"
     },
     {
       "id": "7212",
       "name": "Borne 1",
       "position": 3,
-      "match_points": 2.0,
-      "board_points": 8.5,
+      "match_points": 4.0,
+      "board_points": 13.0,
       "source_url": "https://knsb.netstand.nl/teams/view/7212"
+    },
+    {
+      "id": "7209",
+      "name": "ASV 5",
+      "position": 4,
+      "match_points": 3.0,
+      "board_points": 11.0,
+      "source_url": "https://knsb.netstand.nl/teams/view/7209"
     },
     {
       "id": "7206",
       "name": "Veenendaal 3",
-      "position": 4,
+      "position": 5,
       "match_points": 2.0,
-      "board_points": 8.0,
+      "board_points": 11.5,
       "source_url": "https://knsb.netstand.nl/teams/view/7206"
     },
     {
       "id": "7211",
       "name": "Hardenberg 2",
-      "position": 5,
-      "match_points": 2.0,
-      "board_points": 8.0,
-      "source_url": "https://knsb.netstand.nl/teams/view/7211"
-    },
-    {
-      "id": "7209",
-      "name": "ASV 5",
       "position": 6,
       "match_points": 2.0,
-      "board_points": 7.0,
-      "source_url": "https://knsb.netstand.nl/teams/view/7209"
+      "board_points": 10.5,
+      "source_url": "https://knsb.netstand.nl/teams/view/7211"
     },
     {
       "id": "7205",
       "name": "De Zeven Pionnen 1",
       "position": 7,
       "match_points": 1.0,
-      "board_points": 6.0,
+      "board_points": 8.5,
       "source_url": "https://knsb.netstand.nl/teams/view/7205"
     },
     {
       "id": "7210",
       "name": "Almelo 3",
       "position": 8,
-      "match_points": 0.0,
-      "board_points": 4.5,
+      "match_points": 1.0,
+      "board_points": 8.5,
       "source_url": "https://knsb.netstand.nl/teams/view/7210"
     }
   ],
@@ -1522,11 +1522,175 @@
       "date": "2026-11-21",
       "home": "7206",
       "away": "7212",
-      "score": null,
-      "raw_score": "",
+      "score": [
+        3.5,
+        4.5
+      ],
+      "raw_score": "3.5 - 4.5",
       "source_url": "https://knsb.netstand.nl/pairings/view/23736",
-      "boards": [],
-      "status": "scheduled"
+      "boards": [
+        {
+          "board": 1,
+          "home_player": {
+            "id": "2574860",
+            "name": "Don, H. (Henk)"
+          },
+          "away_player": {
+            "id": "2567712",
+            "name": "Munster, P. (Patrick)"
+          },
+          "home_rating": 1951.0,
+          "away_rating": 2033.0,
+          "home_color": "black",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 2,
+          "home_player": {
+            "id": "2567742",
+            "name": "Duijker, J.H. (Bert)"
+          },
+          "away_player": {
+            "id": "2591641",
+            "name": "Zeeman, G. (Goswin)"
+          },
+          "home_rating": 1857.0,
+          "away_rating": 1944.0,
+          "home_color": "white",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 3,
+          "home_player": {
+            "id": "2567028",
+            "name": "Bosman, N.J. (Nico)"
+          },
+          "away_player": {
+            "id": "2574236",
+            "name": "Rol, A. (Art)"
+          },
+          "home_rating": 1744.0,
+          "away_rating": 1863.0,
+          "home_color": "black",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 4,
+          "home_player": {
+            "id": "2574081",
+            "name": "Dik, P.E. (Pim)"
+          },
+          "away_player": {
+            "id": "2571512",
+            "name": "Leerentveld, J.G. (John)"
+          },
+          "home_rating": 1872.0,
+          "away_rating": 1930.0,
+          "home_color": "white",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 5,
+          "home_player": {
+            "id": "2571690",
+            "name": "Laar van, J. (Jan)"
+          },
+          "away_player": {
+            "id": "2572335",
+            "name": "Muller, J. (Jos)"
+          },
+          "home_rating": 1772.0,
+          "away_rating": 1756.0,
+          "home_color": "black",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 6,
+          "home_player": {
+            "id": "2607099",
+            "name": "Kaastra, G.K. (Gosse)"
+          },
+          "away_player": {
+            "id": "2708269",
+            "name": "Eisink, T. (Tijmen)"
+          },
+          "home_rating": 1712.0,
+          "away_rating": 0.0,
+          "home_color": "white",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 7,
+          "home_player": {
+            "id": "2573320",
+            "name": "Blom, L.H. (Lodewijk)"
+          },
+          "away_player": {
+            "id": "2566308",
+            "name": "Heeregrave, T.J. (Theo)"
+          },
+          "home_rating": 1719.0,
+          "away_rating": 1750.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 8,
+          "home_player": {
+            "id": "2567317",
+            "name": "Anjema, P. (Pieter)"
+          },
+          "away_player": {
+            "id": "2604068",
+            "name": "Uijthof, H. (Henk)"
+          },
+          "home_rating": 1676.0,
+          "away_rating": 1621.0,
+          "home_color": "white",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        }
+      ],
+      "status": "completed"
     },
     {
       "id": "23737",
@@ -1534,11 +1698,175 @@
       "date": "2026-11-21",
       "home": "7207",
       "away": "7205",
-      "score": null,
-      "raw_score": "",
+      "score": [
+        5.5,
+        2.5
+      ],
+      "raw_score": "5.5 - 2.5",
       "source_url": "https://knsb.netstand.nl/pairings/view/23737",
-      "boards": [],
-      "status": "scheduled"
+      "boards": [
+        {
+          "board": 1,
+          "home_player": {
+            "id": "2606122",
+            "name": "Landsheer, J. (Jeroen)"
+          },
+          "away_player": {
+            "id": "2575289",
+            "name": "Wissink, S. (Sander)"
+          },
+          "home_rating": 1880.0,
+          "away_rating": 2056.0,
+          "home_color": "black",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 2,
+          "home_player": {
+            "id": "2600923",
+            "name": "Schroën, F. (Ferry)"
+          },
+          "away_player": {
+            "id": "2569040",
+            "name": "Elskamp, D. (Dries)"
+          },
+          "home_rating": 1914.0,
+          "away_rating": 1893.0,
+          "home_color": "white",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 3,
+          "home_player": {
+            "id": "2605416",
+            "name": "Gerrits, G.H. (Gerben)"
+          },
+          "away_player": {
+            "id": "2573522",
+            "name": "Romph de, J.G. (Guido)"
+          },
+          "home_rating": 1936.0,
+          "away_rating": 2013.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 4,
+          "home_player": {
+            "id": "2571596",
+            "name": "Rindertsma, C. (Chris)"
+          },
+          "away_player": {
+            "id": "2574512",
+            "name": "Goede de, H.P. (Hans)"
+          },
+          "home_rating": 1859.0,
+          "away_rating": 1778.0,
+          "home_color": "white",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 5,
+          "home_player": {
+            "id": "2604026",
+            "name": "Koelewijn, J. (Jan Wout)"
+          },
+          "away_player": {
+            "id": "2569642",
+            "name": "Oegema, B. (Bartelo)"
+          },
+          "home_rating": 1821.0,
+          "away_rating": 1720.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 6,
+          "home_player": {
+            "id": "2580428",
+            "name": "Capel, R.C. (Robert)"
+          },
+          "away_player": {
+            "id": "2591026",
+            "name": "Kruse, C. (Chris)"
+          },
+          "home_rating": 1834.0,
+          "away_rating": 1653.0,
+          "home_color": "white",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 7,
+          "home_player": {
+            "id": "2575652",
+            "name": "Sittert van, M. (Marco)"
+          },
+          "away_player": {
+            "id": "2580388",
+            "name": "Kasteel, B. (Bernard)"
+          },
+          "home_rating": 1798.0,
+          "away_rating": 1433.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 8,
+          "home_player": {
+            "id": "2606653",
+            "name": "Enserink, H. (Henk)"
+          },
+          "away_player": {
+            "id": "2568939",
+            "name": "Maarel van der, D.A. (Dirk)"
+          },
+          "home_rating": 1752.0,
+          "away_rating": 1728.0,
+          "home_color": "white",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        }
+      ],
+      "status": "completed"
     },
     {
       "id": "23738",
@@ -1546,11 +1874,175 @@
       "date": "2026-11-21",
       "home": "7208",
       "away": "7211",
-      "score": null,
-      "raw_score": "",
+      "score": [
+        4.5,
+        2.5
+      ],
+      "raw_score": "4.5 - 2.5",
       "source_url": "https://knsb.netstand.nl/pairings/view/23738",
-      "boards": [],
-      "status": "scheduled"
+      "boards": [
+        {
+          "board": 1,
+          "home_player": {
+            "id": "2611463",
+            "name": "Dooper, L.L.A.H. (Lûtsen)"
+          },
+          "away_player": {
+            "id": "2574437",
+            "name": "Spuij, A.D. (Arie)"
+          },
+          "home_rating": 1972.0,
+          "away_rating": 1926.0,
+          "home_color": "black",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 2,
+          "home_player": {
+            "id": "-1",
+            "name": "NO"
+          },
+          "away_player": {
+            "id": "-1",
+            "name": "NO"
+          },
+          "home_rating": 0.0,
+          "away_rating": 0.0,
+          "home_color": "white",
+          "score": [
+            0.0,
+            0.0
+          ],
+          "forfeit": true,
+          "raw_score": "0R - 0R"
+        },
+        {
+          "board": 3,
+          "home_player": {
+            "id": "2611475",
+            "name": "Tienhoven van, R.M. (Richard)"
+          },
+          "away_player": {
+            "id": "2577341",
+            "name": "Hamhuis, J. (Jasper)"
+          },
+          "home_rating": 1943.0,
+          "away_rating": 1885.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 4,
+          "home_player": {
+            "id": "2570879",
+            "name": "Berg van den, M. (Mark)"
+          },
+          "away_player": {
+            "id": "2576455",
+            "name": "Zwaagstra, M.B. (Marten)"
+          },
+          "home_rating": 1932.0,
+          "away_rating": 1874.0,
+          "home_color": "white",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 5,
+          "home_player": {
+            "id": "2570520",
+            "name": "Oving, W. (Willem)"
+          },
+          "away_player": {
+            "id": "2568666",
+            "name": "Reinders, J. (Joan)"
+          },
+          "home_rating": 1913.0,
+          "away_rating": 1865.0,
+          "home_color": "black",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 6,
+          "home_player": {
+            "id": "2703989",
+            "name": "Sloots, J. (John)"
+          },
+          "away_player": {
+            "id": "2573128",
+            "name": "Lenthe van, G.W. (Gerwin)"
+          },
+          "home_rating": 1938.0,
+          "away_rating": 1754.0,
+          "home_color": "white",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 7,
+          "home_player": {
+            "id": "2568718",
+            "name": "Kloppers, E. (Eric)"
+          },
+          "away_player": {
+            "id": "2571115",
+            "name": "Spanjers, E. (Edgar)"
+          },
+          "home_rating": 1862.0,
+          "away_rating": 1665.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 8,
+          "home_player": {
+            "id": "2567439",
+            "name": "Hagendijk, K. (Klaas)"
+          },
+          "away_player": {
+            "id": "-1",
+            "name": "NO"
+          },
+          "home_rating": 1894.0,
+          "away_rating": 0.0,
+          "home_color": "white",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": true,
+          "raw_score": "1R - 0R"
+        }
+      ],
+      "status": "completed"
     },
     {
       "id": "23739",
@@ -1558,11 +2050,175 @@
       "date": "2026-11-21",
       "home": "7209",
       "away": "7210",
-      "score": null,
-      "raw_score": "",
+      "score": [
+        4.0,
+        4.0
+      ],
+      "raw_score": "4 - 4",
       "source_url": "https://knsb.netstand.nl/pairings/view/23739",
-      "boards": [],
-      "status": "scheduled"
+      "boards": [
+        {
+          "board": 1,
+          "home_player": {
+            "id": "2568067",
+            "name": "Knuiman, J.J.E. (Jan)"
+          },
+          "away_player": {
+            "id": "2596860",
+            "name": "Reinders, Y. (Youri)"
+          },
+          "home_rating": 1921.0,
+          "away_rating": 1837.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 2,
+          "home_player": {
+            "id": "2572350",
+            "name": "Jansz, W.F.E. (Wilfred)"
+          },
+          "away_player": {
+            "id": "2603945",
+            "name": "Knoef, K.C.M. (Koen)"
+          },
+          "home_rating": 1834.0,
+          "away_rating": 1889.0,
+          "home_color": "white",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 3,
+          "home_player": {
+            "id": "2566171",
+            "name": "Wille, E. (Erik)"
+          },
+          "away_player": {
+            "id": "2566097",
+            "name": "Burer, H.R.M. (Humphrey)"
+          },
+          "home_rating": 1892.0,
+          "away_rating": 1831.0,
+          "home_color": "black",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        },
+        {
+          "board": 4,
+          "home_player": {
+            "id": "2569881",
+            "name": "Boonstra, J. (Jacques)"
+          },
+          "away_player": {
+            "id": "2610257",
+            "name": "Pees, H. (Hans)"
+          },
+          "home_rating": 1845.0,
+          "away_rating": 1804.0,
+          "home_color": "white",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 5,
+          "home_player": {
+            "id": "2567404",
+            "name": "Fassaert, D.J.M. (Désiré)"
+          },
+          "away_player": {
+            "id": "2577769",
+            "name": "Pol, F.I. (Florian)"
+          },
+          "home_rating": 1878.0,
+          "away_rating": 1773.0,
+          "home_color": "black",
+          "score": [
+            0.0,
+            1.0
+          ],
+          "forfeit": false,
+          "raw_score": "0 - 1"
+        },
+        {
+          "board": 6,
+          "home_player": {
+            "id": "2606156",
+            "name": "Peut van de, A.A. (Aart)"
+          },
+          "away_player": {
+            "id": "2576818",
+            "name": "Ingen Schenau van, D. (Dik)"
+          },
+          "home_rating": 1846.0,
+          "away_rating": 1740.0,
+          "home_color": "white",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 7,
+          "home_player": {
+            "id": "2570966",
+            "name": "Eggink, R. (Ronnie)"
+          },
+          "away_player": {
+            "id": "2594339",
+            "name": "Kleinjan, T.H.J. (Thias)"
+          },
+          "home_rating": 1798.0,
+          "away_rating": 1722.0,
+          "home_color": "black",
+          "score": [
+            1.0,
+            0.0
+          ],
+          "forfeit": false,
+          "raw_score": "1 - 0"
+        },
+        {
+          "board": 8,
+          "home_player": {
+            "id": "2598461",
+            "name": "Rouwenhorst, B. (Bram)"
+          },
+          "away_player": {
+            "id": "2568641",
+            "name": "Mijnheer, E. (Erik)"
+          },
+          "home_rating": 1816.0,
+          "away_rating": 1677.0,
+          "home_color": "white",
+          "score": [
+            0.5,
+            0.5
+          ],
+          "forfeit": false,
+          "raw_score": "½ - ½"
+        }
+      ],
+      "status": "completed"
     },
     {
       "id": "23740",
@@ -1757,5 +2413,5 @@
       "status": "scheduled"
     }
   ],
-  "updated_at": "2026-11-21T09:01:22.644405+00:00"
+  "updated_at": "2026-11-25T09:01:20.805367+00:00"
 }

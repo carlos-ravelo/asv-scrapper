@@ -46,7 +46,7 @@ python3 scripts/knsb_scraper.py --all-asv
 bash setup-cron.sh
 ```
 
-Cron runs both scrapers at 10:00 and 22:00 in the system time zone, with one lock and timestamped output in `cron_execution.log`. KNSB data is published atomically per group to `data/knsb/divisions/<id>.json`; changed previous versions are saved under `data/knsb/divisions/history/`. The lightweight `data/knsb/catalog.json` lists the covered teams and groups. Historical snapshots describe what was published at each download, not when the games were actually played.
+GitHub Actions runs both scrapers at 09:00 and 21:00 UTC and commits the changed data (see the README). KNSB data is published atomically per group to `data/knsb/divisions/<id>.json`; each data commit keeps the previous version in git history. Local runs also save changed previous versions under `data/knsb/divisions/history/`, which is not committed. The lightweight `data/knsb/catalog.json` lists the covered teams and groups. Historical snapshots describe what was published at each download, not when the games were actually played.
 
 The browser first reads the small team catalog, then downloads only the selected group. Groups are reused during a visit; Netstand is queried only by the scraper. Discovery uses the configured competition (currently 69) and includes each group containing an ASV team once. To refresh one group, use `python3 scripts/knsb_scraper.py --division 669`. A failed or incomplete download leaves the last successful JSON available. The page flags data older than 36 hours.
 
