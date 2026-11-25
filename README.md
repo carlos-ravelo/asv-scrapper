@@ -16,7 +16,7 @@ Static dashboards for ASV club players and the KNSB team competition.
 | `tests/` | Statistics, scraper and browser checks |
 | `tests/fixtures/` | Saved public HTML for offline parser checks |
 
-The site is this directory, served as static files. Production runs on Cloudflare Workers static assets (`wrangler.jsonc`); `.assetsignore` keeps scripts, tests and docs out of the published site, and `worker/index.js` only serves `index.html` at `/`. Cloudflare deploys every push to `main`.
+The site is this directory, served as static files. Production runs on Cloudflare Workers static assets (`wrangler.jsonc`); `.assetsignore` keeps scripts, tests and docs out of the published site, and `worker/index.js` only serves `index.html` at `/`. Cloudflare deploys every push to `main`; the Worker is also reachable at `https://asv-stats.cr-cravelo.workers.dev/`.
 
 Preview locally (Node 22 in Docker, nothing installed on the host):
 
